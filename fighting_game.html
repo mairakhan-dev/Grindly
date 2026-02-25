@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>⚡ KENJI VS SAKURA – CHARACTERS SEPARATED ⚡</title>
+    <title>⚡ KENJI VS SAKURA – ULTIMATE EDITION ⚡</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Bangers&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
         
         * {
             margin: 0;
@@ -20,14 +21,66 @@
             height: 100%;
             overflow: hidden;
             position: fixed;
+            background: #000;
         }
         
         body {
-            background: linear-gradient(135deg, #0a0b1a, #1a0033);
             font-family: 'Orbitron', sans-serif;
         }
         
-        /* ---------- CHARACTER SELECTION (original cards) ---------- */
+        /* Animated background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at 20% 30%, #1a0033, #000 70%);
+            overflow: hidden;
+        }
+        
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            left: -50%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 20px,
+                rgba(251, 191, 36, 0.03) 20px,
+                rgba(251, 191, 36, 0.03) 40px
+            );
+            animation: bgMove 20s linear infinite;
+        }
+        
+        @keyframes bgMove {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(10%, 10%) rotate(5deg); }
+        }
+        
+        /* Floating particles */
+        .particle {
+            position: fixed;
+            width: 2px;
+            height: 2px;
+            background: rgba(251, 191, 36, 0.3);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 10s infinite linear;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(100vh) translateX(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) translateX(100px); opacity: 0; }
+        }
+        
+        /* ---------- CHARACTER SELECTION ---------- */
         .character-modal {
             position: fixed;
             top: 0;
@@ -42,6 +95,12 @@
             backdrop-filter: blur(15px);
             padding: 20px;
             overflow-y: auto;
+            animation: modalFadeIn 0.5s ease-out;
+        }
+        
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
         }
         
         .character-modal.hidden {
@@ -49,184 +108,213 @@
         }
         
         .character-select-card {
-            background: linear-gradient(135deg, rgba(30,41,59,0.95), rgba(15,23,42,0.98));
+            background: linear-gradient(135deg, rgba(30,41,59,0.98), rgba(15,23,42,0.99));
             border: 4px solid #fbbf24;
             border-radius: 50px;
             padding: clamp(20px, 5vh, 50px);
             max-width: 1200px;
             width: 100%;
             text-align: center;
-            box-shadow: 0 0 100px rgba(251,191,36,0.3);
+            box-shadow: 0 0 100px rgba(251,191,36,0.5), 0 0 200px rgba(251,191,36,0.3);
+            animation: cardPulse 3s infinite;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .character-select-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(251,191,36,0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        @keyframes cardPulse {
+            0%, 100% { box-shadow: 0 0 100px rgba(251,191,36,0.5), 0 0 200px rgba(251,191,36,0.3); }
+            50% { box-shadow: 0 0 150px rgba(251,191,36,0.7), 0 0 300px rgba(251,191,36,0.5); }
         }
         
         .character-select-title {
             font-size: clamp(2rem, 6vw, 4rem);
             color: #fbbf24;
             margin-bottom: 30px;
-            text-shadow: 0 0 30px #fbbf24;
+            text-shadow: 0 0 30px #fbbf24, 0 0 60px #fbbf24;
             font-family: 'Bangers', cursive;
+            letter-spacing: 4px;
+            animation: titleGlitch 3s infinite;
+            position: relative;
+            z-index: 1;
         }
         
-       /* REPLACE YOUR EXISTING .character-options STYLES with this: */
-
-.character-options {
-    display: flex;
-    flex-direction: row; /* Force row layout */
-    gap: clamp(15px, 3vw, 30px);
-    justify-content: center;
-    align-items: center;
-    margin: 20px 0;
-    flex-wrap: wrap; /* Allow wrap only if absolutely necessary */
-    width: 100%;
-}
-
-/* Update character cards to be side-by-side */
-.character-option {
-    cursor: pointer;
-    padding: clamp(15px, 3vh, 30px);
-    border-radius: 25px;
-    background: rgba(0,0,0,0.6);
-    border: 3px solid transparent;
-    width: min(280px, 45%); /* Max 45% width so two fit side by side */
-    min-width: 200px; /* Minimum width for readability */
-    transition: all 0.3s;
-    backdrop-filter: blur(5px);
-}
-
-/* Make the preview images smaller in landscape */
-.character-preview {
-    width: min(150px, 70%);
-    height: auto;
-    aspect-ratio: 200/240;
-    margin: 0 auto 15px;
-    background: linear-gradient(135deg, #4f46e5, #7c3aed);
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: clamp(3rem, 8vw, 5rem);
-    border: 3px solid #fbbf24;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.5);
-}
-
-/* Make stats more compact in landscape */
-.character-stats {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    color: #fbbf24;
-    font-size: clamp(0.9rem, 2.5vw, 1rem);
-    flex-wrap: wrap;
-    background: rgba(0,0,0,0.4);
-    padding: 8px;
-    border-radius: 25px;
-}
-
-/* Landscape-specific adjustments */
-@media (orientation: landscape) and (max-height: 500px) {
-    .character-modal {
-        padding: 10px;
-        align-items: flex-start; /* Align to top */
-        overflow-y: auto;
-    }
-    
-    .character-select-card {
-        padding: 15px;
-        margin: 10px auto;
-    }
-    
-    .character-select-title {
-        font-size: clamp(1.8rem, 5vh, 2.5rem);
-        margin-bottom: 15px;
-    }
-    
-    .character-options {
-        gap: 15px;
-        margin: 10px 0;
-    }
-    
-    .character-option {
-        padding: 15px;
-        min-width: 180px;
-    }
-    
-    .character-preview {
-        width: min(120px, 60%);
-        margin-bottom: 10px;
-    }
-    
-    .character-name {
-        font-size: clamp(1.3rem, 4vh, 1.8rem);
-        margin-bottom: 5px;
-    }
-    
-    .character-desc {
-        font-size: clamp(0.8rem, 2vh, 0.9rem);
-        margin-bottom: 8px;
-    }
-    
-    .character-stats {
-        padding: 6px;
-        gap: 10px;
-    }
-    
-    .character-stats span {
-        font-size: 0.9rem;
-    }
-    
-    .confirm-btn {
-        padding: 12px 40px;
-        font-size: clamp(1.1rem, 4vh, 1.5rem);
-        margin-top: 15px;
-    }
-}
-
-/* For very small landscape screens */
-@media (orientation: landscape) and (max-height: 400px) {
-    .character-select-card {
-        padding: 10px;
-    }
-    
-    .character-option {
-        padding: 10px;
-        min-width: 160px;
-    }
-    
-    .character-preview {
-        width: min(100px, 50%);
-        margin-bottom: 5px;
-    }
-    
-    .character-name {
-        font-size: 1.2rem;
-    }
-    
-    .character-desc {
-        display: none; /* Hide description on very small screens */
-    }
-    
-    .character-stats span {
-        font-size: 0.8rem;
-    }
-    
-    .confirm-btn {
-        padding: 8px 30px;
-    }
-}
+        @keyframes titleGlitch {
+            0%, 100% { text-shadow: 2px 2px 0 #ff0000, -2px -2px 0 #00ff00; }
+            25% { text-shadow: -2px 2px 0 #ff0000, 2px -2px 0 #00ff00; }
+            50% { text-shadow: 2px -2px 0 #ff0000, -2px 2px 0 #00ff00; }
+            75% { text-shadow: -2px -2px 0 #ff0000, 2px 2px 0 #00ff00; }
+        }
         
-       
+        .character-options {
+            display: flex;
+            flex-direction: row;
+            gap: clamp(15px, 3vw, 30px);
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+        }
         
+        .character-option {
+            cursor: pointer;
+            padding: clamp(15px, 3vh, 30px);
+            border-radius: 25px;
+            background: rgba(0,0,0,0.8);
+            border: 3px solid transparent;
+            width: min(280px, 45%);
+            min-width: 200px;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(5px);
+            position: relative;
+            overflow: hidden;
+        }
         
-        /* ---------- MAIN GAME LAYOUT (canvas right, controls left) ---------- */
+        .character-option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(251,191,36,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .character-option:hover::before {
+            left: 100%;
+        }
+        
+        .character-option.selected {
+            border-color: #fbbf24;
+            background: rgba(251,191,36,0.2);
+            box-shadow: 0 0 50px rgba(251,191,36,0.5);
+            transform: scale(1.05);
+        }
+        
+        .character-option.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(0.8);
+            pointer-events: none;
+        }
+        
+        .character-preview {
+            width: min(150px, 70%);
+            height: auto;
+            aspect-ratio: 200/240;
+            margin: 0 auto 15px;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(3rem, 8vw, 5rem);
+            border: 3px solid #fbbf24;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+            animation: previewFloat 3s infinite ease-in-out;
+        }
+        
+        @keyframes previewFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .character-name {
+            font-size: clamp(1.5rem, 5vw, 2rem);
+            color: #fbbf24;
+            font-family: 'Bangers', cursive;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px #fbbf24;
+        }
+        
+        .character-desc {
+            color: #9ca3af;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .character-stats {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            color: #fbbf24;
+            font-size: clamp(0.9rem, 2.5vw, 1rem);
+            flex-wrap: wrap;
+            background: rgba(0,0,0,0.6);
+            padding: 8px;
+            border-radius: 25px;
+            border: 1px solid #fbbf24;
+        }
+        
+        .confirm-btn {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: black;
+            border: none;
+            padding: clamp(15px, 3vh, 25px) clamp(30px, 6vw, 60px);
+            font-size: clamp(1.3rem, 5vw, 2rem);
+            border-radius: 60px;
+            border: 4px solid #fbbf24;
+            cursor: pointer;
+            font-family: 'Bangers', cursive;
+            box-shadow: 0 8px 0 #b45309, 0 0 50px #fbbf24;
+            transition: all 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            margin-top: 20px;
+            position: relative;
+            z-index: 1;
+            animation: btnPulse 2s infinite;
+        }
+        
+        @keyframes btnPulse {
+            0%, 100% { box-shadow: 0 8px 0 #b45309, 0 0 30px #fbbf24; }
+            50% { box-shadow: 0 8px 0 #b45309, 0 0 60px #fbbf24; }
+        }
+        
+        .confirm-btn:active {
+            transform: translateY(8px);
+            box-shadow: 0 0 0 #b45309, 0 0 50px #fbbf24;
+        }
+        
+        .confirm-btn:disabled {
+            opacity: 0.5;
+            pointer-events: none;
+            filter: grayscale(0.8);
+        }
+        
+        /* ---------- MAIN GAME LAYOUT ---------- */
         .game-container {
             display: flex;
             flex-direction: row;
             width: 100vw;
             height: 100vh;
             position: relative;
+            animation: gameFadeIn 0.5s ease-out;
         }
         
-        /* LEFT PANEL – canvas (60%) */
+        @keyframes gameFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
         .left-panel {
             width: 60%;
             height: 100vh;
@@ -234,21 +322,53 @@
             align-items: center;
             justify-content: center;
             background: #000;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .left-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 30%, rgba(251,191,36,0.1), transparent 70%);
+            pointer-events: none;
+            animation: panelGlow 5s infinite;
+        }
+        
+        @keyframes panelGlow {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
         }
         
         canvas {
             width: 100%;
             height: 100%;
             object-fit: contain;
-            background: linear-gradient(180deg, #0a1a2a 0%, #1a2a3a 100%);
+            background: linear-gradient(180deg, #0a1a2a 0%, #1a2a3a 50%, #2a1a1a 100%);
             cursor: none;
+            filter: drop-shadow(0 0 20px rgba(251,191,36,0.3));
         }
         
-        /* RIGHT PANEL – controls (38%) */
+        canvas.rage-mode {
+            filter: drop-shadow(0 0 30px #ff0000) brightness(1.2);
+            animation: screenShake 0.1s infinite;
+        }
+        
+        @keyframes screenShake {
+            0% { transform: translate(0, 0); }
+            25% { transform: translate(5px, 5px); }
+            50% { transform: translate(-5px, -5px); }
+            75% { transform: translate(5px, -5px); }
+            100% { transform: translate(-5px, 5px); }
+        }
+        
         .right-panel {
             width: 38%;
             height: 100vh;
-            background: linear-gradient(135deg, #0a0b1a, #1a0033);
+            background: linear-gradient(135deg, rgba(10,11,26,0.98), rgba(26,0,51,0.98));
             border-left: 2px solid #fbbf24;
             display: flex;
             flex-direction: column;
@@ -256,18 +376,42 @@
             gap: 8px;
             overflow-y: auto;
             z-index: 10;
+            backdrop-filter: blur(10px);
+            box-shadow: -10px 0 30px rgba(0,0,0,0.5);
         }
         
-        /* ---------- CONTROLS INSIDE RIGHT PANEL ---------- */
+        /* Custom scrollbar */
+        .right-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .right-panel::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.5);
+            border-radius: 4px;
+        }
+        
+        .right-panel::-webkit-scrollbar-thumb {
+            background: #fbbf24;
+            border-radius: 4px;
+            box-shadow: 0 0 10px #fbbf24;
+        }
+        
         .top-info {
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.9);
             border: 2px solid #fbbf24;
             border-radius: 15px;
             padding: 8px;
             text-align: center;
             color: #fbbf24;
             font-size: 14px;
-            font-family: 'Bangers', cursive;
+            font-family: 'Press Start 2P', cursive;
+            text-shadow: 0 0 10px #fbbf24;
+            animation: infoPulse 2s infinite;
+        }
+        
+        @keyframes infoPulse {
+            0%, 100% { border-color: #fbbf24; }
+            50% { border-color: #ff0000; }
         }
         
         .player-huds {
@@ -277,18 +421,33 @@
         
         .player-hud {
             flex: 1;
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.95);
             border: 2px solid #fbbf24;
             border-radius: 12px;
             padding: 8px;
+            position: relative;
+            overflow: hidden;
         }
         
-        .player-hud.left {
-            border-color: #ef4444;
+        .player-hud::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(251,191,36,0.2), transparent);
+            animation: hudScan 3s infinite;
         }
-        .player-hud.right {
-            border-color: #ff69b4;
+        
+        @keyframes hudScan {
+            0% { left: -100%; }
+            20% { left: 100%; }
+            100% { left: 100%; }
         }
+        
+        .player-hud.left { border-color: #ef4444; box-shadow: 0 0 20px rgba(239,68,68,0.3); }
+        .player-hud.right { border-color: #ff69b4; box-shadow: 0 0 20px rgba(255,105,180,0.3); }
         
         .player-name-row {
             display: flex;
@@ -300,9 +459,10 @@
             font-size: 14px;
             font-weight: 900;
             font-family: 'Bangers', cursive;
+            letter-spacing: 1px;
         }
-        .left .player-name { color: #ef4444; }
-        .right .player-name { color: #ff69b4; }
+        .left .player-name { color: #ef4444; text-shadow: 0 0 10px #ef4444; }
+        .right .player-name { color: #ff69b4; text-shadow: 0 0 10px #ff69b4; }
         
         .player-level {
             background: #fbbf24;
@@ -310,6 +470,8 @@
             padding: 2px 6px;
             border-radius: 8px;
             font-size: 10px;
+            font-weight: bold;
+            box-shadow: 0 0 10px #fbbf24;
         }
         
         .health-bar {
@@ -319,11 +481,30 @@
             border-radius: 6px;
             overflow: hidden;
             margin-bottom: 4px;
+            position: relative;
         }
+        
+        .health-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            animation: healthShine 2s infinite;
+        }
+        
+        @keyframes healthShine {
+            0% { transform: translateX(-100%); }
+            20% { transform: translateX(100%); }
+            100% { transform: translateX(100%); }
+        }
+        
         .health-fill {
             height: 100%;
             width: 100%;
-            transition: width 0.1s;
+            transition: width 0.1s ease-out;
         }
         .left .health-fill { background: linear-gradient(90deg, #ef4444, #ff8a8a); }
         .right .health-fill { background: linear-gradient(90deg, #ff69b4, #ffb6c1); }
@@ -341,24 +522,33 @@
             width: 0%;
             background: linear-gradient(90deg, #fbbf24, #ffd700);
             transition: width 0.2s;
+            box-shadow: 0 0 10px #fbbf24;
         }
         .rage-fill {
             height: 100%;
             width: 0%;
             background: linear-gradient(90deg, #ff0000, #8b0000);
             transition: width 0.2s;
+            box-shadow: 0 0 10px #ff0000;
         }
         
         .timer {
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.95);
             border: 2px solid #fbbf24;
             border-radius: 30px;
             padding: 5px 15px;
             font-size: 28px;
             color: #fbbf24;
-            font-family: 'Bangers', cursive;
+            font-family: 'Press Start 2P', cursive;
             text-align: center;
             margin: 5px 0;
+            text-shadow: 0 0 20px #fbbf24;
+            animation: timerPulse 1s infinite;
+        }
+        
+        @keyframes timerPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
         
         .indicators {
@@ -367,17 +557,39 @@
         }
         .rage-indicator, .combo-indicator {
             flex: 1;
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.95);
             border: 2px solid #fbbf24;
             border-radius: 10px;
             padding: 5px;
             text-align: center;
             font-size: 12px;
             font-family: 'Bangers', cursive;
-            display: none;
+            letter-spacing: 1px;
         }
-        .rage-indicator { color: #ff0000; }
-        .combo-indicator { color: #ffd700; }
+        .rage-indicator { 
+            color: #ff0000; 
+            display: none; 
+            border-color: #ff0000;
+            box-shadow: 0 0 20px #ff0000;
+            animation: ragePulse 0.5s infinite;
+        }
+        .combo-indicator { 
+            color: #ffd700; 
+            display: none; 
+            border-color: #ffd700;
+            box-shadow: 0 0 20px #ffd700;
+            animation: comboPulse 0.3s infinite;
+        }
+        
+        @keyframes ragePulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        @keyframes comboPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
         
         .button-grid {
             display: grid;
@@ -395,15 +607,36 @@
             font-weight: 900;
             font-family: 'Bangers', cursive;
             cursor: pointer;
-            box-shadow: 0 3px 0 #000;
+            box-shadow: 0 3px 0 #000, 0 0 10px #fbbf24;
             text-transform: uppercase;
+            touch-action: manipulation;
+            transition: all 0.05s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
         }
+        
+        .action-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(251,191,36,0.3), transparent);
+            transition: left 0.3s;
+        }
+        
+        .action-btn:hover::before {
+            left: 100%;
+        }
+        
         .action-btn:active {
             transform: translateY(3px);
-            box-shadow: none;
+            box-shadow: 0 0 0 #000, 0 0 20px #fbbf24;
             background: linear-gradient(135deg, #fbbf24, #f59e0b);
             color: black;
         }
+        
         .ultimate-btn {
             grid-column: span 3;
             background: linear-gradient(135deg, #ff0000, #8b0000);
@@ -414,132 +647,154 @@
             font-size: 16px;
             font-family: 'Bangers', cursive;
             cursor: pointer;
-            box-shadow: 0 3px 0 #000, 0 0 20px #ff0000;
-            animation: pulse 1s infinite;
-        }
-        .ultimate-btn:active {
-            transform: translateY(3px);
-            box-shadow: none;
-        }
-        @keyframes pulse {
-            0%,100% { box-shadow: 0 3px 0 #000, 0 0 20px #ff0000; }
-            50% { box-shadow: 0 3px 0 #000, 0 0 40px #ff0000; }
+            box-shadow: 0 3px 0 #000, 0 0 30px #ff0000;
+            animation: ultimatePulse 1s infinite;
+            touch-action: manipulation;
+            position: relative;
+            overflow: hidden;
         }
         
-        /* ========== SPECIAL MOVES – FIXED FOR MOBILE (NO SCROLL) ========== */
-.special-moves {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 6px;
-    margin: 6px 0 4px;
-    padding: 8px 6px;
-    background: rgba(0,0,0,0.95);
-    border: 2px solid #fbbf24;
-    border-radius: 16px;
-    /* NO MAX-HEIGHT, NO OVERFLOW, NO SCROLLING */
-    flex: 0 1 auto;
-    width: 100%;
-}
-
-.special-move-btn {
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
-    color: white;
-    border: 2px solid #fbbf24;
-    border-radius: 12px;
-    padding: 8px 5px;
-    font-size: 12px;
-    display: inline-flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-width: 65px;
-    flex: 0 1 auto;
-    cursor: pointer;
-    box-shadow: 0 3px 0 #000;
-    touch-action: manipulation;
-    transition: transform 0.05s, background 0.1s;
-    font-weight: bold;
-}
-
-.special-move-btn:active {
-    transform: translateY(3px);
-    box-shadow: none;
-    background: linear-gradient(135deg, #fbbf24, #f59e0b);
-    color: black;
-    border-color: #000;
-}
-
-.special-move-btn .icon {
-    font-size: 20px;
-    line-height: 1;
-    margin-bottom: 2px;
-}
-
-.special-move-btn span:not(.icon) {
-    font-size: 9px;
-    font-family: 'Bangers', cursive;
-    letter-spacing: 0.5px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 60px;
-    padding: 0 2px;
-}
-
-.special-move-btn .cost {
-    background: #000000aa;
-    border-radius: 20px;
-    padding: 2px 6px;
-    margin-top: 2px;
-    font-size: 8px;
-    color: #fbbf24;
-    border: 1px solid #fbbf24;
-}
-
-/* Rarity colors */
-.special-move-btn.rare { background: linear-gradient(135deg, #a855f7, #7e22ce); }
-.special-move-btn.epic { background: linear-gradient(135deg, #ec4899, #be185d); }
-.special-move-btn.legendary { 
-    background: linear-gradient(135deg, #f97316, #c2410c); 
-    animation: legendaryGlow 2s infinite;
-    border-color: gold;
-}
-@keyframes legendaryGlow { 
-    50% { border-color: #ffd700; box-shadow: 0 0 10px gold; } 
-}
+        .ultimate-btn::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.3), transparent 70%);
+            animation: rotate 10s linear infinite;
+        }
+        
+        .ultimate-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 0 0 #000, 0 0 50px #ff0000;
+        }
+        
+        @keyframes ultimatePulse {
+            0%,100% { box-shadow: 0 3px 0 #000, 0 0 30px #ff0000; }
+            50% { box-shadow: 0 3px 0 #000, 0 0 60px #ff0000; }
+        }
+        
+        .special-moves {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 6px;
+            margin: 6px 0 4px;
+            padding: 8px 6px;
+            background: rgba(0,0,0,0.98);
+            border: 2px solid #fbbf24;
+            border-radius: 16px;
+            max-height: none;
+            overflow: visible;
+            flex: 0 1 auto;
+            width: 100%;
+            box-shadow: inset 0 0 20px rgba(251,191,36,0.2);
+        }
+        
         .special-move-btn {
             background: linear-gradient(135deg, #3b82f6, #2563eb);
             color: white;
-            border: 1px solid #fbbf24;
-            border-radius: 8px;
-            padding: 4px 6px;
-            font-size: 10px;
-            display: flex;
+            border: 2px solid #fbbf24;
+            border-radius: 12px;
+            padding: 8px 5px;
+            font-size: 12px;
+            display: inline-flex;
             flex-direction: column;
             align-items: center;
-            min-width: 50px;
+            justify-content: center;
+            min-width: 65px;
             cursor: pointer;
-            box-shadow: 0 2px 0 #000;
+            box-shadow: 0 3px 0 #000, 0 0 10px #3b82f6;
+            touch-action: manipulation;
+            transition: transform 0.05s, background 0.1s;
+            font-weight: bold;
+            position: relative;
+            overflow: hidden;
         }
+        
+        .special-move-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.3s;
+        }
+        
+        .special-move-btn:hover::before {
+            left: 100%;
+        }
+        
         .special-move-btn:active {
-            transform: translateY(2px);
-            box-shadow: none;
+            transform: translateY(3px);
+            box-shadow: 0 0 0 #000, 0 0 20px #fbbf24;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: black;
+            border-color: #000;
         }
-        .special-move-btn .icon { font-size: 14px; }
+        
+        .special-move-btn .icon {
+            font-size: 20px;
+            line-height: 1;
+            margin-bottom: 2px;
+            filter: drop-shadow(0 0 5px currentColor);
+        }
+        
+        .special-move-btn span:not(.icon) {
+            font-size: 9px;
+            font-family: 'Bangers', cursive;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 60px;
+            padding: 0 2px;
+        }
+        
+        .special-move-btn .cost {
+            background: #000000aa;
+            border-radius: 20px;
+            padding: 2px 6px;
+            margin-top: 2px;
+            font-size: 8px;
+            color: #fbbf24;
+            border: 1px solid #fbbf24;
+        }
+        
+        .special-move-btn.rare { 
+            background: linear-gradient(135deg, #a855f7, #7e22ce);
+            box-shadow: 0 3px 0 #000, 0 0 10px #a855f7;
+        }
+        .special-move-btn.epic { 
+            background: linear-gradient(135deg, #ec4899, #be185d);
+            box-shadow: 0 3px 0 #000, 0 0 10px #ec4899;
+        }
+        .special-move-btn.legendary { 
+            background: linear-gradient(135deg, #f97316, #c2410c); 
+            animation: legendaryGlow 2s infinite;
+            border-color: gold;
+            box-shadow: 0 3px 0 #000, 0 0 20px gold;
+        }
+        @keyframes legendaryGlow { 
+            50% { border-color: #ffd700; box-shadow: 0 3px 0 #000, 0 0 30px gold; } 
+        }
         
         .restart-hint {
             color: #fbbf24;
             font-size: 10px;
             text-align: center;
             opacity: 0.8;
+            font-family: 'Press Start 2P', cursive;
+            text-shadow: 0 0 5px #fbbf24;
         }
         
-        /* back / sound buttons (fixed) */
         .back-btn, .sound-toggle {
             position: fixed;
             z-index: 100;
-            background: #ef4444;
+            background: rgba(239,68,68,0.9);
             color: white;
             border: 2px solid #fbbf24;
             padding: 5px 15px;
@@ -547,24 +802,26 @@
             font-size: 14px;
             font-family: 'Bangers', cursive;
             cursor: pointer;
-            box-shadow: 0 3px 0 #b91c1c;
+            box-shadow: 0 3px 0 #b91c1c, 0 0 20px #ef4444;
             text-decoration: none;
+            backdrop-filter: blur(5px);
+            transition: all 0.1s;
         }
         .back-btn:active, .sound-toggle:active {
             transform: translateY(3px);
-            box-shadow: none;
+            box-shadow: 0 0 0 #b91c1c, 0 0 20px #ef4444;
         }
         .sound-toggle {
             right: 10px;
             top: 10px;
             background: rgba(0,0,0,0.8);
+            box-shadow: 0 3px 0 #000, 0 0 20px #fbbf24;
         }
         .back-btn {
             left: 10px;
             top: 10px;
         }
         
-        /* game overlay */
         .game-overlay {
             position: absolute;
             top: 0;
@@ -578,19 +835,44 @@
             flex-direction: column;
             z-index: 10000;
             border: 4px solid #fbbf24;
+            animation: overlayFadeIn 0.5s ease-out;
+            backdrop-filter: blur(10px);
         }
+        
+        @keyframes overlayFadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
         .game-overlay.show { display: flex; }
+        
         .victory-text {
             font-size: clamp(48px, 12vw, 96px);
             color: #fbbf24;
             font-family: 'Bangers', cursive;
             margin-bottom: 20px;
+            text-shadow: 0 0 30px #fbbf24, 0 0 60px #fbbf24;
+            animation: victoryPulse 1s infinite;
         }
+        
+        @keyframes victoryPulse {
+            0%, 100% { transform: scale(1); text-shadow: 0 0 30px #fbbf24, 0 0 60px #fbbf24; }
+            50% { transform: scale(1.1); text-shadow: 0 0 50px #fbbf24, 0 0 100px #fbbf24; }
+        }
+        
         .xp-gained {
             font-size: 24px;
             color: #f59e0b;
             margin-bottom: 20px;
+            font-family: 'Press Start 2P', cursive;
+            animation: xpFloat 2s infinite;
         }
+        
+        @keyframes xpFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
         .restart-btn {
             background: linear-gradient(135deg, #ef4444, #ff69b4);
             color: white;
@@ -601,11 +883,19 @@
             border: 4px solid #fbbf24;
             cursor: pointer;
             font-family: 'Bangers', cursive;
-            box-shadow: 0 8px 0 #b91c1c;
+            box-shadow: 0 8px 0 #b91c1c, 0 0 50px #ef4444;
+            transition: all 0.1s;
+            animation: restartPulse 2s infinite;
         }
+        
+        @keyframes restartPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
         .restart-btn:active {
             transform: translateY(8px);
-            box-shadow: none;
+            box-shadow: 0 0 0 #b91c1c, 0 0 50px #ef4444;
         }
         
         .battle-message {
@@ -620,203 +910,151 @@
             border: 3px solid #fbbf24;
             font-size: 20px;
             z-index: 1000;
-            animation: msgAppear 0.5s forwards;
+            animation: msgAppear 0.5s forwards, msgFloat 2s infinite;
             font-family: 'Bangers', cursive;
             pointer-events: none;
+            text-shadow: 0 0 20px #fbbf24;
+            box-shadow: 0 0 50px #fbbf24;
         }
+        
         @keyframes msgAppear {
             0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
             100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
         }
         
-        /* desktop override: keep same layout (left canvas, right controls) */
+        @keyframes msgFloat {
+            0%, 100% { transform: translate(-50%, -50%); }
+            50% { transform: translate(-50%, -60%); }
+        }
+        
+        /* Damage number animation */
+        .damage-number {
+            position: fixed;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 24px;
+            font-weight: bold;
+            pointer-events: none;
+            z-index: 1000;
+            animation: damageFloat 1s forwards;
+            text-shadow: 0 0 10px currentColor;
+        }
+        
+        @keyframes damageFloat {
+            0% { opacity: 1; transform: translate(0, 0) scale(1); }
+            100% { opacity: 0; transform: translate(0, -100px) scale(2); }
+        }
+        
+        /* Responsive adjustments */
         @media (min-width: 1024px) {
             .left-panel { width: 65%; }
             .right-panel { width: 33%; }
         }
-
-        /* REPLACE ONLY THIS ENTIRE SPECIAL MOVES SECTION in your CSS */
-/* Find .special-moves and everything under it, replace with this: */
-
-.special-moves {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 6px;
-    margin: 6px 0 4px;
-    padding: 8px 6px;
-    background: rgba(0,0,0,0.95);
-    border: 2px solid #fbbf24;
-    border-radius: 16px;
-    /* CRITICAL: No height restrictions, no overflow */
-    max-height: none;
-    overflow: visible;
-    flex: 0 1 auto;
-    width: 100%;
-}
-
-.special-move-btn {
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
-    color: white;
-    border: 2px solid #fbbf24;
-    border-radius: 12px;
-    padding: 8px 5px;
-    font-size: 12px;
-    display: inline-flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-width: 65px;
-    cursor: pointer;
-    box-shadow: 0 3px 0 #000;
-    touch-action: manipulation;
-    transition: transform 0.05s, background 0.1s;
-    font-weight: bold;
-}
-
-.special-move-btn:active {
-    transform: translateY(3px);
-    box-shadow: none;
-    background: linear-gradient(135deg, #fbbf24, #f59e0b);
-    color: black;
-    border-color: #000;
-}
-
-.special-move-btn .icon {
-    font-size: 20px;
-    line-height: 1;
-    margin-bottom: 2px;
-}
-
-.special-move-btn span:not(.icon) {
-    font-size: 9px;
-    font-family: 'Bangers', cursive;
-    letter-spacing: 0.5px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 60px;
-    padding: 0 2px;
-}
-
-.special-move-btn .cost {
-    background: #000000aa;
-    border-radius: 20px;
-    padding: 2px 6px;
-    margin-top: 2px;
-    font-size: 8px;
-    color: #fbbf24;
-    border: 1px solid #fbbf24;
-}
-
-.special-move-btn.rare { background: linear-gradient(135deg, #a855f7, #7e22ce); }
-.special-move-btn.epic { background: linear-gradient(135deg, #ec4899, #be185d); }
-.special-move-btn.legendary { 
-    background: linear-gradient(135deg, #f97316, #c2410c); 
-    animation: legendaryGlow 2s infinite;
-    border-color: gold;
-}
-@keyframes legendaryGlow { 
-    50% { border-color: #ffd700; box-shadow: 0 0 10px gold; } 
-}
-
-/* ADD THIS AT THE VERY END OF YOUR STYLES */
-/* LANDSCAPE FIX FOR CHARACTER SELECTION ONLY - DOES NOT AFFECT GAME */
-
-@media (orientation: landscape) and (max-height: 500px) {
-    /* Target only the character modal - NOT the game */
-    .character-modal {
-        padding: 5px !important;
-        align-items: center !important;
-    }
-    
-    .character-modal .character-select-card {
-        padding: 15px !important;
-        max-width: 95% !important;
-        margin: 0 auto !important;
-    }
-    
-    .character-modal .character-options {
-        flex-direction: row !important;
-        flex-wrap: nowrap !important;
-        gap: 15px !important;
-        margin: 10px 0 !important;
-    }
-    
-    .character-modal .character-option {
-        width: 45% !important;
-        min-width: 180px !important;
-        padding: 15px !important;
-    }
-    
-    .character-modal .character-preview {
-        width: 100px !important;
-        height: 120px !important;
-        font-size: 3rem !important;
-        margin-bottom: 8px !important;
-    }
-    
-    .character-modal .character-name {
-        font-size: 1.3rem !important;
-        margin-bottom: 3px !important;
-    }
-    
-    .character-modal .character-desc {
-        font-size: 0.8rem !important;
-        margin-bottom: 5px !important;
-    }
-    
-    .character-modal .character-stats {
-        padding: 5px !important;
-        gap: 8px !important;
-    }
-    
-    .character-modal .character-stats span {
-        font-size: 0.8rem !important;
-    }
-    
-    .character-modal .confirm-btn {
-        padding: 10px 30px !important;
-        font-size: 1.2rem !important;
-        margin-top: 10px !important;
-    }
-}
-
-/* Even smaller screens */
-@media (orientation: landscape) and (max-height: 400px) {
-    .character-modal .character-option {
-        min-width: 160px !important;
-        padding: 10px !important;
-    }
-    
-    .character-modal .character-preview {
-        width: 80px !important;
-        height: 100px !important;
-        font-size: 2.5rem !important;
-    }
-    
-    .character-modal .character-name {
-        font-size: 1.1rem !important;
-    }
-    
-    .character-modal .character-desc {
-        display: none !important; /* Hide description on very small screens */
-    }
-    
-    .character-modal .character-stats span {
-        font-size: 0.7rem !important;
-    }
-}
+        
+        @media (max-width: 768px) {
+            .button-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .ultimate-btn {
+                grid-column: span 2;
+            }
+            .special-move-btn {
+                min-width: 55px;
+            }
+        }
+        
+        @media (orientation: landscape) and (max-height: 500px) {
+            .character-modal {
+                padding: 5px !important;
+                align-items: center !important;
+            }
+            
+            .character-modal .character-select-card {
+                padding: 15px !important;
+                max-width: 95% !important;
+                margin: 0 auto !important;
+            }
+            
+            .character-modal .character-options {
+                flex-direction: row !important;
+                flex-wrap: nowrap !important;
+                gap: 15px !important;
+                margin: 10px 0 !important;
+            }
+            
+            .character-modal .character-option {
+                width: 45% !important;
+                min-width: 180px !important;
+                padding: 15px !important;
+            }
+            
+            .character-modal .character-preview {
+                width: 100px !important;
+                height: 120px !important;
+                font-size: 3rem !important;
+                margin-bottom: 8px !important;
+            }
+            
+            .character-modal .character-name {
+                font-size: 1.3rem !important;
+                margin-bottom: 3px !important;
+            }
+            
+            .character-modal .character-desc {
+                font-size: 0.8rem !important;
+                margin-bottom: 5px !important;
+            }
+            
+            .character-modal .character-stats {
+                padding: 5px !important;
+                gap: 8px !important;
+            }
+            
+            .character-modal .character-stats span {
+                font-size: 0.8rem !important;
+            }
+            
+            .character-modal .confirm-btn {
+                padding: 10px 30px !important;
+                font-size: 1.2rem !important;
+                margin-top: 10px !important;
+            }
+        }
+        
+        @media (orientation: landscape) and (max-height: 400px) {
+            .character-modal .character-option {
+                min-width: 160px !important;
+                padding: 10px !important;
+            }
+            
+            .character-modal .character-preview {
+                width: 80px !important;
+                height: 100px !important;
+                font-size: 2.5rem !important;
+            }
+            
+            .character-modal .character-desc {
+                display: none !important;
+            }
+            
+            .character-modal .character-stats span {
+                font-size: 0.7rem !important;
+            }
+        }
     </style>
 </head>
 <body>
-    <!-- CHARACTER SELECTION MODAL (original cards) -->
+    <!-- Animated background -->
+    <div class="bg-animation"></div>
+    
+    <!-- Floating particles -->
+    <div id="particles"></div>
+
+    <!-- CHARACTER SELECTION MODAL -->
     <div class="character-modal" id="characterModal">
         <div class="character-select-card">
             <div class="character-select-title">⚔️ CHOOSE YOUR WARRIOR ⚔️</div>
-            <div id="characterTakenMessage" style="color: #fbbf24; margin-bottom:20px; font-size:16px;"></div>
+            <div id="characterTakenMessage" style="color: #fbbf24; margin-bottom:20px; font-size:16px; font-family: 'Press Start 2P', cursive;"></div>
             <div class="character-options">
-                <!-- Kenji card -->
                 <div class="character-option" id="chooseKenji" onclick="selectCharacter('kenji')">
                     <div class="character-preview">⚔️</div>
                     <div class="character-name">KENJI</div>
@@ -824,9 +1062,8 @@
                     <div class="character-stats">
                         <span>💪 9</span> <span>⚡ 7</span> <span>🛡️ 8</span>
                     </div>
-                    <div id="kenjiTaken" style="display:none; color:#ef4444;">🔒 TAKEN</div>
+                    <div id="kenjiTaken" style="display:none; color:#ef4444; font-family: 'Press Start 2P', cursive; font-size: 10px;">🔒 TAKEN</div>
                 </div>
-                <!-- Sakura card -->
                 <div class="character-option" id="chooseSakura" onclick="selectCharacter('sakura')">
                     <div class="character-preview">🌸</div>
                     <div class="character-name">SAKURA</div>
@@ -834,7 +1071,7 @@
                     <div class="character-stats">
                         <span>💪 7</span> <span>⚡ 9</span> <span>🛡️ 7</span>
                     </div>
-                    <div id="sakuraTaken" style="display:none; color:#ef4444;">🔒 TAKEN</div>
+                    <div id="sakuraTaken" style="display:none; color:#ef4444; font-family: 'Press Start 2P', cursive; font-size: 10px;">🔒 TAKEN</div>
                 </div>
             </div>
             <button class="confirm-btn" id="confirmCharacterBtn" onclick="confirmCharacter()" disabled>⚡ SELECT FIGHTER ⚡</button>
@@ -843,19 +1080,16 @@
 
     <!-- MAIN GAME LAYOUT -->
     <div class="game-container">
-        <!-- LEFT PANEL (canvas) -->
         <div class="left-panel" id="leftPanel">
             <canvas id="gameCanvas"></canvas>
         </div>
 
-        <!-- RIGHT PANEL (controls) -->
         <div class="right-panel" id="rightPanel" style="display: none;">
             <div class="top-info" id="battleInfoMobile">
                 <span>⚔️ ARENA · ROUND 1</span>
             </div>
             <div class="top-info" id="playerIndicatorMobile">CHOOSE YOUR FIGHTER</div>
 
-            <!-- Player HUDs -->
             <div class="player-huds">
                 <div class="player-hud left">
                     <div class="player-name-row">
@@ -877,16 +1111,13 @@
                 </div>
             </div>
 
-            <!-- Timer -->
             <div class="timer" id="timerDisplay">99</div>
 
-            <!-- Indicators -->
             <div class="indicators">
                 <div class="rage-indicator" id="rageIndicator">⚡ RAGE MODE</div>
                 <div class="combo-indicator" id="comboIndicator">🔥 COMBO</div>
             </div>
 
-            <!-- Action Buttons -->
             <div class="button-grid">
                 <button class="action-btn" id="btnLeft" onmousedown="if(window.game) window.game.press('left')" ontouchstart="if(window.game) window.game.press('left')" onmouseup="if(window.game) window.game.release('left')" ontouchend="if(window.game) window.game.release('left')">← LEFT</button>
                 <button class="action-btn" id="btnRight" onmousedown="if(window.game) window.game.press('right')" ontouchstart="if(window.game) window.game.press('right')" onmouseup="if(window.game) window.game.release('right')" ontouchend="if(window.game) window.game.release('right')">→ RIGHT</button>
@@ -896,12 +1127,10 @@
                 <button class="ultimate-btn" id="btnUltimate" onmousedown="if(window.game) window.game.press('ultimate')" ontouchstart="if(window.game) window.game.press('ultimate')">🔥 ULTIMATE</button>
             </div>
 
-            <!-- Special Moves -->
             <div class="special-moves" id="specialMoves"></div>
             <div class="restart-hint" id="restartHint">R = RESTART · U = ULTIMATE</div>
         </div>
 
-        <!-- GAME OVERLAY -->
         <div class="game-overlay" id="gameOverlay">
             <div class="victory-text" id="victoryText"></div>
             <div class="xp-gained" id="xpGained">+0 XP</div>
@@ -909,24 +1138,38 @@
         </div>
     </div>
 
-    <!-- fixed buttons -->
     <a href="javascript:history.back()" class="back-btn" id="backBtn" style="display: none;">← BACK</a>
     <div class="sound-toggle" id="soundToggle" onclick="toggleSound()" style="display: none;">🔊 ON</div>
 
-    <!-- Firebase scripts (loaded dynamically) -->
     <script>
+        // ========== CREATE FLOATING PARTICLES ==========
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 10 + 's';
+                particle.style.width = (Math.random() * 3 + 1) + 'px';
+                particle.style.height = particle.style.width;
+                particle.style.background = `rgba(251, 191, 36, ${Math.random() * 0.3})`;
+                particlesContainer.appendChild(particle);
+            }
+        }
+        createParticles();
+
         // ========== MOVE DATABASE ==========
         const MOVE_DATABASE = {
-            punch: { id: 'punch', name: 'PUNCH', icon: '👊', damage: 3, manaCost: 0, rarity: 'common' },
-            kick: { id: 'kick', name: 'KICK', icon: '🦵', damage: 4, manaCost: 5, rarity: 'common' },
-            heavy_punch: { id: 'heavy_punch', name: 'HEAVY', icon: '💪', damage: 6, manaCost: 10, rarity: 'common' },
-            power_kick: { id: 'power_kick', name: 'POWER', icon: '🦶', damage: 7, manaCost: 15, rarity: 'common' },
-            fire_punch: { id: 'fire_punch', name: 'FIRE', icon: '🔥', damage: 9, manaCost: 20, rarity: 'rare' },
-            thunder_kick: { id: 'thunder_kick', name: 'THUNDER', icon: '⚡', damage: 10, manaCost: 25, rarity: 'rare' },
-            ice_blast: { id: 'ice_blast', name: 'ICE', icon: '❄️', damage: 8, manaCost: 30, rarity: 'epic' },
-            dragon_fury: { id: 'dragon_fury', name: 'DRAGON', icon: '🐉', damage: 14, manaCost: 40, rarity: 'legendary' },
-            healing_light: { id: 'healing_light', name: 'HEAL', icon: '✨', heal: 15, manaCost: 25, rarity: 'rare' },
-            ultimate: { id: 'ultimate', name: 'ULTIMATE', icon: '💀', damage: 999, manaCost: 100, rarity: 'legendary' }
+            punch: { id: 'punch', name: 'PUNCH', icon: '👊', damage: 8, manaCost: 0, rarity: 'common' },
+            kick: { id: 'kick', name: 'KICK', icon: '🦵', damage: 12, manaCost: 5, rarity: 'common' },
+            heavy_punch: { id: 'heavy_punch', name: 'HEAVY', icon: '💪', damage: 15, manaCost: 10, rarity: 'common' },
+            power_kick: { id: 'power_kick', name: 'POWER', icon: '🦶', damage: 18, manaCost: 15, rarity: 'common' },
+            fire_punch: { id: 'fire_punch', name: 'FIRE', icon: '🔥', damage: 22, manaCost: 20, rarity: 'rare' },
+            thunder_kick: { id: 'thunder_kick', name: 'THUNDER', icon: '⚡', damage: 25, manaCost: 25, rarity: 'rare' },
+            ice_blast: { id: 'ice_blast', name: 'ICE', icon: '❄️', damage: 20, manaCost: 30, rarity: 'epic' },
+            dragon_fury: { id: 'dragon_fury', name: 'DRAGON', icon: '🐉', damage: 35, manaCost: 40, rarity: 'legendary' },
+            healing_light: { id: 'healing_light', name: 'HEAL', icon: '✨', heal: 20, manaCost: 25, rarity: 'rare' },
+            ultimate: { id: 'ultimate', name: 'ULTIMATE', icon: '💀', damage: 100, manaCost: 100, rarity: 'legendary' }
         };
 
         // ========== FIREBASE CONFIG ==========
@@ -937,96 +1180,331 @@
             projectId: "student-teacher-app-4e7c9"
         };
 
-        // ========== SOUND SYSTEM (enhanced) ==========
+        // ========== ENHANCED SOUND SYSTEM ==========
         let soundEnabled = true;
         let audioContext = null;
-        function initAudio() { if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)(); }
+        
+        function initAudio() { 
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+        }
+        
         function playSound(type, volume = 0.3) {
             if (!soundEnabled) return;
             initAudio();
+            
             try {
-                const osc = audioContext.createOscillator();
-                const gain = audioContext.createGain();
-                const filter = audioContext.createBiquadFilter();
-                osc.connect(filter); filter.connect(gain); gain.connect(audioContext.destination);
-                gain.gain.value = volume;
+                const now = audioContext.currentTime;
+                
                 switch(type) {
                     case 'punch':
-                        osc.frequency.setValueAtTime(200, audioContext.currentTime);
-                        osc.frequency.exponentialRampToValueAtTime(80, audioContext.currentTime+0.1);
-                        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime+0.2);
-                        osc.type = 'sawtooth'; filter.type='lowpass'; filter.frequency.value=800; break;
+                        playPunchSound(volume);
+                        break;
                     case 'kick':
-                        osc.frequency.setValueAtTime(150, audioContext.currentTime);
-                        osc.frequency.exponentialRampToValueAtTime(50, audioContext.currentTime+0.15);
-                        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime+0.25);
-                        osc.type='triangle'; filter.type='lowpass'; filter.frequency.value=600; break;
+                        playKickSound(volume);
+                        break;
                     case 'block':
-                        osc.frequency.setValueAtTime(100, audioContext.currentTime);
-                        osc.frequency.exponentialRampToValueAtTime(50, audioContext.currentTime+0.05);
-                        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime+0.1);
-                        osc.type='square'; filter.type='lowpass'; filter.frequency.value=400; break;
+                        playBlockSound(volume);
+                        break;
                     case 'hit':
-                        osc.frequency.setValueAtTime(300, audioContext.currentTime);
-                        osc.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime+0.1);
-                        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime+0.15);
-                        osc.type='sawtooth'; filter.type='bandpass'; filter.frequency.value=500; break;
+                        playHitSound(volume);
+                        break;
                     case 'critical':
-                        for(let i=0;i<2;i++){ let o=audioContext.createOscillator(), g=audioContext.createGain();
-                            o.type='sawtooth'; o.frequency.setValueAtTime(600+i*200, audioContext.currentTime);
-                            o.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime+0.2);
-                            o.connect(g); g.connect(audioContext.destination);
-                            g.gain.setValueAtTime(0.2, audioContext.currentTime);
-                            g.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime+0.3);
-                            o.start(); o.stop(audioContext.currentTime+0.3);
-                        } return;
+                        playCriticalSound(volume);
+                        break;
                     case 'ko':
-                        for(let i=0;i<2;i++){ let o=audioContext.createOscillator(), g=audioContext.createGain();
-                            o.type='sawtooth'; o.frequency.setValueAtTime(200-i*50, audioContext.currentTime);
-                            o.frequency.linearRampToValueAtTime(50, audioContext.currentTime+1);
-                            o.connect(g); g.connect(audioContext.destination);
-                            g.gain.setValueAtTime(0.4, audioContext.currentTime);
-                            g.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime+1);
-                            o.start(); o.stop(audioContext.currentTime+1);
-                        } return;
+                        playKOSound(volume);
+                        break;
                     case 'victory':
-                        for(let i=0;i<3;i++){ let o=audioContext.createOscillator(), g=audioContext.createGain();
-                            o.type='sine'; o.frequency.setValueAtTime(440+i*110, audioContext.currentTime);
-                            o.frequency.linearRampToValueAtTime(880, audioContext.currentTime+0.3);
-                            o.connect(g); g.connect(audioContext.destination);
-                            g.gain.setValueAtTime(0.2, audioContext.currentTime);
-                            g.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime+0.8);
-                            o.start(); o.stop(audioContext.currentTime+0.8);
-                        } return;
+                        playVictorySound(volume);
+                        break;
                     case 'select':
-                        osc.frequency.setValueAtTime(523.25, audioContext.currentTime);
-                        osc.frequency.exponentialRampToValueAtTime(783.99, audioContext.currentTime+0.1);
-                        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime+0.2);
-                        osc.type='sine'; filter.type='lowpass'; filter.frequency.value=2000; break;
+                        playSelectSound(volume);
+                        break;
                     case 'rage':
-                        for(let i=0;i<2;i++){ let o=audioContext.createOscillator(), g=audioContext.createGain();
-                            o.type='sawtooth'; o.frequency.setValueAtTime(200+i*100, audioContext.currentTime);
-                            o.frequency.linearRampToValueAtTime(400+i*200, audioContext.currentTime+0.3);
-                            o.connect(g); g.connect(audioContext.destination);
-                            g.gain.setValueAtTime(0.4, audioContext.currentTime);
-                            g.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime+0.5);
-                            o.start(); o.stop(audioContext.currentTime+0.5);
-                        } return;
+                        playRageSound(volume);
+                        break;
                     case 'ultimate':
-                        for(let i=0;i<5;i++){ let o=audioContext.createOscillator(), g=audioContext.createGain();
-                            o.type='sawtooth'; o.frequency.setValueAtTime(200+i*100, audioContext.currentTime);
-                            o.frequency.linearRampToValueAtTime(800+i*200, audioContext.currentTime+0.5);
-                            o.connect(g); g.connect(audioContext.destination);
-                            g.gain.setValueAtTime(0.2, audioContext.currentTime);
-                            g.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime+0.6);
-                            o.start(); o.stop(audioContext.currentTime+0.6);
-                        } return;
+                        playUltimateSound(volume);
+                        break;
+                    case 'heal':
+                        playHealSound(volume);
+                        break;
+                    case 'warning':
+                        playWarningSound(volume);
+                        break;
+                    case 'combo':
+                        playComboSound(volume);
+                        break;
                 }
-                osc.start(); osc.stop(audioContext.currentTime+0.2);
-            } catch(e){}
+            } catch(e) {
+                console.log('Sound error:', e);
+            }
         }
-        window.toggleSound = function(){ soundEnabled=!soundEnabled;
-            document.getElementById('soundToggle').textContent=soundEnabled?'🔊 ON':'🔇 OFF'; playSound('select'); };
+        
+        function playPunchSound(volume) {
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            const filter = audioContext.createBiquadFilter();
+            
+            osc.connect(filter);
+            filter.connect(gain);
+            gain.connect(audioContext.destination);
+            
+            osc.type = 'sawtooth';
+            filter.type = 'lowpass';
+            filter.frequency.value = 800;
+            
+            osc.frequency.setValueAtTime(200, audioContext.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(80, audioContext.currentTime + 0.1);
+            
+            gain.gain.setValueAtTime(volume, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+            
+            osc.start();
+            osc.stop(audioContext.currentTime + 0.2);
+        }
+        
+        function playKickSound(volume) {
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            const filter = audioContext.createBiquadFilter();
+            
+            osc.connect(filter);
+            filter.connect(gain);
+            gain.connect(audioContext.destination);
+            
+            osc.type = 'triangle';
+            filter.type = 'lowpass';
+            filter.frequency.value = 600;
+            
+            osc.frequency.setValueAtTime(150, audioContext.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(50, audioContext.currentTime + 0.15);
+            
+            gain.gain.setValueAtTime(volume, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.25);
+            
+            osc.start();
+            osc.stop(audioContext.currentTime + 0.25);
+        }
+        
+        function playBlockSound(volume) {
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(100, audioContext.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(50, audioContext.currentTime + 0.05);
+            
+            gain.gain.setValueAtTime(volume, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+            
+            osc.start();
+            osc.stop(audioContext.currentTime + 0.1);
+        }
+        
+        function playHitSound(volume) {
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(300, audioContext.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.1);
+            
+            gain.gain.setValueAtTime(volume, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+            
+            osc.start();
+            osc.stop(audioContext.currentTime + 0.15);
+        }
+        
+        function playCriticalSound(volume) {
+            for(let i = 0; i < 3; i++) {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(600 + i * 200, audioContext.currentTime + i * 0.05);
+                osc.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + 0.2 + i * 0.05);
+                
+                gain.gain.setValueAtTime(volume * 0.5, audioContext.currentTime + i * 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3 + i * 0.05);
+                
+                osc.start(audioContext.currentTime + i * 0.05);
+                osc.stop(audioContext.currentTime + 0.3 + i * 0.05);
+            }
+        }
+        
+        function playKOSound(volume) {
+            for(let i = 0; i < 3; i++) {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(200 - i * 30, audioContext.currentTime);
+                osc.frequency.linearRampToValueAtTime(50, audioContext.currentTime + 1);
+                
+                gain.gain.setValueAtTime(volume * 0.5, audioContext.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
+                
+                osc.start();
+                osc.stop(audioContext.currentTime + 1);
+            }
+        }
+        
+        function playVictorySound(volume) {
+            const notes = [440, 554, 659, 880];
+            notes.forEach((freq, i) => {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, audioContext.currentTime + i * 0.15);
+                
+                gain.gain.setValueAtTime(volume, audioContext.currentTime + i * 0.15);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3 + i * 0.15);
+                
+                osc.start(audioContext.currentTime + i * 0.15);
+                osc.stop(audioContext.currentTime + 0.3 + i * 0.15);
+            });
+        }
+        
+        function playSelectSound(volume) {
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(523.25, audioContext.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(783.99, audioContext.currentTime + 0.1);
+            
+            gain.gain.setValueAtTime(volume, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+            
+            osc.start();
+            osc.stop(audioContext.currentTime + 0.2);
+        }
+        
+        function playRageSound(volume) {
+            for(let i = 0; i < 3; i++) {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(200 + i * 100, audioContext.currentTime + i * 0.1);
+                osc.frequency.linearRampToValueAtTime(400 + i * 200, audioContext.currentTime + 0.3 + i * 0.1);
+                
+                gain.gain.setValueAtTime(volume * 0.4, audioContext.currentTime + i * 0.1);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5 + i * 0.1);
+                
+                osc.start(audioContext.currentTime + i * 0.1);
+                osc.stop(audioContext.currentTime + 0.5 + i * 0.1);
+            }
+        }
+        
+        function playUltimateSound(volume) {
+            for(let i = 0; i < 5; i++) {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(200 + i * 100, audioContext.currentTime + i * 0.1);
+                osc.frequency.linearRampToValueAtTime(800 + i * 200, audioContext.currentTime + 0.5 + i * 0.1);
+                
+                gain.gain.setValueAtTime(volume * 0.3, audioContext.currentTime + i * 0.1);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.6 + i * 0.1);
+                
+                osc.start(audioContext.currentTime + i * 0.1);
+                osc.stop(audioContext.currentTime + 0.6 + i * 0.1);
+            }
+        }
+        
+        function playHealSound(volume) {
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(400, audioContext.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(800, audioContext.currentTime + 0.2);
+            
+            gain.gain.setValueAtTime(volume, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            
+            osc.start();
+            osc.stop(audioContext.currentTime + 0.3);
+        }
+        
+        function playWarningSound(volume) {
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(800, audioContext.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.2);
+            
+            gain.gain.setValueAtTime(volume, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            
+            osc.start();
+            osc.stop(audioContext.currentTime + 0.3);
+        }
+        
+        function playComboSound(volume) {
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(600, audioContext.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.1);
+            
+            gain.gain.setValueAtTime(volume, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+            
+            osc.start();
+            osc.stop(audioContext.currentTime + 0.2);
+        }
+        
+        window.toggleSound = function() { 
+            soundEnabled = !soundEnabled;
+            document.getElementById('soundToggle').textContent = soundEnabled ? '🔊 ON' : '🔇 OFF'; 
+            playSound('select'); 
+        };
 
         // ========== GLOBAL VARIABLES ==========
         let selectedCharacter = null;
@@ -1037,7 +1515,7 @@
         let battleRef = null;
         let database = null;
         let positionUpdateInterval = null;
-        window.game = null;  // make it global
+        window.game = null;
 
         const urlParams = new URLSearchParams(window.location.search);
         battleCode = urlParams.get('code');
@@ -1049,7 +1527,7 @@
         window.selectCharacter = function(character) {
             const option = document.getElementById(`choose${character.charAt(0).toUpperCase()+character.slice(1)}`);
             if (option.classList.contains('locked')) {
-                playSound('locked');
+                playSound('block');
                 document.getElementById('characterTakenMessage').textContent = `❌ ${character.toUpperCase()} is already taken!`;
                 return;
             }
@@ -1068,7 +1546,7 @@
             const snapshot = await battleRef.child('characters').once('value');
             const characters = snapshot.val() || {};
             if (characters.player1 === selectedCharacter || characters.player2 === selectedCharacter) {
-                playSound('locked');
+                playSound('block');
                 document.getElementById('characterTakenMessage').textContent = `❌ ${selectedCharacter.toUpperCase()} already taken!`;
                 return;
             }
@@ -1171,7 +1649,23 @@
         function startGameInstance() { window.game = new FightingGame(window.gamePlayerRole||playerRole); }
         window.restartGame = function() { location.reload(); };
 
-        // ========== FIGHTING GAME CLASS (with proper position sync) ==========
+        // ========== DAMAGE NUMBER HELPER ==========
+        function showDamageNumber(x, y, amount, isCritical = false, isHeal = false) {
+            const damageEl = document.createElement('div');
+            damageEl.className = 'damage-number';
+            damageEl.style.left = x + 'px';
+            damageEl.style.top = y + 'px';
+            damageEl.style.color = isHeal ? '#10b981' : (isCritical ? '#ffd700' : '#ef4444');
+            damageEl.style.fontSize = isCritical ? '32px' : '24px';
+            damageEl.textContent = isHeal ? '+' + amount : '-' + amount;
+            document.body.appendChild(damageEl);
+            
+            setTimeout(() => {
+                damageEl.remove();
+            }, 1000);
+        }
+
+        // ========== FIGHTING GAME CLASS - ULTIMATE EDITION ==========
         class FightingGame {
             constructor(role) {
                 this.canvas = document.getElementById('gameCanvas');
@@ -1192,13 +1686,15 @@
                 this.rageMode = false;
                 this.rageTimer = 0;
                 this.maxRageTimer = 300;
-                this.rageGainPerHit = 25;
+                this.rageGainPerHit = 15;
                 this.bloodParticles = [];
                 this.specialEffects = [];
                 this.blockEffects = [];
                 this.shockwaves = [];
+                this.hitStop = 0;
+                this.flashWhite = 0;
+                this.lastAttackTime = 0;
 
-                // Original character images (using working placeholder URLs – replace with your actual image URLs)
                 this.images = {
                     kenji: {
                         idle: this.loadImage('adventurer_idle.png'),
@@ -1216,14 +1712,52 @@
                     }
                 };
 
-                // Players start far apart
+                // Start positions
                 this.players = [
-                    { id:null, x:250, y:400, health:100, maxHealth:100, special:100, maxSpecial:100, rage:0, maxRage:100,
-                      state:'idle', stateTimer:0, facing:1, speed:this.moveSpeed, images:null, attackTimer:0, isBlocking:false,
-                      controlledBy:'player1', hitLocked:false },
-                    { id:null, x:950, y:400, health:100, maxHealth:100, special:100, maxSpecial:100, rage:0, maxRage:100,
-                      state:'idle', stateTimer:0, facing:-1, speed:this.moveSpeed, images:null, attackTimer:0, isBlocking:false,
-                      controlledBy:'player2', hitLocked:false }
+                    { 
+                        id:null, 
+                        x:200,
+                        y:400, 
+                        health:100, 
+                        maxHealth:100, 
+                        special:100, 
+                        maxSpecial:100, 
+                        rage:0, 
+                        maxRage:100,
+                        state:'idle', 
+                        stateTimer:0, 
+                        facing:1, 
+                        speed:this.moveSpeed, 
+                        images:null, 
+                        attackTimer:0, 
+                        isBlocking:false,
+                        controlledBy:'player1', 
+                        hitLocked:false,
+                        characterName: null,
+                        combo: 0
+                    },
+                    { 
+                        id:null, 
+                        x:1000,
+                        y:400, 
+                        health:100, 
+                        maxHealth:100, 
+                        special:100, 
+                        maxSpecial:100, 
+                        rage:0, 
+                        maxRage:100,
+                        state:'idle', 
+                        stateTimer:0, 
+                        facing:-1, 
+                        speed:this.moveSpeed, 
+                        images:null, 
+                        attackTimer:0, 
+                        isBlocking:false,
+                        controlledBy:'player2', 
+                        hitLocked:false,
+                        characterName: null,
+                        combo: 0
+                    }
                 ];
 
                 window.game = this;
@@ -1234,6 +1768,13 @@
                 this.loadCharacterAssignments();
                 this.checkImagesLoaded();
                 window.addEventListener('resize', ()=>this.resizeCanvas());
+                
+                // Canvas click to resume audio
+                this.canvas.addEventListener('click', () => {
+                    if (audioContext && audioContext.state === 'suspended') {
+                        audioContext.resume();
+                    }
+                });
             }
 
             resizeCanvas() {
@@ -1247,7 +1788,6 @@
                 img.onload = () => { this.loadedImages++; if(this.loadedImages===this.totalImages) this.startGame(); };
                 img.onerror = () => {
                     this.loadedImages++;
-                    // fallback: coloured rectangle with emoji
                     const canvas = document.createElement('canvas'); canvas.width=100; canvas.height=120;
                     const ctx = canvas.getContext('2d');
                     ctx.fillStyle = src.includes('kenji')||src.includes('8iF')?'#ef4444':'#ff69b4';
@@ -1270,20 +1810,57 @@
                 this.battleRef.child('characters').on('value', (snap) => {
                     const chars = snap.val() || {};
                     let both = true;
-                    if (chars.player1 === 'kenji') { this.players[0].id='kenji'; this.players[0].images=this.images.kenji; }
-                    else if (chars.player1 === 'sakura') { this.players[0].id='sakura'; this.players[0].images=this.images.sakura; }
+                    
+                    if (chars.player1 === 'kenji') { 
+                        this.players[0].id='kenji'; 
+                        this.players[0].images=this.images.kenji;
+                        this.players[0].characterName = 'kenji';
+                    }
+                    else if (chars.player1 === 'sakura') { 
+                        this.players[0].id='sakura'; 
+                        this.players[0].images=this.images.sakura;
+                        this.players[0].characterName = 'sakura';
+                    }
                     else both = false;
-                    if (chars.player2 === 'kenji') { this.players[1].id='kenji'; this.players[1].images=this.images.kenji; }
-                    else if (chars.player2 === 'sakura') { this.players[1].id='sakura'; this.players[1].images=this.images.sakura; }
+                    
+                    if (chars.player2 === 'kenji') { 
+                        this.players[1].id='kenji'; 
+                        this.players[1].images=this.images.kenji;
+                        this.players[1].characterName = 'kenji';
+                    }
+                    else if (chars.player2 === 'sakura') { 
+                        this.players[1].id='sakura'; 
+                        this.players[1].images=this.images.sakura;
+                        this.players[1].characterName = 'sakura';
+                    }
                     else both = false;
+                    
                     if (both) {
                         if (this.playerRole==='player1') {
-                            if(this.players[0].id==='kenji') { document.getElementById('p1Name').textContent='KENJI (YOU)'; document.getElementById('p2Name').textContent=this.players[1].id==='kenji'?'KENJI':'SAKURA'; }
-                            else { document.getElementById('p1Name').textContent='SAKURA (YOU)'; document.getElementById('p2Name').textContent=this.players[1].id==='kenji'?'KENJI':'SAKURA'; }
+                            if(this.players[0].id==='kenji') { 
+                                document.getElementById('p1Name').textContent='KENJI (YOU)'; 
+                                document.getElementById('p2Name').textContent=this.players[1].id==='kenji'?'KENJI':'SAKURA'; 
+                            }
+                            else { 
+                                document.getElementById('p1Name').textContent='SAKURA (YOU)'; 
+                                document.getElementById('p2Name').textContent=this.players[1].id==='kenji'?'KENJI':'SAKURA'; 
+                            }
                         } else {
-                            if(this.players[1].id==='kenji') { document.getElementById('p2Name').textContent='KENJI (YOU)'; document.getElementById('p1Name').textContent=this.players[0].id==='kenji'?'KENJI':'SAKURA'; }
-                            else { document.getElementById('p2Name').textContent='SAKURA (YOU)'; document.getElementById('p1Name').textContent=this.players[0].id==='kenji'?'KENJI':'SAKURA'; }
+                            if(this.players[1].id==='kenji') { 
+                                document.getElementById('p2Name').textContent='KENJI (YOU)'; 
+                                document.getElementById('p1Name').textContent=this.players[0].id==='kenji'?'KENJI':'SAKURA'; 
+                            }
+                            else { 
+                                document.getElementById('p2Name').textContent='SAKURA (YOU)'; 
+                                document.getElementById('p1Name').textContent=this.players[0].id==='kenji'?'KENJI':'SAKURA'; 
+                            }
                         }
+                        
+                        // Initialize health in Firebase
+                        this.battleRef.child('player1/health').set(100);
+                        this.battleRef.child('player2/health').set(100);
+                        this.battleRef.child('player1/mana').set(100);
+                        this.battleRef.child('player2/mana').set(100);
                     } else {
                         if(!chars.player1||!chars.player2) this.showBattleMessage('⏳ Waiting for opponent...','#fbbf24');
                     }
@@ -1296,8 +1873,8 @@
                     const k=e.key.toLowerCase();
                     if(k==='a'||k==='arrowleft'){ e.preventDefault(); this.buttonStates.left=true; }
                     if(k==='d'||k==='arrowright'){ e.preventDefault(); this.buttonStates.right=true; }
-                    if(k==='j'){ e.preventDefault(); this.performAttack(3,'punch'); }
-                    if(k==='k'){ e.preventDefault(); this.performAttack(4,'kick'); }
+                    if(k==='j'){ e.preventDefault(); this.performAttack('punch'); }
+                    if(k==='k'){ e.preventDefault(); this.performAttack('kick'); }
                     if(k==='l'){ e.preventDefault(); this.buttonStates.block=true; }
                     if(k==='u'){ e.preventDefault(); this.useUltimate(); }
                     if(k==='r' && this.gameOver) restartGame();
@@ -1315,13 +1892,12 @@
             press(action) {
                 if(this.gameOver) return;
                 const my=this.players.find(p=>p.controlledBy===this.playerRole);
-                const opp=this.players.find(p=>p.controlledBy!==this.playerRole);
-                if(!my||!opp) return;
+                if(!my) return;
                 switch(action){
                     case'left': this.buttonStates.left=true; break;
                     case'right': this.buttonStates.right=true; break;
-                    case'punch': this.performAttack(3,'punch'); break;
-                    case'kick': this.performAttack(4,'kick'); break;
+                    case'punch': this.performAttack('punch'); break;
+                    case'kick': this.performAttack('kick'); break;
                     case'block': this.buttonStates.block=true; break;
                     case'ultimate': this.useUltimate(); break;
                 }
@@ -1337,12 +1913,46 @@
                 const opp=this.players.find(p=>p.controlledBy!==this.playerRole);
                 if(!my||!opp||this.gameOver) return;
                 if(!this.rageMode){ this.showBattleMessage('❌ NEED RAGE MODE!','#ff0000'); return; }
-                opp.health=0;
-                this.showBattleMessage('💀 ULTIMATE!','#ff0000'); playSound('ultimate',0.8);
-                for(let i=0;i<100;i++) this.bloodParticles.push({ x:opp.x, y:opp.y-50, vx:(Math.random()-0.5)*30, vy:(Math.random()-0.5)*30-10, life:2, size:5+Math.random()*10, color:'#8B0000' });
-                if(opp.id==='kenji') document.getElementById('p1HealthFill').style.width='0%';
-                else document.getElementById('p2HealthFill').style.width='0%';
-                this.checkGameOver();
+                
+                // Hit stop effect
+                this.hitStop = 10;
+                this.flashWhite = 5;
+                
+                // Update opponent's health in Firebase
+                if(this.battleRef){
+                    const hpPath = opp.id==='kenji'?'player1/health':'player2/health';
+                    this.battleRef.child(hpPath).set(0);
+                }
+                
+                // Show damage number
+                const rect = this.canvas.getBoundingClientRect();
+                const scaleX = this.canvas.width/1200;
+                const scaleY = this.canvas.height/700;
+                const scale = Math.min(scaleX, scaleY);
+                const offsetX = (this.canvas.width-1200*scale)/2;
+                const offsetY = (this.canvas.height-700*scale)/2;
+                const screenX = rect.left + offsetX + opp.x * scale;
+                const screenY = rect.top + offsetY + (opp.y - 60) * scale;
+                showDamageNumber(screenX, screenY, 100, true);
+                
+                this.showBattleMessage('💀 ULTIMATE!','#ff0000'); 
+                playSound('ultimate',0.8);
+                
+                // Massive blood explosion
+                for(let i=0;i<100;i++) {
+                    this.bloodParticles.push({ 
+                        x:opp.x, 
+                        y:opp.y-50, 
+                        vx:(Math.random()-0.5)*40, 
+                        vy:(Math.random()-0.5)*40-20, 
+                        life:2, 
+                        size:5+Math.random()*15, 
+                        color:'#8B0000' 
+                    });
+                }
+                
+                // Shockwave
+                this.shockwaves.push({ x:opp.x, y:opp.y-50, radius:30, life:1 });
             }
 
             startGame() {
@@ -1359,73 +1969,145 @@
                 positionUpdateInterval = setInterval(()=>{
                     if(this.gameOver||!this.battleRef) return;
                     const my=this.players.find(p=>p.controlledBy===this.playerRole);
-                    if(!my||my.hitLocked||!my.id) return;
-                    const pos={}; pos[my.id]={ x: my.x };
-                    this.battleRef.child('positions').update(pos).catch(()=>{});
+                    if(!my||my.hitLocked||!my.characterName) return;
+                    
+                    const posData = {};
+                    if (this.playerRole === 'player1') {
+                        posData['player1'] = { x: my.x };
+                    } else {
+                        posData['player2'] = { x: my.x };
+                    }
+                    this.battleRef.child('positions').update(posData).catch(()=>{});
                 }, 50);
             }
 
             listenForUpdates() {
                 if(!this.battleRef) return;
+                
+                // Listen for ALL health changes - Firebase is the source of truth
                 this.battleRef.child('player1/health').on('value',(s)=>{
-                    const h=s.val(); if(h!==null && this.players[0].health!==h){ this.players[0].health=h; document.getElementById('p1HealthFill').style.width=h+'%'; this.checkGameOver(); }
-                });
-                this.battleRef.child('player2/health').on('value',(s)=>{
-                    const h=s.val(); if(h!==null && this.players[1].health!==h){ this.players[1].health=h; document.getElementById('p2HealthFill').style.width=h+'%'; this.checkGameOver(); }
-                });
-                this.battleRef.child('player1/mana').on('value',(s)=>{
-                    const m=s.val(); if(m!==null && this.players[0].special!==m){ this.players[0].special=m; document.getElementById('p1SpecialFill').style.width=m+'%'; }
-                });
-                this.battleRef.child('player2/mana').on('value',(s)=>{
-                    const m=s.val(); if(m!==null && this.players[1].special!==m){ this.players[1].special=m; document.getElementById('p2SpecialFill').style.width=m+'%'; }
-                });
-                this.battleRef.child('positions').on('value',(s)=>{
-                    const pos=s.val();
-                    if(pos && !this.gameOver){
-                        // Only update the opponent's position – never overwrite our own
-                        if(this.playerRole==='player1' && pos.sakura && this.players[1]) {
-                            this.players[1].x = pos.sakura.x;
+                    const h=s.val(); 
+                    if(h!==null) {
+                        const oldHealth = this.players[0].health;
+                        this.players[0].health = h;
+                        document.getElementById('p1HealthFill').style.width=h+'%'; 
+                        
+                        // If health decreased, show damage effect
+                        if (oldHealth > h && this.playerRole !== 'player1') {
+                            this.flashWhite = 3;
+                            this.shakeIntensity = 15;
+                            
+                            // Show damage number
+                            const damage = oldHealth - h;
+                            const rect = this.canvas.getBoundingClientRect();
+                            const scaleX = this.canvas.width/1200;
+                            const scaleY = this.canvas.height/700;
+                            const scale = Math.min(scaleX, scaleY);
+                            const offsetX = (this.canvas.width-1200*scale)/2;
+                            const offsetY = (this.canvas.height-700*scale)/2;
+                            const screenX = rect.left + offsetX + this.players[0].x * scale;
+                            const screenY = rect.top + offsetY + (this.players[0].y - 60) * scale;
+                            showDamageNumber(screenX, screenY, Math.round(damage));
                         }
-                        else if(this.playerRole==='player2' && pos.kenji && this.players[0]) {
-                            this.players[0].x = pos.kenji.x;
+                        
+                        this.checkGameOver(); 
+                    }
+                });
+                
+                this.battleRef.child('player2/health').on('value',(s)=>{
+                    const h=s.val(); 
+                    if(h!==null) {
+                        const oldHealth = this.players[1].health;
+                        this.players[1].health = h;
+                        document.getElementById('p2HealthFill').style.width=h+'%'; 
+                        
+                        // If health decreased, show damage effect
+                        if (oldHealth > h && this.playerRole !== 'player2') {
+                            this.flashWhite = 3;
+                            this.shakeIntensity = 15;
+                            
+                            // Show damage number
+                            const damage = oldHealth - h;
+                            const rect = this.canvas.getBoundingClientRect();
+                            const scaleX = this.canvas.width/1200;
+                            const scaleY = this.canvas.height/700;
+                            const scale = Math.min(scaleX, scaleY);
+                            const offsetX = (this.canvas.width-1200*scale)/2;
+                            const offsetY = (this.canvas.height-700*scale)/2;
+                            const screenX = rect.left + offsetX + this.players[1].x * scale;
+                            const screenY = rect.top + offsetY + (this.players[1].y - 60) * scale;
+                            showDamageNumber(screenX, screenY, Math.round(damage));
+                        }
+                        
+                        this.checkGameOver(); 
+                    }
+                });
+                
+                // Listen for mana changes
+                this.battleRef.child('player1/mana').on('value',(s)=>{
+                    const m=s.val(); 
+                    if(m!==null) {
+                        this.players[0].special = m;
+                        document.getElementById('p1SpecialFill').style.width=m+'%'; 
+                    }
+                });
+                
+                this.battleRef.child('player2/mana').on('value',(s)=>{
+                    const m=s.val(); 
+                    if(m!==null) {
+                        this.players[1].special = m;
+                        document.getElementById('p2SpecialFill').style.width=m+'%'; 
+                    }
+                });
+                
+                // Position updates
+                this.battleRef.child('positions').on('value',(s)=>{
+                    const pos = s.val();
+                    if(!pos || this.gameOver) return;
+                    
+                    if (this.playerRole === 'player1') {
+                        if (pos.player2 && pos.player2.x !== undefined && this.players[1]) {
+                            this.players[1].x = Math.max(100, Math.min(1100, pos.player2.x));
+                        }
+                    } else if (this.playerRole === 'player2') {
+                        if (pos.player1 && pos.player1.x !== undefined && this.players[0]) {
+                            this.players[0].x = Math.max(100, Math.min(1100, pos.player1.x));
                         }
                     }
                 });
             }
 
-           createSpecialMovesUI() {
-    const container = document.getElementById('specialMoves'); 
-    if(!container) return;
-    
-    container.innerHTML = '';
-    
-    // Filter out basic punches/kicks, keep only special moves
-    const special = this.myMoves.filter(m => m.id !== 'punch' && m.id !== 'kick');
-    
-    if(special.length === 0) { 
-        container.innerHTML = '<div style="color:#fbbf24; text-align:center; padding:10px; font-size:14px; width:100%;">⚡ NO SPECIAL MOVES</div>'; 
-        return; 
-    }
-    
-    // Create a button for each special move
-    special.forEach(move => {
-        const btn = document.createElement('button');
-        btn.className = `special-move-btn ${move.rarity || 'common'}`;
-        btn.innerHTML = `<span class="icon">${move.icon}</span><span>${move.name}</span><span class="cost">${move.manaCost}</span>`;
-        
-        // Add event listeners
-        btn.onmousedown = (e) => { 
-            e.preventDefault(); 
-            this.useSpecialMove(move); 
-        };
-        btn.ontouchstart = (e) => { 
-            e.preventDefault(); 
-            this.useSpecialMove(move); 
-        };
-        
-        container.appendChild(btn);
-    });
-}
+            createSpecialMovesUI() {
+                const container = document.getElementById('specialMoves'); 
+                if(!container) return;
+                
+                container.innerHTML = '';
+                
+                const special = this.myMoves.filter(m => m.id !== 'punch' && m.id !== 'kick');
+                
+                if(special.length === 0) { 
+                    container.innerHTML = '<div style="color:#fbbf24; text-align:center; padding:10px; font-size:14px; width:100%; font-family: \'Press Start 2P\', cursive;">⚡ NO SPECIAL MOVES</div>'; 
+                    return; 
+                }
+                
+                special.forEach(move => {
+                    const btn = document.createElement('button');
+                    btn.className = `special-move-btn ${move.rarity || 'common'}`;
+                    btn.innerHTML = `<span class="icon">${move.icon}</span><span>${move.name}</span><span class="cost">${move.manaCost}</span>`;
+                    
+                    btn.onmousedown = (e) => { 
+                        e.preventDefault(); 
+                        this.useSpecialMove(move); 
+                    };
+                    btn.ontouchstart = (e) => { 
+                        e.preventDefault(); 
+                        this.useSpecialMove(move); 
+                    };
+                    
+                    container.appendChild(btn);
+                });
+            }
+            
             useSpecialMove(move) {
                 const my=this.players.find(p=>p.controlledBy===this.playerRole);
                 const opp=this.players.find(p=>p.controlledBy!==this.playerRole);
@@ -1433,58 +2115,155 @@
                 if(my.hitLocked||my.state==='hurt'||my.attackTimer>0){ this.showBattleMessage('❌ CANNOT ACT!','#ef4444'); return; }
                 if(Math.abs(my.x-opp.x)>250){ this.showBattleMessage('❌ TOO FAR!','#ef4444'); return; }
                 if(my.special < move.manaCost){ this.showBattleMessage(`❌ NEED ${move.manaCost} MP`,'#ef4444'); return; }
+                
+                // Deduct mana
                 my.special -= move.manaCost;
+                if(this.battleRef){
+                    const mpPath = my.id==='kenji'?'player1/mana':'player2/mana';
+                    this.battleRef.child(mpPath).set(my.special);
+                }
+                
                 if(move.heal){
-                    my.health = Math.min(100, my.health+move.heal);
-                    this.showBattleMessage(`💚 +${move.heal} HP`,'#10b981'); playSound('special');
-                    if(my.id==='kenji') document.getElementById('p1HealthFill').style.width=my.health+'%';
-                    else document.getElementById('p2HealthFill').style.width=my.health+'%';
+                    // HEALING MOVE - update self health in Firebase
+                    const newHealth = Math.min(100, my.health+move.heal);
+                    if(this.battleRef){
+                        const hpPath = my.id==='kenji'?'player1/health':'player2/health';
+                        this.battleRef.child(hpPath).set(newHealth);
+                    }
+                    
+                    // Show heal number
+                    const rect = this.canvas.getBoundingClientRect();
+                    const scaleX = this.canvas.width/1200;
+                    const scaleY = this.canvas.height/700;
+                    const scale = Math.min(scaleX, scaleY);
+                    const offsetX = (this.canvas.width-1200*scale)/2;
+                    const offsetY = (this.canvas.height-700*scale)/2;
+                    const screenX = rect.left + offsetX + my.x * scale;
+                    const screenY = rect.top + offsetY + (my.y - 60) * scale;
+                    showDamageNumber(screenX, screenY, move.heal, false, true);
+                    
+                    this.showBattleMessage(`💚 +${move.heal} HP`,'#10b981'); 
+                    playSound('heal',0.5);
+                    
+                    // Heal particles
+                    for(let i=0;i<20;i++) {
+                        this.specialEffects.push({ 
+                            x:my.x, 
+                            y:my.y-50, 
+                            vx:(Math.random()-0.5)*8, 
+                            vy:(Math.random()-0.5)*8-5, 
+                            life:1, 
+                            color:'#10b981' 
+                        });
+                    }
                 } else {
+                    // ATTACK MOVE - calculate damage and update opponent's health in Firebase
                     const chainBonus = this.comboChain.multiplier;
                     const dmgBoost = this.rageMode?1.5:1;
                     const crit = Math.random()<0.2;
                     let finalDmg = Math.floor(move.damage * dmgBoost * chainBonus);
-                    if(crit){ finalDmg+=Math.floor(move.damage*0.5); this.showBattleMessage(`✨ CRITICAL! ${finalDmg}`,'#ffd700'); playSound('critical'); }
-                    else this.showBattleMessage(`💥 -${finalDmg}`,'#ef4444');
-                    opp.health = Math.max(0, opp.health - finalDmg);
-                    if(opp.id==='kenji') document.getElementById('p1HealthFill').style.width=opp.health+'%';
-                    else document.getElementById('p2HealthFill').style.width=opp.health+'%';
-                    opp.hitLocked=true; opp.state='hurt'; opp.stateTimer=15;
-                    opp.x += (my.facing>0?120:-120); opp.x = Math.max(200, Math.min(1000, opp.x));
+                    
+                    // Hit stop effect
+                    this.hitStop = 5;
+                    
+                    if(crit){ 
+                        finalDmg+=Math.floor(move.damage*0.5); 
+                        this.showBattleMessage(`✨ CRITICAL! ${finalDmg}`,'#ffd700'); 
+                        playSound('critical',0.6); 
+                        this.flashWhite = 5;
+                        this.shakeIntensity = 40;
+                    } else { 
+                        this.showBattleMessage(`💥 -${finalDmg}`,'#ef4444'); 
+                        playSound('hit',0.3);
+                    }
+                    
+                    const newHealth = Math.max(0, opp.health - finalDmg);
+                    
+                    // Show damage number
+                    const rect = this.canvas.getBoundingClientRect();
+                    const scaleX = this.canvas.width/1200;
+                    const scaleY = this.canvas.height/700;
+                    const scale = Math.min(scaleX, scaleY);
+                    const offsetX = (this.canvas.width-1200*scale)/2;
+                    const offsetY = (this.canvas.height-700*scale)/2;
+                    const screenX = rect.left + offsetX + opp.x * scale;
+                    const screenY = rect.top + offsetY + (opp.y - 60) * scale;
+                    showDamageNumber(screenX, screenY, finalDmg, crit);
+                    
+                    // Update opponent's health in Firebase
+                    if(this.battleRef){
+                        const hpPath = opp.id==='kenji'?'player1/health':'player2/health';
+                        this.battleRef.child(hpPath).set(newHealth);
+                    }
+                    
+                    opp.hitLocked=true; 
+                    opp.state='hurt'; 
+                    opp.stateTimer=15;
+                    
+                    // Knockback
+                    opp.x += (my.facing>0?80:-80); 
+                    opp.x = Math.max(100, Math.min(1100, opp.x));
+                    
                     this.shakeIntensity = 35;
-                    for(let i=0;i<(this.rageMode?40:20);i++) this.bloodParticles.push({ x:opp.x, y:opp.y-50, vx:(Math.random()-0.5)*15, vy:(Math.random()-0.5)*15-5, life:1.2, size:3+Math.random()*6, color:crit?'#8B0000':'#B22222' });
+                    
+                    // Blood particles
+                    for(let i=0;i<(this.rageMode?40:20);i++) {
+                        this.bloodParticles.push({ 
+                            x:opp.x, 
+                            y:opp.y-50, 
+                            vx:(Math.random()-0.5)*15, 
+                            vy:(Math.random()-0.5)*15-5, 
+                            life:1.2, 
+                            size:3+Math.random()*6, 
+                            color:crit?'#8B0000':'#B22222' 
+                        });
+                    }
+                    
+                    // Shockwave
+                    this.shockwaves.push({ x:opp.x, y:opp.y-50, radius:30, life:0.5 });
+                    
+                    // Gain rage from hitting
                     my.rage = Math.min(my.maxRage, my.rage + this.rageGainPerHit);
                     if(my.rage>=my.maxRage && !this.rageMode) this.activateRageMode();
+                    
+                    // Combo
+                    this.comboChain.count++; 
+                    this.comboChain.timer=this.comboChain.maxTimer; 
+                    playSound('combo',0.2);
                 }
-                my.attackTimer=20; my.state='punch'; my.stateTimer=15;
-                document.getElementById('p1SpecialFill').style.width=this.players[0].special+'%';
-                document.getElementById('p2SpecialFill').style.width=this.players[1].special+'%';
+                
+                my.attackTimer=20; 
+                my.state='punch'; 
+                my.stateTimer=15;
+                
+                // Update rage UI
                 document.getElementById('p1RageFill').style.width=this.players[0].rage+'%';
                 document.getElementById('p2RageFill').style.width=this.players[1].rage+'%';
-                if(this.battleRef){
-                    const hpPath = opp.id==='kenji'?'player1/health':'player2/health';
-                    const mpPath = my.id==='kenji'?'player1/mana':'player2/mana';
-                    const posPath = opp.id==='kenji'?'positions/kenji':'positions/sakura';
-                    this.battleRef.child(hpPath).set(opp.health);
-                    this.battleRef.child(mpPath).set(my.special);
-                    this.battleRef.child(posPath).set({ x: opp.x });
-                }
-                this.checkGameOver();
             }
 
             activateRageMode() {
-                this.rageMode=true; this.rageTimer=this.maxRageTimer; playSound('rage',0.7);
+                this.rageMode=true; this.rageTimer=this.maxRageTimer; 
+                playSound('rage',0.7);
                 document.getElementById('rageIndicator').style.display='block';
                 document.querySelector('canvas').classList.add('rage-mode');
-                this.showBattleMessage('⚡ RAGE MODE!','#ff0000'); this.shakeIntensity=30;
-                const my=this.players.find(p=>p.controlledBy===this.playerRole); if(my) my.rage=0;
+                this.showBattleMessage('⚡ RAGE MODE!','#ff0000'); 
+                this.shakeIntensity=30;
+                const my=this.players.find(p=>p.controlledBy===this.playerRole); 
+                if(my) {
+                    my.rage=0;
+                }
             }
 
             updateRageMode() {
                 if(this.rageMode){
                     this.rageTimer--;
                     document.getElementById('rageIndicator').innerHTML = `⚡ ${Math.ceil(this.rageTimer/60)}s ⚡`;
-                    if(this.rageTimer<=0){ this.rageMode=false; document.getElementById('rageIndicator').style.display='none'; document.querySelector('canvas').classList.remove('rage-mode'); this.showBattleMessage('💤 RAGE EXPIRED','#888'); }
+                    if(this.rageTimer<=0){ 
+                        this.rageMode=false; 
+                        document.getElementById('rageIndicator').style.display='none'; 
+                        document.querySelector('canvas').classList.remove('rage-mode'); 
+                        this.showBattleMessage('💤 RAGE EXPIRED','#888'); 
+                    }
                 }
             }
 
@@ -1504,18 +2283,46 @@
             }
 
             checkGameOver() {
-                if(this.gameOver) return;
-                if(this.players[0].health<=0 || this.players[1].health<=0){
-                    this.gameOver=true;
-                    const winner = this.players[0].health<=0 ? 'player2' : 'player1';
+                if(this.gameOver) return false;
+                
+                // Check if either player is defeated
+                if(this.players[0].health <= 0 || this.players[1].health <= 0){
+                    this.gameOver = true;
+                    
+                    // Hit stop
+                    this.hitStop = 20;
+                    
+                    // Determine winner
+                    const winner = this.players[0].health <= 0 ? 'player2' : 'player1';
                     const playerWon = (this.playerRole === winner);
+                    
+                    // Show victory/defeat message
                     document.getElementById('victoryText').textContent = playerWon ? 'VICTORY!' : 'DEFEAT!';
                     document.getElementById('gameOverlay').classList.add('show');
+                    
+                    // Calculate XP
                     const xp = playerWon ? 100 : 25;
                     document.getElementById('xpGained').textContent = `+${xp} XP`;
+                    
+                    // Play sound
                     playSound('ko',0.8);
-                    for(let i=0;i<100;i++) this.bloodParticles.push({ x:this.players[0].x, y:this.players[0].y-50, vx:(Math.random()-0.5)*25, vy:(Math.random()-0.5)*25-15, life:2, size:4+Math.random()*10, color:'#8B0000' });
+                    
+                    // Blood particles
+                    for(let i=0;i<200;i++) {
+                        this.bloodParticles.push({ 
+                            x:this.players[0].x, 
+                            y:this.players[0].y-50, 
+                            vx:(Math.random()-0.5)*30, 
+                            vy:(Math.random()-0.5)*30-20, 
+                            life:2, 
+                            size:4+Math.random()*15, 
+                            color:'#8B0000' 
+                        });
+                    }
+                    
+                    // Clear position sync interval
                     if(positionUpdateInterval) clearInterval(positionUpdateInterval);
+                    
                     return true;
                 }
                 return false;
@@ -1526,82 +2333,210 @@
                 document.body.appendChild(d); setTimeout(()=>d.remove(),1500);
             }
 
-            performAttack(damage, type) {
+            performAttack(type) {
+                const now = Date.now();
+                if (now - this.lastAttackTime < 200) return; // Attack cooldown
+                this.lastAttackTime = now;
+                
                 const attacker = this.players.find(p=>p.controlledBy===this.playerRole);
                 const defender = this.players.find(p=>p.controlledBy!==this.playerRole);
                 if(!attacker||!defender) return;
+                
                 const dist = Math.abs(attacker.x - defender.x);
                 if(dist < 200){
+                    // Get damage from move database
+                    const move = MOVE_DATABASE[type];
+                    if(!move) return;
+                    
                     const blocking = defender.isBlocking;
-                    let finalDmg = Math.floor(damage * (this.rageMode?1.5:1) * this.comboChain.multiplier);
+                    let finalDmg = Math.floor(move.damage * (this.rageMode?1.5:1) * this.comboChain.multiplier);
                     if(blocking) finalDmg = Math.floor(finalDmg*0.2);
-                    defender.health = Math.max(0, defender.health - finalDmg);
-                    defender.hitLocked=true; defender.state='hurt'; defender.stateTimer=15;
-                    attacker.state=type; attacker.stateTimer=15; attacker.attackTimer=20;
-                    if(!blocking){
-                        attacker.special = Math.min(attacker.maxSpecial, attacker.special+8);
-                        this.comboChain.count++; this.comboChain.timer=this.comboChain.maxTimer; playSound('chain',0.3);
-                        this.combo.count++; this.combo.timer=30;
-                        document.getElementById('comboIndicator').style.display='block';
-                        document.getElementById('comboIndicator').innerHTML = `🔥 ${this.combo.count} HIT!`;
-                        if(this.combo.count%5===0){
-                            playSound('critical');
-                            this.shockwaves.push({ x:defender.x, y:defender.y-50, radius:30, life:1 });
-                            attacker.rage = Math.min(attacker.maxRage, attacker.rage+40);
-                        }
-                        playSound('crowd',0.1); playSound('blood',0.3);
-                        for(let i=0;i<(this.rageMode?20:10);i++) this.bloodParticles.push({ x:defender.x, y:defender.y-50, vx:(Math.random()-0.5)*12, vy:(Math.random()-0.5)*12-5, life:1, size:2+Math.random()*5, color:'#B22222' });
-                        attacker.rage = Math.min(attacker.maxRage, attacker.rage+this.rageGainPerHit);
-                        if(attacker.rage>=attacker.maxRage && !this.rageMode) this.activateRageMode();
-                    } else {
-                        for(let i=0;i<8;i++) this.blockEffects.push({ x:defender.x, y:defender.y-50, vx:(Math.random()-0.5)*8, vy:(Math.random()-0.5)*8, life:0.5, color:'#22c55e' });
-                        this.comboChain.count=0; this.comboChain.multiplier=1;
-                    }
-                    document.getElementById('p1HealthFill').style.width = this.players[0].health+'%';
-                    document.getElementById('p2HealthFill').style.width = this.players[1].health+'%';
-                    document.getElementById('p1RageFill').style.width = this.players[0].rage+'%';
-                    document.getElementById('p2RageFill').style.width = this.players[1].rage+'%';
+                    
+                    // Hit stop effect
+                    this.hitStop = blocking ? 3 : 5;
+                    
+                    // Calculate new health for defender
+                    const newHealth = Math.max(0, defender.health - finalDmg);
+                    
+                    // Update defender's health in Firebase
                     if(this.battleRef){
                         const hpPath = defender.id==='kenji'?'player1/health':'player2/health';
-                        const mpPath = attacker.id==='kenji'?'player1/mana':'player2/mana';
-                        const posPath = defender.id==='kenji'?'positions/kenji':'positions/sakura';
-                        this.battleRef.child(hpPath).set(defender.health);
-                        this.battleRef.child(mpPath).set(attacker.special);
-                        this.battleRef.child(posPath).set({ x: defender.x });
+                        this.battleRef.child(hpPath).set(newHealth);
                     }
-                    this.checkGameOver();
+                    
+                    defender.hitLocked=true; 
+                    defender.state='hurt'; 
+                    defender.stateTimer=15;
+                    
+                    attacker.state=type; 
+                    attacker.stateTimer=15; 
+                    attacker.attackTimer=20;
+                    
+                    // Show damage number
+                    const rect = this.canvas.getBoundingClientRect();
+                    const scaleX = this.canvas.width/1200;
+                    const scaleY = this.canvas.height/700;
+                    const scale = Math.min(scaleX, scaleY);
+                    const offsetX = (this.canvas.width-1200*scale)/2;
+                    const offsetY = (this.canvas.height-700*scale)/2;
+                    const screenX = rect.left + offsetX + defender.x * scale;
+                    const screenY = rect.top + offsetY + (defender.y - 60) * scale;
+                    
+                    if(!blocking){
+                        // Show damage message
+                        this.showBattleMessage(`💥 -${finalDmg}`,'#ef4444');
+                        showDamageNumber(screenX, screenY, finalDmg);
+                        
+                        // Gain resources for successful hit
+                        attacker.special = Math.min(attacker.maxSpecial, attacker.special+8);
+                        if(this.battleRef){
+                            const mpPath = attacker.id==='kenji'?'player1/mana':'player2/mana';
+                            this.battleRef.child(mpPath).set(attacker.special);
+                        }
+                        
+                        this.comboChain.count++; 
+                        this.comboChain.timer=this.comboChain.maxTimer; 
+                        
+                        this.combo.count++; 
+                        this.combo.timer=30;
+                        
+                        document.getElementById('comboIndicator').style.display='block';
+                        document.getElementById('comboIndicator').innerHTML = `🔥 ${this.combo.count} HIT!`;
+                        
+                        if(this.combo.count%5===0){
+                            playSound('critical',0.5);
+                            this.shockwaves.push({ x:defender.x, y:defender.y-50, radius:30, life:1 });
+                            attacker.rage = Math.min(attacker.maxRage, attacker.rage+40);
+                            this.flashWhite = 3;
+                        }
+                        
+                        // Blood particles
+                        for(let i=0;i<(this.rageMode?20:10);i++) {
+                            this.bloodParticles.push({ 
+                                x:defender.x, 
+                                y:defender.y-50, 
+                                vx:(Math.random()-0.5)*12, 
+                                vy:(Math.random()-0.5)*12-5, 
+                                life:1, 
+                                size:2+Math.random()*5, 
+                                color:'#B22222' 
+                            });
+                        }
+                        
+                        // Shockwave
+                        this.shockwaves.push({ x:defender.x, y:defender.y-50, radius:20, life:0.3 });
+                        
+                        attacker.rage = Math.min(attacker.maxRage, attacker.rage+this.rageGainPerHit);
+                        if(attacker.rage>=attacker.maxRage && !this.rageMode) this.activateRageMode();
+                        
+                        // Play hit sound
+                        playSound('hit',0.3);
+                        
+                    } else {
+                        // Block effects
+                        this.showBattleMessage('🛡️ BLOCKED!','#22c55e');
+                        showDamageNumber(screenX, screenY, finalDmg, false, false, true);
+                        
+                        for(let i=0;i<15;i++) {
+                            this.blockEffects.push({ 
+                                x:defender.x, 
+                                y:defender.y-50, 
+                                vx:(Math.random()-0.5)*10, 
+                                vy:(Math.random()-0.5)*10-5, 
+                                life:0.8, 
+                                color:'#22c55e' 
+                            });
+                        }
+                        this.comboChain.count=0; 
+                        this.comboChain.multiplier=1;
+                        
+                        // Play block sound
+                        playSound('block',0.4);
+                    }
+                    
+                    // Update rage UI
+                    document.getElementById('p1RageFill').style.width=this.players[0].rage+'%';
+                    document.getElementById('p2RageFill').style.width=this.players[1].rage+'%';
                 }
             }
 
             update() {
                 if(this.gameOver) return;
+                
+                // Hit stop
+                if (this.hitStop > 0) {
+                    this.hitStop--;
+                    return;
+                }
+                
                 this.frame++;
                 this.updateRageMode();
                 this.updateComboChain();
-                if(this.shakeIntensity>0) this.shakeIntensity*=0.9;
-                if(this.frame%60===0 && this.timer>0){ this.timer--; document.getElementById('timerDisplay').textContent=this.timer; if(this.timer<=10) playSound('warning',0.2); }
-                if(this.timer<=0){
-                    if(this.players[0].health > this.players[1].health) this.players[1].health=0;
-                    else if(this.players[1].health > this.players[0].health) this.players[0].health=0;
-                    else Math.random()<0.5 ? this.players[0].health=0 : this.players[1].health=0;
-                    this.checkGameOver();
+                
+                // Flash white effect
+                if (this.flashWhite > 0) {
+                    this.flashWhite--;
                 }
-                this.players.forEach(p=>{ if(p.stateTimer>0 && --p.stateTimer<=0){ p.state='idle'; p.hitLocked=false; } });
+                
+                if(this.shakeIntensity>0) this.shakeIntensity*=0.9;
+                
+                // Timer
+                if(this.frame%60===0 && this.timer>0){ 
+                    this.timer--; 
+                    document.getElementById('timerDisplay').textContent=this.timer; 
+                    if(this.timer<=10) playSound('warning',0.2);
+                    
+                    // Time's up - determine winner
+                    if(this.timer<=0){
+                        if(this.players[0].health > this.players[1].health) {
+                            if(this.battleRef) this.battleRef.child('player2/health').set(0);
+                        } else if(this.players[1].health > this.players[0].health) {
+                            if(this.battleRef) this.battleRef.child('player1/health').set(0);
+                        } else {
+                            // Tie - random winner
+                            if(Math.random()<0.5) {
+                                if(this.battleRef) this.battleRef.child('player2/health').set(0);
+                            } else {
+                                if(this.battleRef) this.battleRef.child('player1/health').set(0);
+                            }
+                        }
+                    }
+                }
+                
+                // Update state timers
+                this.players.forEach(p=>{ 
+                    if(p.stateTimer>0 && --p.stateTimer<=0){ 
+                        p.state='idle'; 
+                        p.hitLocked=false; 
+                    } 
+                });
+                
                 this.players.forEach(p=>{ if(p.attackTimer>0) p.attackTimer--; });
-                if(this.combo.timer>0 && --this.combo.timer<=0){ this.combo.count=0; document.getElementById('comboIndicator').style.display='none'; }
+                
+                if(this.combo.timer>0 && --this.combo.timer<=0){ 
+                    this.combo.count=0; 
+                    document.getElementById('comboIndicator').style.display='none'; 
+                }
+                
+                // Update particles
                 this.bloodParticles = this.bloodParticles.filter(p=>p.life>0);
                 this.bloodParticles.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.vy+=0.2; p.life-=0.01; });
+                
                 this.specialEffects = this.specialEffects.filter(e=>e.life>0);
                 this.specialEffects.forEach(e=>{ e.x+=e.vx; e.y+=e.vy; e.life-=0.02; });
+                
                 this.blockEffects = this.blockEffects.filter(e=>e.life>0);
                 this.blockEffects.forEach(e=>{ e.x+=e.vx; e.y+=e.vy; e.life-=0.02; });
+                
                 this.shockwaves = this.shockwaves.filter(s=>s.life>0);
-                this.shockwaves.forEach(s=>{ s.radius+=8; s.life-=0.02; });
+                this.shockwaves.forEach(s=>{ s.radius+=5; s.life-=0.02; });
+                
+                // Update player movement
                 const my=this.players.find(p=>p.controlledBy===this.playerRole);
                 const opp=this.players.find(p=>p.controlledBy!==this.playerRole);
                 if(my && opp) this.updatePlayer(my,opp);
-                document.getElementById('p1HealthFill').style.width=this.players[0].health+'%';
-                document.getElementById('p2HealthFill').style.width=this.players[1].health+'%';
+                
+                // Update UI (health is updated by Firebase listeners)
                 document.getElementById('p1SpecialFill').style.width=this.players[0].special+'%';
                 document.getElementById('p2SpecialFill').style.width=this.players[1].special+'%';
                 document.getElementById('p1RageFill').style.width=this.players[0].rage+'%';
@@ -1615,16 +2550,42 @@
                     if(this.buttonStates.left) move = -player.speed;
                     if(this.buttonStates.right) move = player.speed;
                 }
-                if(move!==0){ player.x += move; player.x = Math.max(200, Math.min(1000, player.x)); }
+                if(move!==0){ 
+                    player.x += move; 
+                    player.x = Math.max(100, Math.min(1100, player.x));
+                }
                 player.facing = opponent.x > player.x ? 1 : -1;
                 player.y = 400 + Math.sin(this.frame*0.1)*5;
-                if(player.special < player.maxSpecial) player.special = Math.min(player.maxSpecial, player.special+0.2);
-                if(player.rage > 0 && !this.rageMode) player.rage = Math.max(0, player.rage-0.1);
+                
+                // Mana regen - update in Firebase occasionally
+                if(player.special < player.maxSpecial) {
+                    player.special = Math.min(player.maxSpecial, player.special+0.2);
+                    if(this.battleRef && Math.floor(Math.random()*10)===0) { // Update occasionally to reduce Firebase writes
+                        const mpPath = player.id==='kenji'?'player1/mana':'player2/mana';
+                        this.battleRef.child(mpPath).set(Math.floor(player.special));
+                    }
+                }
+                
+                // Rage decay
+                if(player.rage > 0 && !this.rageMode) {
+                    player.rage = Math.max(0, player.rage-0.1);
+                }
             }
 
             draw() {
                 this.ctx.save();
-                if(this.shakeIntensity>0) this.ctx.translate((Math.random()-0.5)*this.shakeIntensity*2, (Math.random()-0.5)*this.shakeIntensity);
+                
+                // Screen shake
+                if(this.shakeIntensity>0) {
+                    this.ctx.translate((Math.random()-0.5)*this.shakeIntensity*2, (Math.random()-0.5)*this.shakeIntensity);
+                }
+                
+                // Flash white effect
+                if (this.flashWhite > 0) {
+                    this.ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                }
+                
                 this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
                 
                 const scaleX = this.canvas.width/1200;
@@ -1637,34 +2598,88 @@
                 this.ctx.translate(offsetX, offsetY);
                 this.ctx.scale(scale, scale);
                 
-                // Background
+                // Dynamic background
                 const grad = this.ctx.createLinearGradient(0,0,0,700);
-                grad.addColorStop(0,'#0a1a2a'); grad.addColorStop(0.5,'#1a2a3a'); grad.addColorStop(1,'#2a1a1a');
-                this.ctx.fillStyle=grad; this.ctx.fillRect(0,0,1200,700);
-                this.ctx.fillStyle='#2a3a2a'; this.ctx.fillRect(0,400,1200,300);
-                this.ctx.strokeStyle='#fbbf24'; this.ctx.lineWidth=2; this.ctx.setLineDash([15,15]);
-                this.ctx.beginPath(); this.ctx.moveTo(0,420); this.ctx.lineTo(1200,420); this.ctx.stroke(); this.ctx.setLineDash([]);
-                if(this.rageMode) { this.ctx.fillStyle='rgba(255,0,0,0.1)'; this.ctx.fillRect(0,0,1200,700); }
+                grad.addColorStop(0,'#0a1a2a');
+                grad.addColorStop(0.5,'#1a2a3a');
+                grad.addColorStop(1,'#2a1a1a');
+                this.ctx.fillStyle=grad; 
+                this.ctx.fillRect(0,0,1200,700);
                 
+                // Ground with texture
+                this.ctx.fillStyle='#2a3a2a';
+                this.ctx.fillRect(0,400,1200,300);
+                
+                // Ground lines
+                this.ctx.strokeStyle='#fbbf24';
+                this.ctx.lineWidth=2; 
+                this.ctx.setLineDash([15,15]);
+                this.ctx.beginPath(); 
+                this.ctx.moveTo(0,420); 
+                this.ctx.lineTo(1200,420); 
+                this.ctx.stroke(); 
+                this.ctx.setLineDash([]);
+                
+                // Rage mode overlay
+                if(this.rageMode) { 
+                    this.ctx.fillStyle='rgba(255,0,0,0.1)'; 
+                    this.ctx.fillRect(0,0,1200,700); 
+                }
+                
+                // Shockwaves
                 this.shockwaves.forEach(s=>{
-                    this.ctx.save(); this.ctx.globalAlpha=s.life*0.7; this.ctx.strokeStyle='#fff'; this.ctx.lineWidth=4; this.ctx.shadowColor='#fbbf24'; this.ctx.shadowBlur=20;
-                    this.ctx.beginPath(); this.ctx.arc(s.x,s.y,s.radius,0,Math.PI*2); this.ctx.stroke(); this.ctx.restore();
+                    this.ctx.save(); 
+                    this.ctx.globalAlpha=s.life*0.7; 
+                    this.ctx.strokeStyle='#fff'; 
+                    this.ctx.lineWidth=4; 
+                    this.ctx.shadowColor='#fbbf24'; 
+                    this.ctx.shadowBlur=20;
+                    this.ctx.beginPath(); 
+                    this.ctx.arc(s.x,s.y,s.radius,0,Math.PI*2); 
+                    this.ctx.stroke(); 
+                    this.ctx.restore();
                 });
                 
+                // Draw players
                 this.players.forEach(p=>this.drawPlayer(p));
                 
+                // Blood particles
                 this.bloodParticles.forEach(p=>{
-                    this.ctx.save(); this.ctx.globalAlpha=p.life*0.8; this.ctx.fillStyle=p.color; this.ctx.shadowColor='#8B0000'; this.ctx.shadowBlur=10;
-                    this.ctx.beginPath(); this.ctx.arc(p.x,p.y,p.size||4,0,Math.PI*2); this.ctx.fill(); this.ctx.restore();
+                    this.ctx.save(); 
+                    this.ctx.globalAlpha=p.life*0.8; 
+                    this.ctx.fillStyle=p.color; 
+                    this.ctx.shadowColor='#8B0000'; 
+                    this.ctx.shadowBlur=10;
+                    this.ctx.beginPath(); 
+                    this.ctx.arc(p.x,p.y,p.size||4,0,Math.PI*2); 
+                    this.ctx.fill(); 
+                    this.ctx.restore();
                 });
                 
+                // Special effects
                 this.specialEffects.forEach(e=>{
-                    this.ctx.save(); this.ctx.globalAlpha=e.life; this.ctx.fillStyle=e.color; this.ctx.shadowColor='#ffd700'; this.ctx.shadowBlur=15;
-                    this.ctx.beginPath(); this.ctx.arc(e.x,e.y,8,0,Math.PI*2); this.ctx.fill(); this.ctx.restore();
+                    this.ctx.save(); 
+                    this.ctx.globalAlpha=e.life; 
+                    this.ctx.fillStyle=e.color; 
+                    this.ctx.shadowColor='#ffd700'; 
+                    this.ctx.shadowBlur=15;
+                    this.ctx.beginPath(); 
+                    this.ctx.arc(e.x,e.y,8,0,Math.PI*2); 
+                    this.ctx.fill(); 
+                    this.ctx.restore();
                 });
+                
+                // Block effects
                 this.blockEffects.forEach(e=>{
-                    this.ctx.save(); this.ctx.globalAlpha=e.life; this.ctx.fillStyle=e.color; this.ctx.shadowColor='#22c55e'; this.ctx.shadowBlur=15;
-                    this.ctx.beginPath(); this.ctx.arc(e.x,e.y,6,0,Math.PI*2); this.ctx.fill(); this.ctx.restore();
+                    this.ctx.save(); 
+                    this.ctx.globalAlpha=e.life; 
+                    this.ctx.fillStyle=e.color; 
+                    this.ctx.shadowColor='#22c55e'; 
+                    this.ctx.shadowBlur=15;
+                    this.ctx.beginPath(); 
+                    this.ctx.arc(e.x,e.y,6,0,Math.PI*2); 
+                    this.ctx.fill(); 
+                    this.ctx.restore();
                 });
                 
                 this.ctx.restore();
@@ -1674,47 +2689,97 @@
             drawPlayer(p) {
                 if(!p.id||!p.images){
                     this.ctx.save();
-                    this.ctx.fillStyle='rgba(100,100,100,0.5)'; this.ctx.fillRect(p.x-50, p.y-120, 100, 120);
-                    this.ctx.fillStyle='#fbbf24'; this.ctx.font='bold 60px Arial'; this.ctx.textAlign='center'; this.ctx.textBaseline='middle';
+                    this.ctx.fillStyle='rgba(100,100,100,0.5)'; 
+                    this.ctx.fillRect(p.x-50, p.y-120, 100, 120);
+                    this.ctx.fillStyle='#fbbf24'; 
+                    this.ctx.font='bold 60px Arial'; 
+                    this.ctx.textAlign='center'; 
+                    this.ctx.textBaseline='middle';
                     this.ctx.fillText('?',p.x, p.y-40);
-                    this.ctx.restore(); return;
+                    this.ctx.restore(); 
+                    return;
                 }
+                
                 const img = p.images[p.state] || p.images.idle;
                 const x = p.x-50, y = p.y-120, w=100, h=120;
-                this.ctx.save();
-                if(p.facing===-1){ this.ctx.translate(p.x, p.y-60); this.ctx.scale(-1,1); this.ctx.translate(-p.x, -(p.y-60)); }
-                if(this.rageMode && p.controlledBy===this.playerRole){ this.ctx.shadowColor='#ff0000'; this.ctx.shadowBlur=40; }
-                if(this.comboChain.multiplier>1 && p.controlledBy===this.playerRole){ this.ctx.shadowColor='#ffd700'; this.ctx.shadowBlur=30+(this.comboChain.multiplier*10); }
                 
+                this.ctx.save();
+                
+                // Flip if facing left
+                if(p.facing===-1){ 
+                    this.ctx.translate(p.x, p.y-60); 
+                    this.ctx.scale(-1,1); 
+                    this.ctx.translate(-p.x, -(p.y-60)); 
+                }
+                
+                // Glow effects
+                if(this.rageMode && p.controlledBy===this.playerRole){ 
+                    this.ctx.shadowColor='#ff0000'; 
+                    this.ctx.shadowBlur=40; 
+                }
+                if(this.comboChain.multiplier>1 && p.controlledBy===this.playerRole){ 
+                    this.ctx.shadowColor='#ffd700'; 
+                    this.ctx.shadowBlur=30+(this.comboChain.multiplier*10); 
+                }
+                
+                // Draw character
                 if(img && img.complete && img.naturalHeight!==0){
                     this.ctx.drawImage(img, x, y, w, h);
                 } else {
                     this.ctx.fillStyle = p.id==='kenji'?'#ef4444':'#ff69b4';
                     this.ctx.fillRect(x, y, w, h);
-                    this.ctx.fillStyle='#ffffff'; this.ctx.font='bold 40px Arial';
+                    this.ctx.fillStyle='#ffffff'; 
+                    this.ctx.font='bold 40px Arial';
                     this.ctx.fillText(p.id==='kenji'?'⚔️':'🌸', x+30, y+70);
                 }
                 
+                // Player indicator
                 if(p.controlledBy===this.playerRole){
-                    this.ctx.shadowColor='#fbbf24'; this.ctx.shadowBlur=30; this.ctx.strokeStyle='#fbbf24'; this.ctx.lineWidth=4; this.ctx.setLineDash([8,8]);
-                    this.ctx.beginPath(); this.ctx.ellipse(p.x, p.y-60, 45, 60, 0, 0, Math.PI*2); this.ctx.stroke(); this.ctx.setLineDash([]);
+                    this.ctx.shadowColor='#fbbf24'; 
+                    this.ctx.shadowBlur=30; 
+                    this.ctx.strokeStyle='#fbbf24'; 
+                    this.ctx.lineWidth=4; 
+                    this.ctx.setLineDash([8,8]);
+                    this.ctx.beginPath(); 
+                    this.ctx.ellipse(p.x, p.y-60, 45, 60, 0, 0, Math.PI*2); 
+                    this.ctx.stroke(); 
+                    this.ctx.setLineDash([]);
                 }
+                
+                // Block effect
                 if(p.isBlocking){
-                    this.ctx.shadowColor='#22c55e'; this.ctx.shadowBlur=40; this.ctx.strokeStyle='#22c55e'; this.ctx.lineWidth=5;
-                    this.ctx.beginPath(); this.ctx.ellipse(p.x, p.y-60, 50, 70, 0, 0, Math.PI*2); this.ctx.stroke();
-                    this.ctx.fillStyle='rgba(34,197,94,0.2)'; this.ctx.fill();
+                    this.ctx.shadowColor='#22c55e'; 
+                    this.ctx.shadowBlur=40; 
+                    this.ctx.strokeStyle='#22c55e'; 
+                    this.ctx.lineWidth=5;
+                    this.ctx.beginPath(); 
+                    this.ctx.ellipse(p.x, p.y-60, 50, 70, 0, 0, Math.PI*2); 
+                    this.ctx.stroke();
+                    this.ctx.fillStyle='rgba(34,197,94,0.2)'; 
+                    this.ctx.fill();
                 }
+                
+                // Movement trail
                 if((this.buttonStates.left||this.buttonStates.right) && p.state!=='hurt' && !p.hitLocked && p.controlledBy===this.playerRole){
                     for(let i=0;i<4;i++){
-                        this.ctx.strokeStyle = `rgba(255,255,255,${0.2-i*0.04})`; this.ctx.lineWidth=2; this.ctx.beginPath();
+                        this.ctx.strokeStyle = `rgba(255,255,255,${0.2-i*0.04})`; 
+                        this.ctx.lineWidth=2; 
+                        this.ctx.beginPath();
                         const dir = this.buttonStates.left?-1:1;
-                        this.ctx.moveTo(p.x-(dir*30), p.y-60+i*10); this.ctx.lineTo(p.x-(dir*100), p.y-60+i*10+(i-2)*5); this.ctx.stroke();
+                        this.ctx.moveTo(p.x-(dir*30), p.y-60+i*10); 
+                        this.ctx.lineTo(p.x-(dir*100), p.y-60+i*10+(i-2)*5); 
+                        this.ctx.stroke();
                     }
                 }
+                
                 this.ctx.restore();
             }
 
-            gameLoop() { this.update(); this.draw(); requestAnimationFrame(()=>this.gameLoop()); }
+            gameLoop() { 
+                this.update(); 
+                this.draw(); 
+                requestAnimationFrame(()=>this.gameLoop()); 
+            }
         }
     </script>
 </body>
