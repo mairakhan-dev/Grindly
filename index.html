@@ -5,45 +5,47 @@
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
   gtag('config', 'G-R3FJ3LMC39');
 </script>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>GrindlyLearn – Gamified Learning Platform for Students & Teachers</title>
-  <meta name="description" content="GrindlyLearn is a real-time gamified learning platform with study streaks, class challenges, analytics, focus tools, and teacher management features. Built to drive discipline and engagement.">
+<title>Grindly · modern learning ecosystem</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<meta name="description" content="Complete feature set for students & teachers – clean, professional, and intuitive.">
+<!-- Fonts – clean and modern -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+<!-- Icons – subtle -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <style>
+/* ===== PRESERVE YOUR ORIGINAL THEME VARIABLES ===== */
 :root {
-  --bg: #f9fbff;          /* brighter, airy background */
-  --card: #ffffff;       /* pure white cards */
-  --accent: #6c63ff;     /* keep your brand purple */
-  --text: #1f2937;       /* soft dark (not harsh black) */
-
+  --bg: #f9fbff;
+  --card: #ffffff;
+  --accent: #6c63ff;
+  --accent-soft: #b9b3ff;
+  --text: #1f2937;
+  --text-light: #6b6b7e;
+  --border: #eef2f6;
+  --spacing-xs: 4px;
   --spacing-sm: 8px;
   --spacing-md: 16px;
   --spacing-lg: 32px;
   --spacing-xl: 64px;
-  --border-radius: 16px;
-  --transition: all 0.3s ease;
+  --spacing-2xl: 96px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-2xl: 32px;
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.02);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.04);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.06);
+  --shadow-xl: 0 16px 32px rgba(0,0,0,0.08);
+  --transition: all 0.2s ease;
 }
-/* Elegant Light Theme (DEFAULT) */
-body {
-  --bg: #ffffff;          /* pure white */
-  --card: #ffffff;
-  --text: #1e1e2f;        /* soft dark (not black) */
-  --accent: #7b6cff; 
-   --accent-soft: #b9b3ff; /* NEW */ 
-  --subtitle: #4b4b7c; /* NEW */
-}
-.hero-subtitle,
-.card p,
-.footer {
-  color: rgba(30, 30, 47, 0.75);
-}
-
 
 body.purple {
   --bg: #140a26;
@@ -51,37 +53,38 @@ body.purple {
   --accent: #b388ff;
   --accent-soft: #e0cfff;
   --text: #f3eefe;
-  --subtitle: #d6ccff;
+  --text-light: #d6ccff;
+  --border: #3a2a5a;
 }
-
 body.ocean {
   --bg: #0a1929;
   --card: #1e3a5f;
   --accent: #00b4d8;
   --accent-soft: #90e0ef;
   --text: #caf0f8;
-  --subtitle: #9bdaf0;
+  --text-light: #9bdaf0;
+  --border: #2d4b6e;
 }
-
 body.forest {
   --bg: #1a2f1a;
   --card: #2d5016;
   --accent: #52b788;
   --accent-soft: #b7e4c7;
   --text: #d8f3dc;
-  --subtitle: #b7e4c7;
+  --text-light: #b7e4c7;
+  --border: #3d6130;
 }
-
 body.sunset {
   --bg: #2b1a1a;
   --card: #4a2c2c;
   --accent: #ff6b6b;
   --accent-soft: #ffb3b3;
   --text: #ffe5e5;
-  --subtitle: #ffd6d6;
+  --text-light: #ffd6d6;
+  --border: #5e4040;
 }
 
-/* Base Styles */
+/* ===== BASE ===== */
 * {
   margin: 0;
   padding: 0;
@@ -89,488 +92,790 @@ body.sunset {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-family: 'Inter', -apple-system, sans-serif;
   background: var(--bg);
   color: var(--text);
-  line-height: 1.6;
-  min-height: 100vh;
-  transition: var(--transition);
+  line-height: 1.5;
+  transition: background 0.3s ease, color 0.2s ease;
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Header */
+/* ===== CLEAN HEADER ===== */
 .header {
-  padding: var(--spacing-md) var(--spacing-lg);
+  padding: 20px 48px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
-  gap: var(--spacing-md);
-  position: relative;
-  z-index: 100;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
 }
 
 .logo {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: 8px;
   font-size: 1.5rem;
-  font-weight: 700;
-  white-space: nowrap;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+.logo span {
+  font-size: 1.8rem;
 }
 
 .theme-selector {
-  padding: 12px 20px;
-  border-radius: 50px;
-  border: none;
-  background: var(--accent);
-  color: white;
+  padding: 8px 24px;
+  border-radius: 40px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  font-weight: 400;
   cursor: pointer;
-  font-size: 1rem;
-  font-weight: 500;
-  min-width: 180px;
+  font-size: 0.9rem;
+  min-width: 160px;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 16 16'%3E%3Cpath fill='%23666' d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 16px center;
-  background-size: 16px;
-  padding-right: 44px;
+  background-size: 12px;
 }
 
-.theme-selector:focus {
-  outline: 2px solid rgba(255, 255, 255, 0.5);
-  outline-offset: 2px;
-}
-
-/* Hero Section */
+/* ===== HERO ===== */
 .hero {
-  
   text-align: center;
-  padding: var(--spacing-xl) var(--spacing-lg);
-  max-width: 1200px;
+  padding: 80px 24px 40px;
+  max-width: 1000px;
   margin: 0 auto;
 }
-
 .hero-title {
-  font-size: clamp(2.5rem, 5vw, 4rem);
-  font-weight: 800;
-  background: linear-gradient(
-    135deg,
-    var(--accent),
-    var(--accent-soft)
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-size: clamp(2.8rem, 6vw, 4rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-bottom: 16px;
+  color: var(--text);
 }
-
-
+.hero-title span {
+  color: var(--accent);
+}
 .hero-subtitle {
-  font-size: clamp(1.1rem, 2vw, 1.5rem);
-    color: var(--subtitle);
-  opacity: 1; /* remove fading that caused “disappearing” */
-  margin-bottom: var(--spacing-xl);
+  font-size: 1.2rem;
+  color: var(--text-light);
   max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
+  margin: 0 auto 48px;
+  font-weight: 400;
 }
 
-/* Cards Container */
+/* ===== MODE CARDS – CLEAN AND PROFESSIONAL ===== */
 .cards-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
-  gap: var(--spacing-lg);
-  padding: 0 var(--spacing-lg) var(--spacing-xl);
-  max-width: 1200px;
-  margin: 0 auto;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  max-width: 900px;
+  margin: 0 auto 80px;
+  padding: 0 24px;
 }
 
-/* Card */
 .card {
   background: var(--card);
-  border-radius: var(--border-radius);
-  padding: var(--spacing-xl);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  border-radius: 24px;
+  padding: 40px 32px;
+  border: 1px solid var(--border);
   transition: var(--transition);
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  height: 100%;
-  position: relative;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-body:not(.purple):not(.ocean):not(.forest):not(.sunset) .card {
-  box-shadow: 0 12px 30px rgba(108, 99, 255, 0.12);
 }
 
 .card:hover {
-  transform: translateY(-12px);
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--accent);
 }
 
-.card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 6px;
-  background: linear-gradient(90deg, var(--accent), #9575ff);
-  opacity: 0;
-  transition: var(--transition);
-}
-
-.card:hover::before {
-  opacity: 1;
-}
-
-.card-icon {
+.card-emoji {
   font-size: 3.5rem;
-  margin-bottom: var(--spacing-md);
-  display: block;
+  margin-bottom: 20px;
 }
 
 .card h2 {
-  font-size: 1.75rem;
-  margin-bottom: var(--spacing-sm);
+  font-size: 2.2rem;
+  font-weight: 600;
+  margin-bottom: 16px;
   color: var(--text);
+}
+
+/* Feature tags – clean pills */
+.feature-tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  max-width: 320px;
+}
+
+.tag {
+  background: var(--bg);
+  padding: 4px 12px;
+  border-radius: 30px;
+  font-size: 0.8rem;
+  color: var(--text-light);
+  border: 1px solid var(--border);
+  font-weight: 400;
+}
+
+.feature-count {
+  display: inline-block;
+  padding: 2px 10px;
+  background: var(--accent);
+  color: white;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  margin-bottom: 16px;
 }
 
 .card p {
-  color: var(--text);
-  opacity: 0.8;
-  margin-bottom: var(--spacing-lg);
-  flex-grow: 1;
+  color: var(--text-light);
+  margin-bottom: 28px;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  max-width: 280px;
 }
 
+/* Clean enter button */
 .enter-btn {
-  background: var(--accent);
-  color: white;
-  border: none;
-  padding: 14px 32px;
-  border-radius: 50px;
-  font-size: 1.1rem;
-  font-weight: 600;
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 12px 32px;
+  border-radius: 40px;
+  font-weight: 500;
+  font-size: 1rem;
   cursor: pointer;
   transition: var(--transition);
   width: 100%;
-  max-width: 240px;
-  position: relative;
-  overflow: hidden;
+  max-width: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .enter-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  border-color: var(--accent);
+  background: var(--accent);
+  color: white;
 }
 
-.enter-btn:active {
-  transform: translateY(0);
+.enter-btn i {
+  font-size: 0.9rem;
+  transition: transform 0.2s;
 }
 
-.enter-btn::after {
-  content: '';
+.enter-btn:hover i {
+  transform: translateX(4px);
+}
+
+/* ===== SECTION HEADERS ===== */
+.section-wrapper {
+  max-width: 1300px;
+  margin: 0 auto 80px;
+  padding: 0 24px;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.section-eyebrow {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--accent);
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+
+.section-title {
+  font-size: 2.2rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-bottom: 12px;
+  color: var(--text);
+}
+
+.section-description {
+  font-size: 1rem;
+  color: var(--text-light);
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+/* ===== SLIDESHOWS – CLEAN AND MODERN ===== */
+.slideshow-container {
+  position: relative;
+  background: var(--card);
+  border-radius: 24px;
+  padding: 40px;
+  border: 1px solid var(--border);
+  margin-bottom: 40px;
+}
+
+.slide {
+  display: none;
+}
+
+.slide.active {
+  display: block;
+  animation: fade 0.3s ease;
+}
+
+@keyframes fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.slide-content {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px;
+  align-items: center;
+}
+
+/* Image area – now with real images */
+.slide-image {
+  flex: 1 1 300px;
+  min-width: 260px;
+  height: 280px;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.slide-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.slide-image:hover img {
+  transform: scale(1.02);
+}
+
+/* Slide text */
+.slide-text {
+  flex: 1 1 300px;
+}
+
+.slide-text h3 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.slide-text h3 i {
+  color: var(--accent);
+  font-size: 1.8rem;
+}
+
+.slide-text p {
+  color: var(--text-light);
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+/* Feature list – clean */
+.feature-list {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.feature-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: var(--text-light);
+}
+
+.feature-list i {
+  color: var(--accent);
+  font-size: 0.8rem;
+  width: 16px;
+}
+
+/* Navigation */
+.slideshow-nav {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.nav-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.nav-dot:hover {
+  background: var(--accent);
+  opacity: 0.5;
+}
+
+.nav-dot.active {
+  background: var(--accent);
+  transform: scale(1.2);
+}
+
+.nav-arrow {
   position: absolute;
   top: 50%;
-  left: 50%;
-  width: 5px;
-  height: 5px;
-  background: rgba(255, 255, 255, 0.5);
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+  color: var(--text);
   opacity: 0;
-  border-radius: 100%;
-  transform: scale(1, 1) translate(-50%);
-  transform-origin: 50% 50%;
 }
 
-.enter-btn:focus:not(:active)::after {
-  animation: ripple 1s ease-out;
+.slideshow-container:hover .nav-arrow {
+  opacity: 0.7;
 }
 
-@keyframes ripple {
-  0% {
-    transform: scale(0, 0);
-    opacity: 0.5;
-  }
-  100% {
-    transform: scale(20, 20);
-    opacity: 0;
-  }
+.nav-arrow:hover {
+  opacity: 1 !important;
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
 }
 
-/* Footer */
+.nav-arrow.left {
+  left: 16px;
+}
+
+.nav-arrow.right {
+  right: 16px;
+}
+
+/* ===== FEATURE GRID ===== */
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+  margin: 40px 0;
+}
+
+.grid-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px 16px;
+  text-align: center;
+  transition: var(--transition);
+}
+
+.grid-item:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.grid-item i {
+  font-size: 1.8rem;
+  color: var(--accent);
+  margin-bottom: 12px;
+  display: block;
+}
+
+.grid-item span {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.grid-item small {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-light);
+  margin-top: 4px;
+}
+
+/* ===== STATS ===== */
+.stats-row {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap;
+  margin: 60px 0 40px;
+}
+
+.stat {
+  text-align: center;
+}
+
+.stat-number {
+  font-size: 2.2rem;
+  font-weight: 600;
+  color: var(--accent);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: var(--text-light);
+  letter-spacing: 0.3px;
+}
+
+/* ===== FOOTER ===== */
 .footer {
   text-align: center;
-  padding: var(--spacing-lg);
-  color: var(--text);
-  opacity: 0.7;
-  font-size: 0.9rem;
-  margin-top: auto;
+  padding: 48px 24px 32px;
+  color: var(--text-light);
+  font-size: 0.8rem;
+  border-top: 1px solid var(--border);
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-/* Mobile Menu Toggle (Hidden by default) */
-.mobile-menu-toggle {
-  display: none;
-  background: none;
-  border: none;
-  color: var(--text);
-  font-size: 1.5rem;
-  cursor: pointer;
-  padding: var(--spacing-sm);
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .header {
-    padding: var(--spacing-md);
-    gap: var(--spacing-sm);
-  }
-  
-  .logo {
-    font-size: 1.25rem;
-  }
-  
-  .hero {
-    padding: var(--spacing-lg) var(--spacing-md);
-  }
-  
+/* ===== RESPONSIVE ===== */
+@media (max-width: 800px) {
   .cards-container {
     grid-template-columns: 1fr;
-    padding: 0 var(--spacing-md) var(--spacing-lg);
-    gap: var(--spacing-md);
+    max-width: 450px;
   }
   
-  .card {
-    padding: var(--spacing-lg);
-  }
-  
-  .card-icon {
-    font-size: 2.5rem;
-  }
-  
-  .card h2 {
-    font-size: 1.5rem;
-  }
-  
-  .enter-btn {
-    padding: 12px 24px;
-    font-size: 1rem;
-  }
-  
-  .theme-selector {
-    min-width: 160px;
-    padding: 10px 16px;
-    padding-right: 40px;
-  }
-}
-
-@media (max-width: 480px) {
-  .hero-title {
-    font-size: 2rem;
-  }
-  
-  .hero-subtitle {
-    font-size: 1rem;
-  }
-  
-  .card {
-    padding: var(--spacing-md);
-  }
-  
-  .card-icon {
-    font-size: 2rem;
-    margin-bottom: var(--spacing-sm);
-  }
-  
-  .card h2 {
-    font-size: 1.3rem;
-  }
-  
-  .card p {
-    font-size: 0.95rem;
-    margin-bottom: var(--spacing-md);
-  }
-  
-  .header {
+  .slide-content {
     flex-direction: column;
-    align-items: stretch;
-    text-align: center;
   }
   
-  .logo {
-    justify-content: center;
-    margin-bottom: var(--spacing-sm);
-  }
-  
-  .theme-selector {
-    width: 100%;
-    max-width: 280px;
-    margin: 0 auto;
-  }
-}
-
-/* Landscape Mobile */
-@media (max-height: 600px) and (orientation: landscape) {
-  .hero {
-    padding: var(--spacing-md) var(--spacing-lg);
-  }
-  
-  .cards-container {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .card {
-    padding: var(--spacing-md);
-  }
-}
-
-/* Dark mode preference */
-
-
-/* Print styles */
-@media print {
-  .theme-selector,
-  .enter-btn {
+  .nav-arrow {
     display: none;
   }
   
-  .card {
-    break-inside: avoid;
-    box-shadow: none;
-    border: 1px solid #ddd;
+  .header {
+    padding: 16px 24px;
   }
 }
-
-/* Accessibility */
-.enter-btn:focus,
-.theme-selector:focus {
-  outline: 3px solid rgba(108, 99, 255, 0.5);
-  outline-offset: 2px;
-}
-
-/* High contrast mode */
-@media (prefers-contrast: high) {
-  .card {
-    border: 2px solid var(--text);
-  }
-  
-  .enter-btn {
-    border: 2px solid var(--text);
-  }
-}
-
-/* Reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-  
-  .card:hover {
-    transform: none;
-  }
-  
-  .enter-btn:hover {
-    transform: none;
-  }
-}
-
-/* Loading state */
-.card.loading {
-  position: relative;
-  overflow: hidden;
-}
-
-.card.loading::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.1),
-    transparent
-  );
-  animation: loading 1.5s infinite;
-}
-
-@keyframes loading {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
-}
-/* FORCE TRUE LIGHT MODE */
-body:not(.purple):not(.ocean):not(.forest):not(.sunset) {
-  background: #ffffff;
-  color: #111111;
-}
-
-body:not(.purple):not(.ocean):not(.forest):not(.sunset) .card {
-  background: #ffffff;
-  color: #111111;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
-  border: 1px solid #e5e7eb;
-}
-
 </style>
 </head>
-
 <body>
+
 <header class="header">
   <div class="logo">
-    <span>⚡ </span>
-    <h1>Grindly</h1>
+    <span>⚡</span> grindly
   </div>
-  
-  <button class="mobile-menu-toggle" aria-label="Toggle menu">
-    ☰
-  </button>
-  
-  <select onchange="changeTheme(this.value)" id="themeSelector" class="theme-selector" aria-label="Select theme">
-    <option value="">🎨 Light</option>
-    <option value="purple">💜 Purple</option>
-    <option value="ocean">🌊 Ocean</option>
-    <option value="forest">🌲 Forest</option>
-    <option value="sunset">🌅 Sunset</option>
+  <select onchange="changeTheme(this.value)" id="themeSelector" class="theme-selector">
+    <option value="">☀️ light</option>
+    <option value="purple">💜 purple</option>
+    <option value="ocean">🌊 ocean</option>
+    <option value="forest">🌲 forest</option>
+    <option value="sunset">🌅 sunset</option>
   </select>
 </header>
 
 <main class="hero">
-  <h1 class="hero-title">Choose Your Mode</h1>
-  <p class="hero-subtitle">Focus • Organize • Grow with smart study tools</p>
+  <h1 class="hero-title"><span>learn better</span>, together</h1>
+  <p class="hero-subtitle">Two integrated modes – 42+ features for students and teachers</p>
   
+  <!-- ===== CLEAN, MODERN MODE CARDS ===== -->
   <div class="cards-container">
+    <!-- Student Card -->
     <div class="card">
-      <div class="card-icon">🎓</div>
-      <h2>Student Mode</h2>
-      <p>Study smart with AI, Pomodoro, task management, flashcards, and focus tools designed for students.</p>
+      <div class="card-emoji">🎓</div>
+      <div class="feature-count">20+ features</div>
+      <h2>student</h2>
+      <div class="feature-tags">
+        <span class="tag">streaks</span>
+        <span class="tag">focus</span>
+        <span class="tag">memory wall</span>
+        <span class="tag">badges</span>
+        <span class="tag">analytics</span>
+        <span class="tag">pomodoro</span>
+        <span class="tag">AI tools</span>
+        <span class="tag">growth tree</span>
+      </div>
+      <p>Your personal learning space – track streaks, enter focus portal, share on memory wall, unlock achievements</p>
       <button class="enter-btn" onclick="location.href='studentmode.html'">
-        Enter Student Mode →
+        explore <i class="fas fa-arrow-right"></i>
       </button>
     </div>
     
+    <!-- Teacher Card -->
     <div class="card">
-      <div class="card-icon">👨‍🏫</div>
-      <h2>Teacher Mode</h2>
-      <p>Track student progress, manage classes, upload resources, and create announcements.</p>
+      <div class="card-emoji">👩‍🏫</div>
+      <div class="feature-count">22+ features</div>
+      <h2>teacher</h2>
+      <div class="feature-tags">
+        <span class="tag">live check‑ins</span>
+        <span class="tag">challenges</span>
+        <span class="tag">analytics</span>
+        <span class="tag">toolkit</span>
+        <span class="tag">polls</span>
+        <span class="tag">exit tickets</span>
+        <span class="tag">live feed</span>
+        <span class="tag">management</span>
+      </div>
+      <p>Complete classroom companion – emotional check‑ins, class battles, real‑time analytics, and teaching tools</p>
       <button class="enter-btn" onclick="location.href='teachermode.html'">
-        Enter Teacher Mode →
+        explore <i class="fas fa-arrow-right"></i>
       </button>
     </div>
   </div>
 </main>
 
+<!-- ===== STUDENT MODE SLIDESHOW (4 slides) ===== -->
+<div class="section-wrapper">
+  <div class="section-header">
+    <div class="section-eyebrow">for learners</div>
+    <h2 class="section-title">student mode</h2>
+    <p class="section-description">20+ features designed for focus and growth</p>
+  </div>
+
+  <div class="slideshow-container" id="studentSlideshow">
+    <!-- Slide 1: Dashboard -->
+    <div class="slide active">
+      <div class="slide-content">
+        <div class="slide-image">
+          <img src="student-dashboard.png" alt="Student Dashboard">
+        </div>
+        <div class="slide-text">
+          <h3><i class="fas fa-tachometer-alt"></i> personal dashboard</h3>
+          <p>Track streaks, set daily goals, manage priority tasks, and monitor assignments – all in one place.</p>
+          <ul class="feature-list">
+            <li><i class="fas fa-check"></i> study streak (milestones at 3,7,14,30,60,90)</li>
+            <li><i class="fas fa-check"></i> daily goal with confetti celebrations</li>
+            <li><i class="fas fa-check"></i> urgent / not urgent / optional tasks</li>
+            <li><i class="fas fa-check"></i> quick notes with autosave</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 2: Focus Portal -->
+    <div class="slide">
+      <div class="slide-content">
+        <div class="slide-image">
+          <img src="student-focus.png" alt="Focus Portal">
+        </div>
+        <div class="slide-text">
+          <h3><i class="fas fa-hourglass-half"></i> focus portal</h3>
+          <p>Distraction‑free zone with timer, sounds, and energy tracking.</p>
+          <ul class="feature-list">
+            <li><i class="fas fa-check"></i> pomodoro timer (customizable)</li>
+            <li><i class="fas fa-check"></i> distraction blocker (60s emergency unlock)</li>
+            <li><i class="fas fa-check"></i> study sounds – brown noise, rain, library</li>
+            <li><i class="fas fa-check"></i> energy log – discover your peak hours</li>
+            <li><i class="fas fa-check"></i> learn by teaching – grow your tree 🌱</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 3: Memory Wall -->
+    <div class="slide">
+      <div class="slide-content">
+        <div class="slide-image">
+          <img src="student-memory.png" alt="Memory Wall">
+        </div>
+        <div class="slide-text">
+          <h3><i class="fas fa-chalkboard"></i> memory wall</h3>
+          <p>Interactive class whiteboard – share achievements, encouragement, and questions.</p>
+          <ul class="feature-list">
+            <li><i class="fas fa-check"></i> add sticky notes with 6 colours</li>
+            <li><i class="fas fa-check"></i> drag & drop anywhere</li>
+            <li><i class="fas fa-check"></i> like others' notes</li>
+            <li><i class="fas fa-check"></i> real‑time updates</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 4: Gamification & Analytics -->
+    <div class="slide">
+      <div class="slide-content">
+        <div class="slide-image">
+          <img src="student-badges.png" alt="Gamification and Badges">
+        </div>
+        <div class="slide-text">
+          <h3><i class="fas fa-medal"></i> gamification & analytics</h3>
+          <p>Unlock badges, grow a tree, and track progress with detailed charts.</p>
+          <ul class="feature-list">
+            <li><i class="fas fa-check"></i> 12 achievement badges</li>
+            <li><i class="fas fa-check"></i> growth tree (🌱 → 🌳)</li>
+            <li><i class="fas fa-check"></i> 6 analytics charts</li>
+            <li><i class="fas fa-check"></i> study heatmap & focus score</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation arrows -->
+    <div class="nav-arrow left" onclick="changeStudentSlide(-1)"><i class="fas fa-chevron-left"></i></div>
+    <div class="nav-arrow right" onclick="changeStudentSlide(1)"><i class="fas fa-chevron-right"></i></div>
+  </div>
+
+  <!-- Dots -->
+  <div class="slideshow-nav" id="studentDots">
+    <span class="nav-dot active" onclick="goToStudentSlide(0)"></span>
+    <span class="nav-dot" onclick="goToStudentSlide(1)"></span>
+    <span class="nav-dot" onclick="goToStudentSlide(2)"></span>
+    <span class="nav-dot" onclick="goToStudentSlide(3)"></span>
+  </div>
+</div>
+
+<!-- ===== TEACHER MODE SLIDESHOW (4 slides) ===== -->
+<div class="section-wrapper">
+  <div class="section-header">
+    <div class="section-eyebrow">for educators</div>
+    <h2 class="section-title">teacher mode</h2>
+    <p class="section-description">22+ features to inspire and manage your class</p>
+  </div>
+
+  <div class="slideshow-container" id="teacherSlideshow">
+    <!-- Slide 1: Live Check‑ins -->
+    <div class="slide active">
+      <div class="slide-content">
+        <div class="slide-image">
+          <img src="teacher-checkins.png" alt="Live Check-ins">
+        </div>
+        <div class="slide-text">
+          <h3><i class="fas fa-heart"></i> live emotional check‑ins</h3>
+          <p>Anonymous student check‑ins – see class sentiment in real time.</p>
+          <ul class="feature-list">
+            <li><i class="fas fa-check"></i> 6‑digit code + QR code</li>
+            <li><i class="fas fa-check"></i> live bars (😊 😐 😕)</li>
+            <li><i class="fas fa-check"></i> action suggestions for each emotion</li>
+            <li><i class="fas fa-check"></i> response history</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 2: Class Challenges -->
+    <div class="slide">
+      <div class="slide-content">
+        <div class="slide-image">
+          <img src="teacher-challenges.png" alt="Class Challenges">
+        </div>
+        <div class="slide-text">
+          <h3><i class="fas fa-crosshairs"></i> class challenges</h3>
+          <p>Challenge other classes – compete on study hours or average streak.</p>
+          <ul class="feature-list">
+            <li><i class="fas fa-check"></i> 1, 3, or 7 day durations</li>
+            <li><i class="fas fa-check"></i> live scoreboard</li>
+            <li><i class="fas fa-check"></i> winner celebration with confetti</li>
+            <li><i class="fas fa-check"></i> filter by status (active/pending/won)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 3: Analytics & Heatmap -->
+    <div class="slide">
+      <div class="slide-content">
+        <div class="slide-image">
+          <img src="teacher-analytics.png" alt="Analytics and Heatmap">
+        </div>
+        <div class="slide-text">
+          <h3><i class="fas fa-chart-bar"></i> class analytics & heatmap</h3>
+          <p>Understand when and how your class studies.</p>
+          <ul class="feature-list">
+            <li><i class="fas fa-check"></i> 12‑week activity heatmap</li>
+            <li><i class="fas fa-check"></i> daily active count</li>
+            <li><i class="fas fa-check"></i> at‑risk student alerts</li>
+            <li><i class="fas fa-check"></i> top performers leaderboard</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 4: Teacher Toolkit -->
+    <div class="slide">
+      <div class="slide-content">
+        <div class="slide-image">
+          <img src="teacher-toolkit.png" alt="Teacher Toolkit">
+        </div>
+        <div class="slide-text">
+          <h3><i class="fas fa-wrench"></i> teacher toolkit</h3>
+          <p>10+ in‑class tools to keep you organized and responsive.</p>
+          <ul class="feature-list">
+            <li><i class="fas fa-check"></i> random student picker</li>
+            <li><i class="fas fa-check"></i> group generator</li>
+            <li><i class="fas fa-check"></i> priority list</li>
+            <li><i class="fas fa-check"></i> focus bell & lightning plan</li>
+            <li><i class="fas fa-check"></i> exit tickets & weekly wins</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation arrows -->
+    <div class="nav-arrow left" onclick="changeTeacherSlide(-1)"><i class="fas fa-chevron-left"></i></div>
+    <div class="nav-arrow right" onclick="changeTeacherSlide(1)"><i class="fas fa-chevron-right"></i></div>
+  </div>
+
+  <!-- Dots -->
+  <div class="slideshow-nav" id="teacherDots">
+    <span class="nav-dot active" onclick="goToTeacherSlide(0)"></span>
+    <span class="nav-dot" onclick="goToTeacherSlide(1)"></span>
+    <span class="nav-dot" onclick="goToTeacherSlide(2)"></span>
+    <span class="nav-dot" onclick="goToTeacherSlide(3)"></span>
+  </div>
+</div>
+
+<!-- ===== FEATURE GRID ===== -->
+<div class="section-wrapper">
+  <div class="feature-grid">
+    <div class="grid-item"><i class="fas fa-fire"></i><span>streaks</span><small>daily consistency</small></div>
+    <div class="grid-item"><i class="fas fa-clock"></i><span>pomodoro</span><small>focus sessions</small></div>
+    <div class="grid-item"><i class="fas fa-tasks"></i><span>tasks</span><small>priority management</small></div>
+    <div class="grid-item"><i class="fas fa-sticky-note"></i><span>memory wall</span><small>class sharing</small></div>
+    <div class="grid-item"><i class="fas fa-trophy"></i><span>badges</span><small>achievements</small></div>
+    <div class="grid-item"><i class="fas fa-chart-line"></i><span>analytics</span><small>insights</small></div>
+    <div class="grid-item"><i class="fas fa-smile"></i><span>check‑ins</span><small>emotional pulse</small></div>
+    <div class="grid-item"><i class="fas fa-shield-alt"></i><span>challenges</span><small>class battles</small></div>
+    <div class="grid-item"><i class="fas fa-tools"></i><span>toolkit</span><small>teaching aids</small></div>
+  </div>
+</div>
+
+<!-- ===== STATS ===== -->
+<div class="stats-row">
+  <div class="stat"><div class="stat-number">42+</div><div class="stat-label">total features</div></div>
+  <div class="stat"><div class="stat-number">12</div><div class="stat-label">badges</div></div>
+  <div class="stat"><div class="stat-number">8</div><div class="stat-label">study tools</div></div>
+  <div class="stat"><div class="stat-number">6</div><div class="stat-label">themes</div></div>
+</div>
+
 <footer class="footer">
-  <p>© 2026 Grindly. Made with ❤️ for better learning.</p>
+  <p>© 2026 grindly · clean, modern, intentional · all features from both modes</p>
 </footer>
 
 <script>
@@ -581,96 +886,69 @@ function changeTheme(theme) {
     document.body.classList.add(theme);
   }
   localStorage.setItem('selectedTheme', theme);
-  
-  // Update select value
-  document.getElementById('themeSelector').value = theme;
+  document.getElementById('themeSelector').value = theme || '';
 }
 
 // Load saved theme
 document.addEventListener('DOMContentLoaded', () => {
-  const savedTheme = localStorage.getItem('selectedTheme');
-  if (savedTheme) {
-    document.body.classList.add(savedTheme);
-    document.getElementById('themeSelector').value = savedTheme;
+  const saved = localStorage.getItem('selectedTheme');
+  if (saved) {
+    document.body.classList.add(saved);
+    document.getElementById('themeSelector').value = saved;
   }
-  
-  // Mobile menu toggle
-  const mobileToggle = document.querySelector('.mobile-menu-toggle');
-  if (mobileToggle) {
-    mobileToggle.addEventListener('click', () => {
-      const header = document.querySelector('.header');
-      header.classList.toggle('menu-open');
-    });
-  }
-  
-  // Add loading animation for cards (just for demo)
-  const cards = document.querySelectorAll('.card');
-  cards.forEach(card => {
-    card.classList.add('loading');
-    setTimeout(() => {
-      card.classList.remove('loading');
-    }, 500);
-  });
-  
-  // Keyboard navigation for cards
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Tab') {
-      // Focus management for accessibility
-      const focused = document.activeElement;
-      if (focused.classList.contains('enter-btn')) {
-        const card = focused.closest('.card');
-        card.style.boxShadow = '0 0 0 3px rgba(108, 99, 255, 0.5)';
-        
-        // Remove shadow when focus leaves
-        focused.addEventListener('blur', () => {
-          card.style.boxShadow = '';
-        }, { once: true });
-      }
-    }
-  });
 });
 
-// Touch device detection
-if ('ontouchstart' in window || navigator.maxTouchPoints) {
-  document.body.classList.add('touch-device');
+// Student slideshow
+let studentSlide = 0;
+const studentSlides = document.querySelectorAll('#studentSlideshow .slide');
+const studentDots = document.querySelectorAll('#studentDots .nav-dot');
+
+function showStudentSlide(index) {
+  if (index < 0) index = studentSlides.length - 1;
+  if (index >= studentSlides.length) index = 0;
   
-  // Improve touch experience
-  const buttons = document.querySelectorAll('.enter-btn');
-  buttons.forEach(btn => {
-    btn.addEventListener('touchstart', function() {
-      this.style.transform = 'scale(0.98)';
-    });
-    
-    btn.addEventListener('touchend', function() {
-      this.style.transform = '';
-    });
-  });
+  studentSlides.forEach(s => s.classList.remove('active'));
+  studentDots.forEach(d => d.classList.remove('active'));
+  
+  studentSlides[index].classList.add('active');
+  studentDots[index].classList.add('active');
+  studentSlide = index;
 }
+function changeStudentSlide(direction) { showStudentSlide(studentSlide + direction); }
+function goToStudentSlide(index) { showStudentSlide(index); }
 
-// Handle window resize
-let resizeTimer;
-window.addEventListener('resize', () => {
-  document.body.classList.add('resizing');
-  clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(() => {
-    document.body.classList.remove('resizing');
-  }, 250);
+// Teacher slideshow
+let teacherSlide = 0;
+const teacherSlides = document.querySelectorAll('#teacherSlideshow .slide');
+const teacherDots = document.querySelectorAll('#teacherDots .nav-dot');
+
+function showTeacherSlide(index) {
+  if (index < 0) index = teacherSlides.length - 1;
+  if (index >= teacherSlides.length) index = 0;
+  
+  teacherSlides.forEach(s => s.classList.remove('active'));
+  teacherDots.forEach(d => d.classList.remove('active'));
+  
+  teacherSlides[index].classList.add('active');
+  teacherDots[index].classList.add('active');
+  teacherSlide = index;
+}
+function changeTeacherSlide(direction) { showTeacherSlide(teacherSlide + direction); }
+function goToTeacherSlide(index) { showTeacherSlide(index); }
+
+// Auto-advance
+let studentInterval = setInterval(() => changeStudentSlide(1), 6000);
+let teacherInterval = setInterval(() => changeTeacherSlide(1), 6000);
+
+// Pause on hover
+document.querySelector('#studentSlideshow').addEventListener('mouseenter', () => clearInterval(studentInterval));
+document.querySelector('#studentSlideshow').addEventListener('mouseleave', () => {
+  studentInterval = setInterval(() => changeStudentSlide(1), 6000);
 });
-
-// Add service worker for PWA capabilities (optional)
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(err => {
-      console.log('ServiceWorker registration failed: ', err);
-    });
-  });
-}
-// Add to all pages
-firebase.analytics().logEvent('page_view', {page_location: window.location.href});
+document.querySelector('#teacherSlideshow').addEventListener('mouseenter', () => clearInterval(teacherInterval));
+document.querySelector('#teacherSlideshow').addEventListener('mouseleave', () => {
+  teacherInterval = setInterval(() => changeTeacherSlide(1), 6000);
+});
 </script>
 </body>
 </html>
-
-
-
-
