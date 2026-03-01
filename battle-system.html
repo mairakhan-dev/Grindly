@@ -5,7 +5,6 @@
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
   gtag('config', 'G-R3FJ3LMC39');
 </script>
 <html lang="en">
@@ -14,7 +13,7 @@
     <title>Grindly | Battle Arena</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        /* ===== BATTLE SYSTEM STYLES - SAME AS BEFORE ===== */
+        /* ===== BATTLE SYSTEM STYLES ===== */
         * {
             margin: 0;
             padding: 0;
@@ -489,9 +488,9 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
     <script>
-        // ===== BATTLE SYSTEM CONNECTED TO QUEST SYSTEM =====
+        // ===== BATTLE SYSTEM WITH FIREBASE RULES FIX =====
         (function() {
-            console.log("⚔️ Battle System loaded with Quest System connection");
+            console.log("⚔️ Battle System loaded with Firebase rules fix");
 
             // Firebase Config
             const firebaseConfig = {
@@ -553,15 +552,14 @@
                 }
             }
 
-            function updateQuestMana(amount) {
-                const data = getQuestData();
-                data.mana = Math.max(0, Math.min(data.maxMana || 100, (data.mana || 50) + amount));
-                saveQuestData(data);
-                return data.mana;
-            }
-
             function getPlayerId() {
-                return localStorage.getItem('studentUserId') || 'player_' + Date.now();
+                // Generate a consistent player ID
+                let playerId = localStorage.getItem('battlePlayerId');
+                if (!playerId) {
+                    playerId = 'player_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                    localStorage.setItem('battlePlayerId', playerId);
+                }
+                return playerId;
             }
 
             function getPlayerName() {
@@ -694,8 +692,8 @@
                 await createBattleInFirebase(code, questData);
             }
 
-            // Create battle in Firebase
-            async function createBattleInFirebase(code, questData) {
+            // Create battle in Firebase - with retry logic for permission errors
+            async function createBattleInFirebase(code, questData, retryCount = 0) {
                 try {
                     const playerId = getPlayerId();
                     const playerName = getPlayerName();
@@ -733,6 +731,9 @@
                         }
                     };
                     
+                    // Add a timestamp for cleanup
+                    battleData.metadata.expiresAt = Date.now() + 3600000; // 1 hour
+                    
                     await database.ref('battles/' + code).set(battleData);
                     console.log("✅ Battle created:", code);
                     
@@ -740,12 +741,19 @@
                     
                 } catch (error) {
                     console.error("❌ Error creating battle:", error);
-                    showNotification("Failed to create battle: " + error.message, "error");
                     
-                    // Refund mana if battle creation failed
-                    const questData = getQuestData();
-                    questData.mana = (questData.mana || 50) + 20;
-                    saveQuestData(questData);
+                    // If it's a permission error, try once more after a delay
+                    if (error.code === 'PERMISSION_DENIED' && retryCount < 2) {
+                        console.log(`Retrying... Attempt ${retryCount + 1}`);
+                        setTimeout(() => createBattleInFirebase(code, questData, retryCount + 1), 1000);
+                    } else {
+                        showNotification("Failed to create battle: " + error.message, "error");
+                        
+                        // Refund mana if battle creation failed
+                        const questData = getQuestData();
+                        questData.mana = (questData.mana || 50) + 20;
+                        saveQuestData(questData);
+                    }
                 }
             }
 
@@ -879,6 +887,7 @@
                     const playerName = getPlayerName();
                     const questData = getQuestData();
                     
+                    // Join the battle
                     await database.ref('battles/' + code + '/player2').set({
                         id: playerId,
                         name: playerName,
@@ -912,7 +921,14 @@
                     
                 } catch (error) {
                     console.error("Error joining battle:", error);
-                    if (errorEl) errorEl.textContent = "❌ Failed to join battle";
+                    
+                    // Check if it's a permission error
+                    if (error.code === 'PERMISSION_DENIED') {
+                        if (errorEl) errorEl.textContent = "❌ Firebase permission denied. Please check your database rules.";
+                        showNotification("⚠️ Firebase rules need to be updated for battles", "error");
+                    } else {
+                        if (errorEl) errorEl.textContent = "❌ Failed to join battle: " + error.message;
+                    }
                 }
             }
 
@@ -945,6 +961,13 @@
                         
                     } catch (error) {
                         console.error("Error removing battle:", error);
+                        
+                        // Even if Firebase delete fails, refund mana locally
+                        const questData = getQuestData();
+                        questData.mana = (questData.mana || 50) + 20;
+                        saveQuestData(questData);
+                        
+                        showNotification("✅ Mana refunded: +20", "success");
                     }
                 }
                 
@@ -977,4 +1000,3 @@
     </script>
 </body>
 </html>
-
