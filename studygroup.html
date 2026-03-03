@@ -4073,6 +4073,163 @@ window.deleteResource = deleteResource;
 })();
 </script>
 <!-- ============================================ -->
+
+  <!-- ============================================
+     FINAL CLEAN FIX: EDIT BUTTON IN HEADER ONLY
+     ADD THIS RIGHT BEFORE </body>
+============================================ -->
+<script>
+(function() {
+    console.log('🚀 Applying clean header edit button fix...');
+    
+    function createHeaderButton() {
+        // ============================================
+        // 1. CREATE EDIT FUNCTION (NO RESTRICTIONS)
+        // ============================================
+        window.editGroupName = function() {
+            if (!currentGroup) {
+                alert("Please select a group first");
+                return;
+            }
+            
+            database.ref('groups/' + currentGroup + '/name').once('value')
+                .then((snapshot) => {
+                    const currentName = snapshot.val() || "Group";
+                    const newName = prompt("Enter new group name:", currentName);
+                    
+                    if (!newName || newName.trim() === "") return;
+                    
+                    if (newName.trim() === currentName) {
+                        alert("Name is the same, no changes made");
+                        return;
+                    }
+                    
+                    // Show loading on button
+                    const editBtn = document.getElementById('headerEditBtn');
+                    if (editBtn) {
+                        editBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+                        editBtn.disabled = true;
+                    }
+                    
+                    // Update Firebase
+                    database.ref('groups/' + currentGroup + '/name').set(newName.trim())
+                        .then(() => {
+                            alert("✅ Group name updated successfully!");
+                            
+                            // Update UI
+                            const groupNameEl = document.getElementById('currentGroupName');
+                            if (groupNameEl) groupNameEl.textContent = newName.trim();
+                            
+                            // Refresh groups list
+                            if (typeof renderGroupsList === 'function') {
+                                renderGroupsList();
+                            }
+                        })
+                        .catch((error) => {
+                            console.error("Error:", error);
+                            alert("❌ Failed to update group name");
+                        })
+                        .finally(() => {
+                            if (editBtn) {
+                                editBtn.innerHTML = '<i class="fas fa-edit"></i> Edit Group Name';
+                                editBtn.disabled = false;
+                            }
+                        });
+                });
+        };
+        
+        // ============================================
+        // 2. REMOVE ANY EXISTING EDIT BUTTONS
+        // ============================================
+        const oldButtons = document.querySelectorAll('[id*="edit"], [class*="edit"], [onclick*="edit"]');
+        oldButtons.forEach(btn => btn.remove());
+        
+        // ============================================
+        // 3. ADD BUTTON TO HEADER
+        // ============================================
+        const headerControls = document.querySelector('.header-controls');
+        if (headerControls) {
+            const headerBtn = document.createElement('button');
+            headerBtn.id = 'headerEditBtn';
+            headerBtn.innerHTML = '<i class="fas fa-edit"></i> Edit Group Name';
+            headerBtn.style.background = '#ff9800';
+            headerBtn.style.padding = '10px 15px';
+            headerBtn.style.borderRadius = '10px';
+            headerBtn.style.border = 'none';
+            headerBtn.style.color = 'white';
+            headerBtn.style.fontWeight = 'bold';
+            headerBtn.style.cursor = 'pointer';
+            headerBtn.style.marginRight = '10px';
+            headerBtn.style.transition = 'all 0.3s ease';
+            
+            headerBtn.onmouseover = function() {
+                this.style.background = '#f57c00';
+                this.style.transform = 'translateY(-2px)';
+            };
+            headerBtn.onmouseout = function() {
+                this.style.background = '#ff9800';
+                this.style.transform = 'translateY(0)';
+            };
+            
+            headerBtn.onclick = function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                window.editGroupName();
+                return false;
+            };
+            
+            headerControls.insertBefore(headerBtn, headerControls.firstChild);
+            console.log('✅ Header edit button created - everyone can edit');
+        } else {
+            setTimeout(createHeaderButton, 1000);
+        }
+        
+        // ============================================
+        // 4. ALSO ADD TO GROUP HEADER FOR CONVENIENCE
+        // ============================================
+        function addToGroupHeader() {
+            const groupHeader = document.querySelector('.group-header-buttons');
+            if (groupHeader && !document.getElementById('groupHeaderEditBtn')) {
+                const groupBtn = document.createElement('button');
+                groupBtn.id = 'groupHeaderEditBtn';
+                groupBtn.innerHTML = '<i class="fas fa-edit"></i> Edit Name';
+                groupBtn.style.background = '#ff9800';
+                groupBtn.style.marginRight = '8px';
+                groupBtn.style.padding = '10px 15px';
+                groupBtn.style.borderRadius = '10px';
+                groupBtn.style.border = 'none';
+                groupBtn.style.color = 'white';
+                groupBtn.style.cursor = 'pointer';
+                groupBtn.style.fontWeight = 'bold';
+                
+                groupBtn.onclick = function(e) {
+                    e.preventDefault();
+                    window.editGroupName();
+                    return false;
+                };
+                
+                groupHeader.insertBefore(groupBtn, groupHeader.firstChild);
+                console.log('✅ Group header edit button added');
+            }
+        }
+        
+        // Watch for group selection and add button
+        setInterval(() => {
+            if (currentGroup) {
+                addToGroupHeader();
+            }
+        }, 2000);
+    }
+    
+    // Start when page is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', createHeaderButton);
+    } else {
+        createHeaderButton();
+    }
+})();
+</script>
 </body>
 </html>
+
 
