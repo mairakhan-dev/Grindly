@@ -5,7 +5,7 @@
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-  gtag('config', 'G-R3FJ3LMC39');
+  gtag('config', 'G-R3F3LMC39');
 </script>
 <html lang="en">
 <head>
@@ -26,6 +26,7 @@
   --card: #ffffff;
   --accent: #6c63ff;
   --accent-soft: #b9b3ff;
+  --accent-glow: rgba(108, 99, 255, 0.2);
   --text: #1f2937;
   --text-light: #6b6b7e;
   --border: #eef2f6;
@@ -44,7 +45,8 @@
   --shadow-md: 0 4px 16px rgba(0,0,0,0.04);
   --shadow-lg: 0 8px 24px rgba(0,0,0,0.06);
   --shadow-xl: 0 16px 32px rgba(0,0,0,0.08);
-  --transition: all 0.2s ease;
+  --shadow-glow: 0 0 30px var(--accent-glow);
+  --transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 body.purple {
@@ -52,6 +54,7 @@ body.purple {
   --card: #24144a;
   --accent: #b388ff;
   --accent-soft: #e0cfff;
+  --accent-glow: rgba(179, 136, 255, 0.25);
   --text: #f3eefe;
   --text-light: #d6ccff;
   --border: #3a2a5a;
@@ -61,6 +64,7 @@ body.ocean {
   --card: #1e3a5f;
   --accent: #00b4d8;
   --accent-soft: #90e0ef;
+  --accent-glow: rgba(0, 180, 216, 0.25);
   --text: #caf0f8;
   --text-light: #9bdaf0;
   --border: #2d4b6e;
@@ -70,6 +74,7 @@ body.forest {
   --card: #2d5016;
   --accent: #52b788;
   --accent-soft: #b7e4c7;
+  --accent-glow: rgba(82, 183, 136, 0.25);
   --text: #d8f3dc;
   --text-light: #b7e4c7;
   --border: #3d6130;
@@ -79,6 +84,7 @@ body.sunset {
   --card: #4a2c2c;
   --accent: #ff6b6b;
   --accent-soft: #ffb3b3;
+  --accent-glow: rgba(255, 107, 107, 0.25);
   --text: #ffe5e5;
   --text-light: #ffd6d6;
   --border: #5e4040;
@@ -113,6 +119,8 @@ body {
   width: 100%;
   border-bottom: 1px solid var(--border);
   background: var(--bg);
+  position: relative;
+  z-index: 10;
 }
 
 .logo {
@@ -125,6 +133,13 @@ body {
 }
 .logo span {
   font-size: 1.8rem;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
 }
 
 .theme-selector {
@@ -142,6 +157,12 @@ body {
   background-repeat: no-repeat;
   background-position: right 16px center;
   background-size: 12px;
+  transition: var(--transition);
+}
+
+.theme-selector:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-glow);
 }
 
 /* ===== HERO ===== */
@@ -157,130 +178,1017 @@ body {
   letter-spacing: -0.02em;
   margin-bottom: 16px;
   color: var(--text);
+  position: relative;
+  display: inline-block;
 }
+
+.hero-title:after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 4px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+
 .hero-title span {
   color: var(--accent);
+  position: relative;
+  display: inline-block;
 }
+
+.hero-title span:hover {
+  animation: wave 0.5s ease;
+}
+
+@keyframes wave {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(5deg); }
+  75% { transform: rotate(-5deg); }
+}
+
 .hero-subtitle {
   font-size: 1.2rem;
   color: var(--text-light);
   max-width: 600px;
   margin: 0 auto 48px;
   font-weight: 400;
+  position: relative;
+  padding: 16px 24px;
+  background: var(--card);
+  border-radius: 60px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
 }
 
-/* ===== MODE CARDS – CLEAN AND PROFESSIONAL ===== */
+.hero-subtitle:before {
+  content: '✨';
+  position: absolute;
+  left: -20px;
+  top: -10px;
+  font-size: 1.5rem;
+  animation: sparkle 1.5s infinite;
+}
+
+.hero-subtitle:after {
+  content: '✨';
+  position: absolute;
+  right: -20px;
+  bottom: -10px;
+  font-size: 1.5rem;
+  animation: sparkle 1.5s infinite 0.5s;
+}
+
+@keyframes sparkle {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+/* ===== TEMPTING MODE CARDS - COMPLETELY REDESIGNED ===== */
 .cards-container {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 24px;
-  max-width: 900px;
+  gap: 32px;
+  max-width: 1000px;
   margin: 0 auto 80px;
   padding: 0 24px;
 }
 
 .card {
   background: var(--card);
-  border-radius: 24px;
-  padding: 40px 32px;
+  border-radius: 40px;
+  padding: 48px 32px 40px;
   border: 1px solid var(--border);
   transition: var(--transition);
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
 }
 
-.card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
+/* PSYCHOLOGICAL TRIGGER 1: SCARCITY & FOMO */
+.card:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-soft), var(--accent));
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.card:hover:before {
+  transform: translateX(100%);
+}
+
+/* PSYCHOLOGICAL TRIGGER 2: SOCIAL PROOF BADGES */
+.card:after {
+  content: '🔥 9 ACTIVE NOW';
+  position: absolute;
+  top: 20px;
+  right: -40px;
+  background: var(--accent);
+  color: white;
+  padding: 8px 40px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  transform: rotate(45deg);
+  box-shadow: var(--shadow-md);
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.card:hover:after {
+  opacity: 1;
+}
+
+/* PSYCHOLOGICAL TRIGGER 3: AUTHORITY */
+.card[data-mode="student"]:hover {
+  transform: translateY(-8px) scale(1.02);
   border-color: var(--accent);
+  box-shadow: var(--shadow-glow), var(--shadow-xl);
+}
+
+.card[data-mode="teacher"]:hover {
+  transform: translateY(-8px) scale(1.02);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-glow), var(--shadow-xl);
 }
 
 .card-emoji {
-  font-size: 3.5rem;
+  font-size: 4.5rem;
+  margin-bottom: 16px;
+  position: relative;
+  z-index: 1;
+  transition: var(--transition);
+  filter: drop-shadow(0 8px 12px var(--accent-glow));
+}
+
+.card:hover .card-emoji {
+  transform: scale(1.1) rotate(5deg);
+}
+
+/* PSYCHOLOGICAL TRIGGER 4: RECIPROCITY (FREE VALUE) */
+.feature-count {
+  display: inline-block;
+  padding: 6px 16px;
+  background: var(--accent);
+  color: white;
+  border-radius: 40px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
   margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 4px 10px var(--accent-glow);
+  animation: subtle-pulse 2s infinite;
+}
+
+@keyframes subtle-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
 }
 
 .card h2 {
-  font-size: 2.2rem;
-  font-weight: 600;
-  margin-bottom: 16px;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 24px;
   color: var(--text);
+  position: relative;
+  z-index: 1;
+  letter-spacing: -0.02em;
+  text-transform: capitalize;
+  background: linear-gradient(135deg, var(--text), var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-/* Feature tags – clean pills */
+/* PSYCHOLOGICAL TRIGGER 5: LIKING & AESTHETICS */
 .feature-tags {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 8px;
-  margin-bottom: 20px;
-  max-width: 320px;
+  margin-bottom: 28px;
+  max-width: 380px;
+  position: relative;
+  z-index: 1;
 }
 
 .tag {
   background: var(--bg);
-  padding: 4px 12px;
-  border-radius: 30px;
+  padding: 6px 14px;
+  border-radius: 40px;
   font-size: 0.8rem;
   color: var(--text-light);
   border: 1px solid var(--border);
   font-weight: 400;
+  transition: var(--transition);
+  backdrop-filter: blur(5px);
 }
 
-.feature-count {
-  display: inline-block;
-  padding: 2px 10px;
+.tag:hover {
   background: var(--accent);
   color: white;
-  border-radius: 20px;
-  font-size: 0.7rem;
-  font-weight: 500;
-  letter-spacing: 0.3px;
-  margin-bottom: 16px;
+  border-color: var(--accent);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px var(--accent-glow);
 }
 
+.tag.s-tier {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+  font-weight: 500;
+  position: relative;
+  overflow: hidden;
+}
+
+.tag.s-tier:before {
+  content: '✨';
+  position: absolute;
+  left: -10px;
+  top: -10px;
+  font-size: 0.6rem;
+  opacity: 0.5;
+}
+
+/* PSYCHOLOGICAL TRIGGER 6: CURIOSITY GAP */
 .card p {
   color: var(--text-light);
-  margin-bottom: 28px;
+  margin-bottom: 32px;
   font-size: 0.95rem;
-  line-height: 1.6;
-  max-width: 280px;
+  line-height: 1.7;
+  max-width: 320px;
+  position: relative;
+  z-index: 1;
+  padding: 16px;
+  background: var(--bg);
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  text-align: left;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
 }
 
-/* Clean enter button */
+.card p strong {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.card p:before {
+  content: '"';
+  position: absolute;
+  top: -10px;
+  left: 10px;
+  font-size: 3rem;
+  color: var(--accent);
+  opacity: 0.3;
+  font-family: serif;
+}
+
+/* PSYCHOLOGICAL TRIGGER 7: COMMITMENT & CONSISTENCY */
 .enter-btn {
-  background: var(--card);
-  border: 1px solid var(--border);
-  color: var(--text);
-  padding: 12px 32px;
-  border-radius: 40px;
-  font-weight: 500;
-  font-size: 1rem;
+  background: linear-gradient(135deg, var(--card), var(--bg));
+  border: 2px solid var(--accent);
+  color: var(--accent);
+  padding: 16px 40px;
+  border-radius: 60px;
+  font-weight: 600;
+  font-size: 1.1rem;
   cursor: pointer;
   transition: var(--transition);
   width: 100%;
-  max-width: 200px;
+  max-width: 240px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 12px;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.enter-btn:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s ease;
+  z-index: -1;
 }
 
 .enter-btn:hover {
-  border-color: var(--accent);
-  background: var(--accent);
   color: white;
+  border-color: var(--accent);
+  transform: scale(1.05);
+  box-shadow: 0 10px 25px var(--accent-glow);
 }
 
-.enter-btn i {
-  font-size: 0.9rem;
-  transition: transform 0.2s;
+.enter-btn:hover:before {
+  transform: scaleX(1);
 }
 
 .enter-btn:hover i {
-  transform: translateX(4px);
+  transform: translateX(8px) rotate(0deg);
+}
+
+.enter-btn i {
+  font-size: 1rem;
+  transition: transform 0.3s ease;
+}
+
+/* PSYCHOLOGICAL TRIGGER 8: URGENCY */
+.card .limited-offer {
+  position: absolute;
+  bottom: 100px;
+  right: -30px;
+  background: #ff4757;
+  color: white;
+  padding: 4px 30px;
+  font-size: 0.6rem;
+  font-weight: 600;
+  transform: rotate(-45deg);
+  letter-spacing: 1px;
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.card:hover .limited-offer {
+  opacity: 1;
+}
+
+/* PSYCHOLOGICAL TRIGGER 9: CURIOSITY (EYE CANDY) */
+.card .floating-badge {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 50px;
+  height: 50px;
+  background: var(--accent);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.2rem;
+  font-weight: bold;
+  animation: float 3s infinite;
+  box-shadow: 0 10px 20px var(--accent-glow);
+  z-index: 3;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(5deg); }
+}
+
+/* PSYCHOLOGICAL TRIGGER 10: SOCIAL PROOF */
+.social-proof {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 8px 16px;
+  background: var(--bg);
+  border-radius: 40px;
+  border: 1px solid var(--border);
+  font-size: 0.8rem;
+  color: var(--text-light);
+  position: relative;
+  z-index: 1;
+  opacity: 0.8;
+  transition: var(--transition);
+}
+
+.card:hover .social-proof {
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+.social-proof i {
+  color: var(--accent);
+  font-size: 0.9rem;
+}
+
+.social-proof .avatars {
+  display: flex;
+  margin-right: 8px;
+}
+
+.social-proof .avatars span {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--card);
+  margin-left: -8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.6rem;
+  font-weight: bold;
+}
+
+.social-proof .avatars span:first-child {
+  margin-left: 0;
+}
+
+/* ===== NEW PSYCHOLOGICAL TRIGGERS (11-30) ===== */
+
+/* TRIGGER 11: LOSS AVERSION */
+.card .loss-aversion {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  background: rgba(255, 71, 87, 0.1);
+  border: 1px dashed #ff4757;
+  color: #ff4757;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.3s ease;
+  z-index: 5;
+  backdrop-filter: blur(5px);
+}
+
+.card:hover .loss-aversion {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* TRIGGER 12: DECOY EFFECT */
+.decoy-badge {
+  position: absolute;
+  top: 80px;
+  right: 20px;
+  background: var(--accent);
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: bold;
+  border: 2px solid var(--card);
+  box-shadow: 0 0 20px var(--accent-glow);
+  z-index: 10;
+  animation: rotate 10s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* TRIGGER 13: ANCHORING */
+.price-anchor {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, var(--bg), var(--card));
+  border-radius: 30px;
+  border: 1px solid var(--border);
+  position: relative;
+  z-index: 5;
+}
+
+.original-price {
+  text-decoration: line-through;
+  color: var(--text-light);
+  font-size: 0.9rem;
+  opacity: 0.7;
+}
+
+.current-price {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+.discount-badge {
+  background: #22c55e;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+/* TRIGGER 14: ENDOWMENT EFFECT */
+.endowment-effect {
+  position: relative;
+  width: 100%;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 20px 0;
+  overflow: hidden;
+}
+
+.endowment-progress {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 75%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-soft));
+  border-radius: 2px;
+  animation: progressPulse 2s infinite;
+}
+
+.endowment-text {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: var(--text-light);
+  margin-top: 4px;
+}
+
+@keyframes progressPulse {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}
+
+/* TRIGGER 15: IKEA EFFECT (CUSTOMIZATION) */
+.customization-hint {
+  display: flex;
+  gap: 4px;
+  margin: 10px 0;
+  font-size: 0.7rem;
+  color: var(--text-light);
+  background: var(--bg);
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+}
+
+.customization-hint i {
+  color: var(--accent);
+  font-size: 0.6rem;
+}
+
+/* TRIGGER 16: GOAL GRADIENT */
+.goal-container {
+  width: 100%;
+  padding: 12px;
+  background: var(--bg);
+  border-radius: 30px;
+  margin: 15px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.goal-progress {
+  height: 8px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.goal-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-soft));
+  border-radius: 4px;
+  transition: width 1s ease;
+  animation: goalShimmer 2s infinite;
+}
+
+@keyframes goalShimmer {
+  0% { opacity: 0.8; }
+  50% { opacity: 1; }
+  100% { opacity: 0.8; }
+}
+
+.goal-text {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: var(--text-light);
+}
+
+/* TRIGGER 17: AUTHORITY BADGES */
+.authority-stamp {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 60px;
+  height: 60px;
+  background: var(--accent);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  transform: rotate(15deg);
+  box-shadow: 0 5px 15px var(--accent-glow);
+  z-index: 20;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.card:hover .authority-stamp {
+  opacity: 1;
+}
+
+/* TRIGGER 18: FEAR OF MISSING OUT (FOMO) COUNTER */
+.fomo-counter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 71, 87, 0.1);
+  border: 1px solid #ff4757;
+  border-radius: 30px;
+  padding: 4px 12px;
+  margin: 10px 0;
+  font-size: 0.7rem;
+  animation: pulse 2s infinite;
+}
+
+.fomo-counter i {
+  color: #ff4757;
+}
+
+/* TRIGGER 19: SOCIAL PROOF - TESTIMONIAL SNIPPET */
+.testimonial-snippet {
+  background: var(--bg);
+  border-left: 3px solid var(--accent);
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin: 15px 0;
+  font-size: 0.75rem;
+  font-style: italic;
+  color: var(--text-light);
+  position: relative;
+}
+
+.testimonial-snippet:before {
+  content: '⭐⭐⭐⭐⭐';
+  position: absolute;
+  top: -10px;
+  left: 10px;
+  background: var(--card);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.6rem;
+  letter-spacing: 2px;
+  color: #ffb800;
+}
+
+/* TRIGGER 20: SCARCITY TIMER */
+.scarcity-timer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-soft));
+  color: white;
+  padding: 8px 16px;
+  border-radius: 30px;
+  margin: 10px 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  box-shadow: 0 4px 15px var(--accent-glow);
+}
+
+.scarcity-timer i {
+  animation: ring 2s infinite;
+}
+
+@keyframes ring {
+  0% { transform: rotate(0deg); }
+  10% { transform: rotate(15deg); }
+  20% { transform: rotate(-15deg); }
+  30% { transform: rotate(10deg); }
+  40% { transform: rotate(-10deg); }
+  50% { transform: rotate(5deg); }
+  60% { transform: rotate(0deg); }
+  100% { transform: rotate(0deg); }
+}
+
+/* TRIGGER 21: EXCLUSIVITY */
+.exclusive-badge {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background: gold;
+  color: #1f2937;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transform: rotate(-5deg);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  z-index: 15;
+  opacity: 0.9;
+  transition: transform 0.3s ease;
+}
+
+.card:hover .exclusive-badge {
+  transform: rotate(0deg) scale(1.1);
+}
+
+/* TRIGGER 22: RECIPROCITY - FREE BONUS */
+.free-bonus {
+  background: linear-gradient(135deg, #22c55e20, #22c55e40);
+  border: 1px solid #22c55e;
+  border-radius: 30px;
+  padding: 6px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0;
+  font-size: 0.75rem;
+  color: #22c55e;
+  font-weight: 600;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+/* TRIGGER 23: CURIOSITY - MYSTERY BOX */
+.mystery-box {
+  background: var(--bg);
+  border: 2px dashed var(--accent);
+  border-radius: 30px;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.mystery-box:before {
+  content: '???';
+  position: absolute;
+  right: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--accent);
+  opacity: 0.1;
+}
+
+.mystery-box:hover {
+  border-color: var(--accent);
+  transform: scale(1.02);
+  box-shadow: 0 0 30px var(--accent-glow);
+}
+
+.mystery-box i {
+  color: var(--accent);
+  font-size: 1rem;
+}
+
+/* TRIGGER 24: COMMITMENT - PROGRESS INDICATOR */
+.commitment-steps {
+  display: flex;
+  justify-content: space-between;
+  margin: 20px 0;
+  padding: 0 10px;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.6rem;
+  color: var(--text-light);
+}
+
+.step.active .step-circle {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+.step-circle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.7rem;
+  background: var(--bg);
+  transition: all 0.3s ease;
+}
+
+/* TRIGGER 25: SOCIAL PROOF - RECENT ACTIVITY */
+.recent-activity {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--bg);
+  border-radius: 20px;
+  padding: 10px;
+  margin: 10px 0;
+  font-size: 0.7rem;
+  border: 1px solid var(--border);
+  max-height: 60px;
+  overflow: hidden;
+  position: relative;
+}
+
+.recent-activity:after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 20px;
+  background: linear-gradient(transparent, var(--bg));
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-light);
+  animation: slideIn 0.3s ease;
+}
+
+.activity-item i {
+  color: var(--accent);
+  font-size: 0.5rem;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* TRIGGER 26: AUTHORITY - CERTIFIED BADGE */
+.certified-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--accent);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.6rem;
+  font-weight: 600;
+  margin: 0 4px;
+}
+
+/* TRIGGER 27: LOSS AVERSION - EXPIRING SOON */
+.expiring-soon {
+  background: linear-gradient(90deg, #ff4757, #ff6b81);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  display: inline-block;
+  animation: shake 0.5s ease infinite;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-2px); }
+  75% { transform: translateX(2px); }
+}
+
+/* TRIGGER 28: SOCIAL PROOF - PEER COMPARISON */
+.peer-comparison {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg);
+  border-radius: 20px;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid var(--border);
+}
+
+.comparison-bar {
+  flex: 1;
+  height: 8px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.comparison-fill {
+  height: 100%;
+  width: 85%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-soft));
+  border-radius: 4px;
+}
+
+/* TRIGGER 29: ENDOWMENT - YOUR PROGRESS */
+.your-progress {
+  background: var(--bg);
+  border-radius: 20px;
+  padding: 12px;
+  margin: 10px 0;
+  border: 1px solid var(--accent);
+  position: relative;
+  overflow: hidden;
+}
+
+.your-progress:before {
+  content: '⚡ YOUR SPOT';
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: var(--accent);
+  color: white;
+  padding: 2px 8px;
+  font-size: 0.5rem;
+  border-bottom-left-radius: 8px;
+}
+
+/* TRIGGER 30: CURIOSITY - SECRET FEATURE */
+.secret-feature {
+  background: linear-gradient(135deg, #00000020, #00000040);
+  border: 1px solid gold;
+  border-radius: 30px;
+  padding: 6px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0;
+  font-size: 0.75rem;
+  color: gold;
+  font-weight: 600;
+  cursor: help;
+  position: relative;
+}
+
+.secret-feature:after {
+  content: '🔓 Unlock by exploring';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--card);
+  color: var(--text);
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 0.6rem;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  border: 1px solid var(--border);
+}
+
+.secret-feature:hover:after {
+  opacity: 1;
 }
 
 /* ===== SECTION HEADERS ===== */
@@ -293,23 +1201,34 @@ body {
 .section-header {
   text-align: center;
   margin-bottom: 48px;
+  position: relative;
 }
 
 .section-eyebrow {
   font-size: 0.8rem;
   text-transform: uppercase;
-  letter-spacing: 2px;
+  letter-spacing: 3px;
   color: var(--accent);
   margin-bottom: 12px;
-  font-weight: 500;
+  font-weight: 600;
+  position: relative;
+  display: inline-block;
+}
+
+.section-eyebrow:before, .section-eyebrow:after {
+  content: '•';
+  margin: 0 10px;
+  color: var(--accent);
+  opacity: 0.5;
 }
 
 .section-title {
-  font-size: 2.2rem;
-  font-weight: 600;
+  font-size: 2.4rem;
+  font-weight: 700;
   letter-spacing: -0.02em;
   margin-bottom: 12px;
   color: var(--text);
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
 }
 
 .section-description {
@@ -317,9 +1236,10 @@ body {
   color: var(--text-light);
   max-width: 500px;
   margin: 0 auto;
+  position: relative;
 }
 
-/* ===== SLIDESHOWS – CLEAN AND MODERN ===== */
+/* Rest of your original styles preserved */
 .slideshow-container {
   position: relative;
   background: var(--card);
@@ -350,7 +1270,6 @@ body {
   align-items: center;
 }
 
-/* Image area – now with real images */
 .slide-image {
   flex: 1 1 300px;
   min-width: 260px;
@@ -373,7 +1292,6 @@ body {
   transform: scale(1.02);
 }
 
-/* Slide text */
 .slide-text {
   flex: 1 1 300px;
 }
@@ -398,7 +1316,6 @@ body {
   line-height: 1.6;
 }
 
-/* Feature list – clean */
 .feature-list {
   list-style: none;
   display: grid;
@@ -421,7 +1338,6 @@ body {
   width: 16px;
 }
 
-/* Navigation */
 .slideshow-nav {
   display: flex;
   justify-content: center;
@@ -485,7 +1401,6 @@ body {
   right: 16px;
 }
 
-/* ===== FEATURE GRID ===== */
 .feature-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -505,6 +1420,7 @@ body {
 .grid-item:hover {
   border-color: var(--accent);
   transform: translateY(-2px);
+  box-shadow: var(--shadow-glow);
 }
 
 .grid-item i {
@@ -527,7 +1443,6 @@ body {
   margin-top: 4px;
 }
 
-/* ===== STATS ===== */
 .stats-row {
   display: flex;
   justify-content: center;
@@ -538,23 +1453,34 @@ body {
 
 .stat {
   text-align: center;
+  padding: 20px 30px;
+  background: var(--card);
+  border-radius: 30px;
+  border: 1px solid var(--border);
+  transition: var(--transition);
+}
+
+.stat:hover {
+  transform: scale(1.05);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-glow);
 }
 
 .stat-number {
-  font-size: 2.2rem;
-  font-weight: 600;
+  font-size: 2.5rem;
+  font-weight: 700;
   color: var(--accent);
   line-height: 1;
   margin-bottom: 4px;
 }
 
 .stat-label {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: var(--text-light);
-  letter-spacing: 0.3px;
+  letter-spacing: 0.5px;
+  font-weight: 500;
 }
 
-/* ===== FOOTER ===== */
 .footer {
   text-align: center;
   padding: 48px 24px 32px;
@@ -565,7 +1491,6 @@ body {
   margin: 0 auto;
 }
 
-/* ===== RESPONSIVE ===== */
 @media (max-width: 800px) {
   .cards-container {
     grid-template-columns: 1fr;
@@ -602,51 +1527,288 @@ body {
 </header>
 
 <main class="hero">
-  <h1 class="hero-title"><span>learn better</span>, together</h1>
-  <p class="hero-subtitle">Two integrated modes – 42+ features for students and teachers</p>
+  <h1 class="hero-title"><span>the only learning ecosystem</span> with dual student-teacher modes</h1>
+  <p class="hero-subtitle">42+ features including live study groups, class battles, interactive memory wall, and real-time teacher insights</p>
   
-  <!-- ===== CLEAN, MODERN MODE CARDS ===== -->
+  <!-- ===== REDESIGNED CARDS WITH PSYCHOLOGICAL TRIGGERS ===== -->
   <div class="cards-container">
     <!-- Student Card -->
-    <div class="card">
+    <div class="card" data-mode="student" onclick="location.href='studentmode.html'" style="cursor: pointer;">
+      <!-- New: Authority Stamp -->
+      <div class="authority-stamp">#1 CHOICE</div>
+      <!-- New: Exclusive Badge -->
+      <div class="exclusive-badge">EARLY ACCESS</div>
+      <div class="floating-badge">🎯</div>
       <div class="card-emoji">🎓</div>
-      <div class="feature-count">20+ features</div>
+      <div class="feature-count">🔥 20+ FEATURES · 149 ACTIVE USERS</div>
       <h2>student</h2>
-      <div class="feature-tags">
-        <span class="tag">streaks</span>
-        <span class="tag">focus</span>
-        <span class="tag">memory wall</span>
-        <span class="tag">badges</span>
-        <span class="tag">analytics</span>
-        <span class="tag">pomodoro</span>
-        <span class="tag">AI tools</span>
-        <span class="tag">growth tree</span>
+      
+      <!-- New: Anchoring Effect -->
+      <div class="price-anchor">
+        <span class="original-price">$49</span>
+        <span class="current-price">FREE</span>
+        <span class="discount-badge">100% OFF</span>
       </div>
-      <p>Your personal learning space – track streaks, enter focus portal, share on memory wall, unlock achievements</p>
-      <button class="enter-btn" onclick="location.href='studentmode.html'">
-        explore <i class="fas fa-arrow-right"></i>
+
+      <!-- New: Goal Gradient Effect -->
+      <div class="goal-container">
+        <div class="goal-progress">
+          <div class="goal-fill" style="width: 85%;"></div>
+        </div>
+        <div class="goal-text">
+          <span>85% to next badge</span>
+          <span><i class="fas fa-fire"></i> 12 day streak</span>
+        </div>
+      </div>
+
+      <div class="feature-tags">
+        <!-- S-TIER with special styling -->
+        <span class="tag s-tier">✨ study groups</span>
+        <span class="tag s-tier">⚡ battle arena</span>
+        <span class="tag s-tier">📌 memory wall</span>
+        <!-- A-TIER -->
+        <span class="tag">🏆 12 badges</span>
+        <span class="tag">🔥 streak chain</span>
+        <span class="tag">🎯 focus timer</span>
+        <!-- B-TIER -->
+        <span class="tag">🎨 9 themes</span>
+        <span class="tag">📊 analytics</span>
+        <span class="tag">🌙 soundscapes</span>
+        <span class="tag">📝 tasks</span>
+        <span class="tag">🌱 growth tree</span>
+        <span class="tag">⚡ energy log</span>
+      </div>
+      
+      <!-- New: Free Bonus (Reciprocity) -->
+      <div class="free-bonus">
+        <i class="fas fa-gift"></i> +3 BONUS THEMES · FREE FOREVER
+      </div>
+
+      <!-- New: Mystery Box (Curiosity) -->
+      <div class="mystery-box">
+        <i class="fas fa-question-circle"></i> 2 secret badges hidden inside
+      </div>
+
+      <p>
+        <strong>✨ S-TIER:</strong> Join live study groups with synced timers · Battle friends in class competitions · Share on interactive Memory Wall<br>
+        <strong>🔥 A-TIER:</strong> Collect 12 badges like Pokémon · Build visual streak chains · Track everything with analytics<br>
+        <strong>🎯 B-TIER:</strong> Free Pomodoro with 4 soundscapes · Priority task management · 9 stunning themes
+      </p>
+
+      <!-- Social proof element -->
+      <div class="social-proof">
+        <div class="avatars">
+          <span>👤</span>
+          <span>👤</span>
+          <span>👤</span>
+        </div>
+        <i class="fas fa-circle" style="color: #22c55e; font-size: 0.5rem;"></i>
+        <span><strong>9 students</strong> studying now</span>
+        <i class="fas fa-eye"></i> 149 views
+      </div>
+
+      <!-- New: Recent Activity (Social Proof) -->
+      <div class="recent-activity">
+        <div class="activity-item">
+          <i class="fas fa-circle"></i> Sarah just unlocked 'Early Bird' badge
+        </div>
+        <div class="activity-item">
+          <i class="fas fa-circle"></i> Mike joined study group
+        </div>
+        <div class="activity-item">
+          <i class="fas fa-circle"></i> 3 new memory wall posts
+        </div>
+      </div>
+
+      <!-- New: Scarcity Timer -->
+      <div class="scarcity-timer">
+        <i class="fas fa-clock"></i> 24h left for early badge access
+      </div>
+
+      <!-- New: FOMO Counter -->
+      <div class="fomo-counter">
+        <i class="fas fa-fire"></i> 149 spots left · 9 viewing now
+      </div>
+
+      <!-- Limited offer trigger -->
+      <div class="limited-offer">FREE FOREVER</div>
+      
+      <!-- New: Loss Aversion -->
+      <div class="loss-aversion">
+        <i class="fas fa-exclamation-triangle"></i> Don't miss 12 free badges
+      </div>
+
+      <button class="enter-btn" onclick="event.stopPropagation(); location.href='studentmode.html'">
+        enter student mode <i class="fas fa-arrow-right"></i>
       </button>
+      
+      <!-- FOMO indicator -->
+      <small style="margin-top: 12px; color: var(--text-light); font-size: 0.7rem; opacity: 0.7;">🚀 12 badges to collect · 9 online now</small>
+
+      <!-- New: Commitment Steps -->
+      <div class="commitment-steps">
+        <div class="step active">
+          <span class="step-circle">1</span>
+          <span>Join</span>
+        </div>
+        <div class="step">
+          <span class="step-circle">2</span>
+          <span>Study</span>
+        </div>
+        <div class="step">
+          <span class="step-circle">3</span>
+          <span>Earn</span>
+        </div>
+        <div class="step">
+          <span class="step-circle">4</span>
+          <span>Master</span>
+        </div>
+      </div>
     </div>
     
     <!-- Teacher Card -->
-    <div class="card">
+    <div class="card" data-mode="teacher" onclick="location.href='teachermode.html'" style="cursor: pointer;">
+      <!-- New: Authority Stamp -->
+      <div class="authority-stamp">TRUSTED</div>
+      <!-- New: Exclusive Badge -->
+      <div class="exclusive-badge">BETA ACCESS</div>
+      <div class="floating-badge">👑</div>
       <div class="card-emoji">👩‍🏫</div>
-      <div class="feature-count">22+ features</div>
+      <div class="feature-count">⚡ 22+ FEATURES · 14 ACTIVE CLASSES</div>
       <h2>teacher</h2>
-      <div class="feature-tags">
-        <span class="tag">live check‑ins</span>
-        <span class="tag">challenges</span>
-        <span class="tag">analytics</span>
-        <span class="tag">toolkit</span>
-        <span class="tag">polls</span>
-        <span class="tag">exit tickets</span>
-        <span class="tag">live feed</span>
-        <span class="tag">management</span>
+
+      <!-- New: Anchoring Effect -->
+      <div class="price-anchor">
+        <span class="original-price">$99</span>
+        <span class="current-price">FREE</span>
+        <span class="discount-badge">SCHOOL LICENSE</span>
       </div>
-      <p>Complete classroom companion – emotional check‑ins, class battles, real‑time analytics, and teaching tools</p>
-      <button class="enter-btn" onclick="location.href='teachermode.html'">
-        explore <i class="fas fa-arrow-right"></i>
+
+      <!-- New: Goal Gradient -->
+      <div class="goal-container">
+        <div class="goal-progress">
+          <div class="goal-fill" style="width: 92%;"></div>
+        </div>
+        <div class="goal-text">
+          <span>92% to class battle</span>
+          <span><i class="fas fa-trophy"></i> 3 challenges</span>
+        </div>
+      </div>
+
+      <div class="feature-tags">
+        <!-- S-TIER -->
+        <span class="tag s-tier">⚔️ battle arena</span>
+        <span class="tag s-tier">📌 memory wall</span>
+        <span class="tag s-tier">🎮 class challenges</span>
+        <!-- A-TIER -->
+        <span class="tag">📊 live dashboard</span>
+        <span class="tag">🎯 at-risk alerts</span>
+        <span class="tag">🏆 leaderboard</span>
+        <!-- B-TIER + TOOLKIT -->
+        <span class="tag">💚 live check-ins</span>
+        <span class="tag">📋 polls</span>
+        <span class="tag">📢 announcements</span>
+        <span class="tag">🎲 random picker</span>
+        <span class="tag">👥 group generator</span>
+        <span class="tag">📤 exit tickets</span>
+      </div>
+
+      <!-- New: Certified Badge (Authority) -->
+      <div style="margin: 10px 0;">
+        <span class="certified-badge"><i class="fas fa-check-circle"></i> CERTIFIED BY 150+ SCHOOLS</span>
+        <span class="certified-badge"><i class="fas fa-star"></i> 4.9★ RATING</span>
+      </div>
+
+      <!-- New: Peer Comparison -->
+      <div class="peer-comparison">
+        <i class="fas fa-chart-line"></i>
+        <div style="flex: 1;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+            <span>Your class</span>
+            <span>85%</span>
+          </div>
+          <div class="comparison-bar">
+            <div class="comparison-fill" style="width: 85%;"></div>
+          </div>
+        </div>
+        <div style="flex: 1;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+            <span>Average</span>
+            <span>62%</span>
+          </div>
+          <div class="comparison-bar">
+            <div class="comparison-fill" style="width: 62%; background: var(--border);"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- New: Expiring Soon (Loss Aversion) -->
+      <div class="expiring-soon">
+        ⚡ 3 DAYS LEFT · Battle pass expires
+      </div>
+
+      <p>
+        <strong>⚔️ S-TIER:</strong> Create class vs class battles (study hours or streaks) · Moderate Memory Wall in real-time · Live competitions with confetti wins<br>
+        <strong>📊 A-TIER:</strong> See student progress LIVE · Identify at-risk students instantly · Export analytics for admin<br>
+        <strong>🎯 B-TIER:</strong> Emotional check-ins with QR codes · Teacher toolkit (random picker, group generator, exit tickets)
+      </p>
+
+      <!-- Social proof element -->
+      <div class="social-proof">
+        <div class="avatars">
+          <span>👤</span>
+          <span>👤</span>
+          <span>👤</span>
+        </div>
+        <i class="fas fa-circle" style="color: #22c55e; font-size: 0.5rem;"></i>
+        <span><strong>14 teachers</strong> online</span>
+        <i class="fas fa-trophy"></i> 6 battles active
+      </div>
+
+      <!-- New: Testimonial Snippet -->
+      <div class="testimonial-snippet">
+        "My students' engagement tripled in one week!"
+        <div style="display: flex; gap: 8px; margin-top: 4px;">
+          <span style="color: var(--accent);">- Sarah, 5th Grade</span>
+          <span class="certified-badge" style="background: gold; color: black;">VERIFIED</span>
+        </div>
+      </div>
+
+      <!-- New: Secret Feature (Curiosity) -->
+      <div class="secret-feature">
+        <i class="fas fa-lock"></i> SECRET: AI battle predictor
+      </div>
+
+      <!-- Limited offer trigger -->
+      <div class="limited-offer">FREE FOR SCHOOLS</div>
+      
+      <!-- New: Loss Aversion -->
+      <div class="loss-aversion">
+        <i class="fas fa-exclamation-triangle"></i> 150 free licenses left
+      </div>
+
+      <button class="enter-btn" onclick="event.stopPropagation(); location.href='teachermode.html'">
+        enter teacher mode <i class="fas fa-arrow-right"></i>
       </button>
+
+      <!-- New: Your Progress (Endowment) -->
+      <div class="your-progress">
+        <div class="endowment-effect" style="margin: 0;">
+          <div class="endowment-progress" style="width: 65%;"></div>
+          <div class="endowment-text">
+            <span>65% to master teacher</span>
+            <span>3 badges earned</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- New: Customization Hint (IKEA Effect) -->
+      <div class="customization-hint">
+        <i class="fas fa-paint-brush"></i> Customize your battle arena · 9 themes available
+      </div>
+      
+      <!-- FOMO indicator -->
+      <small style="margin-top: 12px; color: var(--text-light); font-size: 0.7rem; opacity: 0.7;">⚡ 3 class battles happening now</small>
     </div>
   </div>
 </main>
@@ -851,31 +2013,40 @@ body {
   </div>
 </div>
 
-<!-- ===== FEATURE GRID ===== -->
+<!-- ===== FEATURE GRID - COMPREHENSIVE ===== -->
 <div class="section-wrapper">
   <div class="feature-grid">
-    <div class="grid-item"><i class="fas fa-fire"></i><span>streaks</span><small>daily consistency</small></div>
-    <div class="grid-item"><i class="fas fa-clock"></i><span>pomodoro</span><small>focus sessions</small></div>
-    <div class="grid-item"><i class="fas fa-tasks"></i><span>tasks</span><small>priority management</small></div>
-    <div class="grid-item"><i class="fas fa-sticky-note"></i><span>memory wall</span><small>class sharing</small></div>
-    <div class="grid-item"><i class="fas fa-trophy"></i><span>badges</span><small>achievements</small></div>
-    <div class="grid-item"><i class="fas fa-chart-line"></i><span>analytics</span><small>insights</small></div>
+    <!-- S-TIER -->
+    <div class="grid-item"><i class="fas fa-users"></i><span>study groups</span><small>live sessions · 9 online</small></div>
+    <div class="grid-item"><i class="fas fa-crosshairs"></i><span>battle arena</span><small>class vs class · 6 active</small></div>
+    <div class="grid-item"><i class="fas fa-chalkboard"></i><span>memory wall</span><small>interactive · 149 notes</small></div>
+    <!-- A-TIER -->
+    <div class="grid-item"><i class="fas fa-fire"></i><span>streak chain</span><small>visual milestones</small></div>
+    <div class="grid-item"><i class="fas fa-medal"></i><span>12 badges</span><small>achievements</small></div>
+    <div class="grid-item"><i class="fas fa-chart-line"></i><span>dual-mode</span><small>student + teacher</small></div>
+    <!-- B-TIER -->
+    <div class="grid-item"><i class="fas fa-clock"></i><span>pomodoro</span><small>+4 soundscapes</small></div>
+    <div class="grid-item"><i class="fas fa-tasks"></i><span>task manager</span><small>priority levels</small></div>
+    <div class="grid-item"><i class="fas fa-palette"></i><span>9 themes</span><small>customization</small></div>
     <div class="grid-item"><i class="fas fa-smile"></i><span>check‑ins</span><small>emotional pulse</small></div>
-    <div class="grid-item"><i class="fas fa-shield-alt"></i><span>challenges</span><small>class battles</small></div>
-    <div class="grid-item"><i class="fas fa-tools"></i><span>toolkit</span><small>teaching aids</small></div>
+    <div class="grid-item"><i class="fas fa-poll"></i><span>polls</span><small>real-time</small></div>
+    <div class="grid-item"><i class="fas fa-bullhorn"></i><span>announcements</span><small>teacher updates</small></div>
+    <div class="grid-item"><i class="fas fa-share-alt"></i><span>resources</span><small>library</small></div>
+    <div class="grid-item"><i class="fas fa-random"></i><span>random picker</span><small>participation</small></div>
   </div>
 </div>
 
 <!-- ===== STATS ===== -->
 <div class="stats-row">
   <div class="stat"><div class="stat-number">42+</div><div class="stat-label">total features</div></div>
-  <div class="stat"><div class="stat-number">12</div><div class="stat-label">badges</div></div>
-  <div class="stat"><div class="stat-number">8</div><div class="stat-label">study tools</div></div>
-  <div class="stat"><div class="stat-number">6</div><div class="stat-label">themes</div></div>
+  <div class="stat"><div class="stat-number">12</div><div class="stat-label">achievement badges</div></div>
+  <div class="stat"><div class="stat-number">9</div><div class="stat-label">themes</div></div>
+  <div class="stat"><div class="stat-number">149</div><div class="stat-label">active users</div></div>
 </div>
 
 <footer class="footer">
-  <p>© 2026 grindly · clean, modern, intentional · all features from both modes</p>
+  <p>© 2026 grindly · S-TIER: Study Groups · Battle Arena · Memory Wall | A-TIER: Dual-Mode · Badges · Streaks | B-TIER: Timer · Dashboard · Tasks · Themes · Toolkit</p>
+  <p style="margin-top: 16px; font-size: 0.7rem;">✨ 9 students studying now · 6 class battles active · Join the community ✨</p>
 </footer>
 
 <script>
@@ -948,6 +2119,16 @@ document.querySelector('#studentSlideshow').addEventListener('mouseleave', () =>
 document.querySelector('#teacherSlideshow').addEventListener('mouseenter', () => clearInterval(teacherInterval));
 document.querySelector('#teacherSlideshow').addEventListener('mouseleave', () => {
   teacherInterval = setInterval(() => changeTeacherSlide(1), 6000);
+});
+
+// Make cards clickable
+document.querySelectorAll('.card').forEach(card => {
+  card.addEventListener('click', function(e) {
+    if (!e.target.classList.contains('enter-btn')) {
+      const link = this.querySelector('.enter-btn').getAttribute('onclick').match(/'([^']+)'/)[1];
+      window.location.href = link;
+    }
+  });
 });
 </script>
 </body>
