@@ -6106,128 +6106,7 @@ body, #studentMemoryWhiteboard, #studentStickyNotesContainer {
               </div>
             </div>
 
-            <!-- Persona Card HTML -->
-<div id="focusPersonaCard" class="persona-card">
-    <div class="persona-card-inner">
-        <div class="persona-header">
-            <div class="persona-icon" id="personaIcon">📚</div>
-            <div class="persona-title-container">
-                <h2 class="persona-title" id="personaTitle">The Steady Scholar</h2>
-                <p class="persona-subtitle">Focus Persona</p>
-            </div>
-            <div class="persona-level" id="personaLevel">
-                <span class="level-badge">LVL 1</span>
-            </div>
-        </div>
-        
-        <div class="persona-stats">
-            <div class="stat-item">
-                <div class="stat-label">Avg Start</div>
-                <div class="stat-value" id="statStart">--:--</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">Avg Duration</div>
-                <div class="stat-value" id="statDuration">0 min</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">Sessions/Day</div>
-                <div class="stat-value" id="statSessions">0</div>
-            </div>
-        </div>
-        
-        <div class="persona-chart">
-            <h3 class="chart-title">⚔️ FOCUS HOURS (LAST 7 DAYS)</h3>
-            <div class="bar-chart" id="focusBarChart"></div>
-        </div>
-        
-        <div class="persona-description" id="personaDescription">
-            Start your journey to discover your focus persona!
-        </div>
-        
-        <div class="persona-quote" id="personaQuote">
-            "Every master was once a beginner."
-        </div>
-        
-        <div class="persona-footer">
-            <div class="persona-user" id="personaUser">Grindly Student</div>
-            <div class="persona-date" id="personaDate"></div>
-        </div>
-        
-        <div class="persona-badge">
-            <span class="badge-text">PERSONA UNLOCKED</span>
-        </div>
-    </div>
-</div>
-<!-- Persona Section Content -->
-<div id="personaContainer" class="dashboard-content" style="display: none; grid-column: span 12;">
-    <div class="persona-section-header">
-        <h2>🎴 FOCUS PERSONA</h2>
-        <p>Discover your unique study identity based on your last 7 days of focus sessions</p>
-    </div>
-    
-    <!-- Feature Explanation Cards -->
-    <div class="feature-grid">
-        <div class="feature-card">
-            <div class="feature-icon">🔍</div>
-            <h3>Analyze Your Pattern</h3>
-            <p>Our algorithm analyzes your study times, session duration, and frequency to determine your unique focus persona.</p>
-        </div>
-        <div class="feature-card">
-            <div class="feature-icon">🎴</div>
-            <h3>Generate Your Card</h3>
-            <p>Create a shareable RPG-style card with your persona, stats, and a 7-day focus hour chart.</p>
-        </div>
-        <div class="feature-card">
-            <div class="feature-icon">📤</div>
-            <h3>Share to Social</h3>
-            <p>Download as PNG or share directly to Instagram, Snapchat, or any app to show off your study identity.</p>
-        </div>
-    </div>
-    
-    <!-- Persona Types Preview -->
-    <div style="margin: 20px 0; text-align: center;">
-        <h3 style="color: var(--accent); margin-bottom: 15px;">🌟 POSSIBLE PERSONAS</h3>
-        <div class="persona-types">
-            <div class="persona-type-item night-owl">🦉 Night Owl</div>
-            <div class="persona-type-item deep-diver">🏊 Deep Diver</div>
-            <div class="persona-type-item sprinter">⚡ Sprinter</div>
-            <div class="persona-type-item steady-scholar">📚 Steady Scholar</div>
-            <div class="persona-type-item unawakened">🌙 Unawakened</div>
-        </div>
-        <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 10px;">
-            Your persona is determined by your actual study data - no two cards are the same!
-        </p>
-    </div>
-    
-    <!-- How It Works -->
-    <div class="how-it-works">
-        <h3 style="color: var(--accent);">⚙️ HOW IT WORKS</h3>
-        <ul>
-            <li><strong>✨ Last 7 days</strong> of study sessions are analyzed</li>
-            <li><strong>🌙 Night Owl</strong> → Average start time after 10 PM</li>
-            <li><strong>🏊 Deep Diver</strong> → Average session longer than 60 minutes</li>
-            <li><strong>⚡ Sprinter</strong> → More than 5 sessions per day on average</li>
-            <li><strong>📚 Steady Scholar</strong> → Balanced, consistent study pattern</li>
-            <li><strong>🌙 Unawakened</strong> → No study sessions in the last 7 days</li>
-        </ul>
-    </div>
-    
-    <!-- Persona Card will appear here -->
-    <div id="personaCardContainer"></div>
-    
-    <!-- Controls - Buttons ALWAYS VISIBLE -->
-    <div class="persona-controls">
-        <button class="btn btn-primary" onclick="generatePersonaCard()">
-            🎴 Generate My Persona Card
-        </button>
-        <button class="btn btn-success" onclick="sharePersonaCard()" id="sharePersonaBtn">
-            📤 Share to Social
-        </button>
-        <button class="btn btn-warning" onclick="downloadPersonaCard()" id="downloadPersonaBtn">
-            💾 Download PNG
-        </button>
-    </div>
-</div>
+       
             <!-- Assignments Card -->
             <div class="content-card">
               <div class="content-header">
@@ -7161,7 +7040,129 @@ body, #studentMemoryWhiteboard, #studentStickyNotesContainer {
           </div>
         </div>
       </div>
-      
+
+      <!-- Persona Card HTML -->
+<div id="focusPersonaCard" class="persona-card">
+    <div class="persona-card-inner">
+        <div class="persona-header">
+            <div class="persona-icon" id="personaIcon">📚</div>
+            <div class="persona-title-container">
+                <h2 class="persona-title" id="personaTitle">The Steady Scholar</h2>
+                <p class="persona-subtitle">Focus Persona</p>
+            </div>
+            <div class="persona-level" id="personaLevel">
+                <span class="level-badge">LVL 1</span>
+            </div>
+        </div>
+        
+        <div class="persona-stats">
+            <div class="stat-item">
+                <div class="stat-label">Avg Start</div>
+                <div class="stat-value" id="statStart">--:--</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Avg Duration</div>
+                <div class="stat-value" id="statDuration">0 min</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Sessions/Day</div>
+                <div class="stat-value" id="statSessions">0</div>
+            </div>
+        </div>
+        
+        <div class="persona-chart">
+            <h3 class="chart-title">⚔️ FOCUS HOURS (LAST 7 DAYS)</h3>
+            <div class="bar-chart" id="focusBarChart"></div>
+        </div>
+        
+        <div class="persona-description" id="personaDescription">
+            Start your journey to discover your focus persona!
+        </div>
+        
+        <div class="persona-quote" id="personaQuote">
+            "Every master was once a beginner."
+        </div>
+        
+        <div class="persona-footer">
+            <div class="persona-user" id="personaUser">Grindly Student</div>
+            <div class="persona-date" id="personaDate"></div>
+        </div>
+        
+        <div class="persona-badge">
+            <span class="badge-text">PERSONA UNLOCKED</span>
+        </div>
+    </div>
+</div>
+<!-- Persona Section Content -->
+<div id="personaContainer" class="dashboard-content" style="display: none; grid-column: span 12;">
+    <div class="persona-section-header">
+        <h2>🎴 FOCUS PERSONA</h2>
+        <p>Discover your unique study identity based on your last 7 days of focus sessions</p>
+    </div>
+    
+    <!-- Feature Explanation Cards -->
+    <div class="feature-grid">
+        <div class="feature-card">
+            <div class="feature-icon">🔍</div>
+            <h3>Analyze Your Pattern</h3>
+            <p>Our algorithm analyzes your study times, session duration, and frequency to determine your unique focus persona.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🎴</div>
+            <h3>Generate Your Card</h3>
+            <p>Create a shareable RPG-style card with your persona, stats, and a 7-day focus hour chart.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">📤</div>
+            <h3>Share to Social</h3>
+            <p>Download as PNG or share directly to Instagram, Snapchat, or any app to show off your study identity.</p>
+        </div>
+    </div>
+    
+    <!-- Persona Types Preview -->
+    <div style="margin: 20px 0; text-align: center;">
+        <h3 style="color: var(--accent); margin-bottom: 15px;">🌟 POSSIBLE PERSONAS</h3>
+        <div class="persona-types">
+            <div class="persona-type-item night-owl">🦉 Night Owl</div>
+            <div class="persona-type-item deep-diver">🏊 Deep Diver</div>
+            <div class="persona-type-item sprinter">⚡ Sprinter</div>
+            <div class="persona-type-item steady-scholar">📚 Steady Scholar</div>
+            <div class="persona-type-item unawakened">🌙 Unawakened</div>
+        </div>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 10px;">
+            Your persona is determined by your actual study data - no two cards are the same!
+        </p>
+    </div>
+    
+    <!-- How It Works -->
+    <div class="how-it-works">
+        <h3 style="color: var(--accent);">⚙️ HOW IT WORKS</h3>
+        <ul>
+            <li><strong>✨ Last 7 days</strong> of study sessions are analyzed</li>
+            <li><strong>🌙 Night Owl</strong> → Average start time after 10 PM</li>
+            <li><strong>🏊 Deep Diver</strong> → Average session longer than 60 minutes</li>
+            <li><strong>⚡ Sprinter</strong> → More than 5 sessions per day on average</li>
+            <li><strong>📚 Steady Scholar</strong> → Balanced, consistent study pattern</li>
+            <li><strong>🌙 Unawakened</strong> → No study sessions in the last 7 days</li>
+        </ul>
+    </div>
+    
+    <!-- Persona Card will appear here -->
+    <div id="personaCardContainer"></div>
+    
+    <!-- Controls - Buttons ALWAYS VISIBLE -->
+    <div class="persona-controls">
+        <button class="btn btn-primary" onclick="generatePersonaCard()">
+            🎴 Generate My Persona Card
+        </button>
+        <button class="btn btn-success" onclick="sharePersonaCard()" id="sharePersonaBtn">
+            📤 Share to Social
+        </button>
+        <button class="btn btn-warning" onclick="downloadPersonaCard()" id="downloadPersonaBtn">
+            💾 Download PNG
+        </button>
+    </div>
+</div>
       <!-- Profile Section -->
       <div id="profile" class="dashboard-content" style="grid-column: span 12; display: none;">
         <div class="content-card">
