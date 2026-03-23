@@ -25414,6 +25414,375 @@ console.log("✅ All fixes applied - teachermode.js is now crash-resistant");
   }, 1000);
 })();
 </script>
+  <!-- ========== COMPLETE WHITEBOARD SESSIONS ========== -->
+<style>
+.wb-session {
+    background: var(--card);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    margin: var(--spacing-xl) 0;
+    display: none;
+    overflow: hidden;
+}
+
+.wb-session-header {
+    padding: var(--spacing-lg);
+    background: var(--accent);
+    color: white;
+    text-align: center;
+}
+
+.wb-session-code {
+    font-size: 2rem;
+    font-family: monospace;
+    letter-spacing: 5px;
+    background: white;
+    color: var(--accent);
+    padding: 10px 20px;
+    border-radius: 10px;
+    display: inline-block;
+    margin: 10px 0;
+}
+
+.wb-tools {
+    padding: var(--spacing-md);
+    background: var(--bg);
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border);
+    justify-content: center;
+}
+
+.wb-tool {
+    padding: 8px 16px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 0.875rem;
+}
+
+.wb-tool.active {
+    background: var(--accent);
+    color: white;
+}
+
+.wb-color {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+.wb-color.active {
+    border-color: var(--accent);
+    transform: scale(1.1);
+}
+
+#wbCanvas {
+    display: block;
+    background: white;
+    width: 100%;
+    height: auto;
+    cursor: crosshair;
+}
+
+.wb-participants {
+    padding: var(--spacing-md);
+    background: var(--accent-light);
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .wb-session-code { font-size: 1.2rem; letter-spacing: 3px; }
+    .wb-tool { padding: 5px 10px; font-size: 0.75rem; }
+}
+</style>
+
+<div id="wbSession" class="wb-session">
+    <div class="wb-session-header">
+        <h3>🎨 Live Whiteboard Session</h3>
+        <div class="wb-session-code" id="wbCodeDisplay">------</div>
+        <button class="btn btn-light" onclick="copyWbCode()">📋 Copy Code</button>
+        <button class="btn btn-danger" onclick="endWbSession()" style="margin-left: 10px;">End Session</button>
+    </div>
+    
+    <div class="wb-participants">
+        👥 Participants: <strong id="wbParticipantCount">0</strong>
+    </div>
+    
+    <div class="wb-tools">
+        <button class="wb-tool active" onclick="setWbTool('pen')">✏️ Pen</button>
+        <button class="wb-tool" onclick="setWbTool('eraser')">🧽 Eraser</button>
+        <button class="wb-tool" onclick="clearWbCanvas()">🗑️ Clear</button>
+        
+        <div style="width: 1px; background: var(--border); margin: 0 5px;"></div>
+        
+        <div class="wb-color" style="background: black;" onclick="setWbColor('black')"></div>
+        <div class="wb-color" style="background: red;" onclick="setWbColor('red')"></div>
+        <div class="wb-color" style="background: blue;" onclick="setWbColor('blue')"></div>
+        <div class="wb-color" style="background: green;" onclick="setWbColor('green')"></div>
+        <div class="wb-color" style="background: yellow;" onclick="setWbColor('yellow')"></div>
+        <div class="wb-color" style="background: orange;" onclick="setWbColor('orange')"></div>
+        <div class="wb-color" style="background: purple;" onclick="setWbColor('purple')"></div>
+        
+        <select id="wbPenSize" onchange="setWbSize(this.value)">
+            <option value="2">Small</option>
+            <option value="4" selected>Medium</option>
+            <option value="8">Large</option>
+        </select>
+    </div>
+    
+    <canvas id="wbCanvas" width="900" height="500"></canvas>
+</div>
+
+<script>
+// ========== TEACHER WHITEBOARD ==========
+let wbCanvas = null, wbCtx = null;
+let wbDrawing = false;
+let wbTool = 'pen';
+let wbColor = 'black';
+let wbSize = 4;
+let wbLastX = 0, wbLastY = 0;
+let wbSessionCode = null;
+let wbSyncTimer = null;
+
+function getWbDb() {
+    return window.database || (firebase ? firebase.database() : null);
+}
+
+function generateWbCode() {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+function startWbSession() {
+    wbSessionCode = generateWbCode();
+    
+    const db = getWbDb();
+    if (!db) {
+        alert("Database not connected. Please refresh.");
+        return;
+    }
+    
+    db.ref(`whiteboard/${wbSessionCode}`).set({
+        active: true,
+        startedAt: Date.now(),
+        teacher: 'teacher',
+        drawing: null,
+        participants: {}
+    });
+    
+    document.getElementById('wbCodeDisplay').textContent = wbSessionCode;
+    document.getElementById('wbSession').style.display = 'block';
+    
+    // Listen for participants
+    db.ref(`whiteboard/${wbSessionCode}/participants`).on('value', (snapshot) => {
+        let count = 0;
+        if (snapshot.exists()) {
+            snapshot.forEach(() => count++);
+        }
+        document.getElementById('wbParticipantCount').textContent = count;
+    });
+    
+    // Listen for drawing updates from students
+    db.ref(`whiteboard/${wbSessionCode}/drawing`).on('value', (snapshot) => {
+        if (snapshot.exists() && wbCtx) {
+            const data = snapshot.val();
+            if (data && data.data) {
+                const img = new Image();
+                img.onload = () => {
+                    wbCtx.drawImage(img, 0, 0, wbCanvas.width, wbCanvas.height);
+                };
+                img.src = data.data;
+            }
+        }
+    });
+    
+    initWbCanvas();
+    alert(`✅ Session started!\n\nCode: ${wbSessionCode}\nShare this code with students to join.`);
+}
+
+function initWbCanvas() {
+    const canvas = document.getElementById('wbCanvas');
+    if (!canvas) { setTimeout(initWbCanvas, 100); return; }
+    
+    wbCanvas = canvas;
+    wbCtx = canvas.getContext('2d');
+    
+    const container = canvas.parentElement;
+    wbCanvas.width = Math.min(1000, container.clientWidth - 20);
+    wbCanvas.height = 500;
+    wbCanvas.style.width = '100%';
+    wbCanvas.style.height = 'auto';
+    
+    wbCtx.fillStyle = 'white';
+    wbCtx.fillRect(0, 0, wbCanvas.width, wbCanvas.height);
+    
+    setupWbDrawing();
+    setWbColor('black');
+    setWbSize(4);
+}
+
+function setupWbDrawing() {
+    const getCoords = (e) => {
+        const rect = wbCanvas.getBoundingClientRect();
+        const scaleX = wbCanvas.width / rect.width;
+        const scaleY = wbCanvas.height / rect.height;
+        let clientX, clientY;
+        if (e.touches) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+        let x = (clientX - rect.left) * scaleX;
+        let y = (clientY - rect.top) * scaleY;
+        x = Math.max(0, Math.min(wbCanvas.width, x));
+        y = Math.max(0, Math.min(wbCanvas.height, y));
+        return { x, y };
+    };
+    
+    const start = (e) => {
+        e.preventDefault();
+        wbDrawing = true;
+        const coords = getCoords(e);
+        wbLastX = coords.x;
+        wbLastY = coords.y;
+        wbCtx.beginPath();
+        wbCtx.moveTo(wbLastX, wbLastY);
+    };
+    
+    const draw = (e) => {
+        if (!wbDrawing) return;
+        e.preventDefault();
+        const coords = getCoords(e);
+        const x = coords.x, y = coords.y;
+        
+        wbCtx.lineTo(x, y);
+        wbCtx.stroke();
+        wbCtx.beginPath();
+        wbCtx.moveTo(x, y);
+        
+        syncWbDrawing();
+    };
+    
+    const end = () => {
+        if (!wbDrawing) return;
+        wbDrawing = false;
+        wbCtx.beginPath();
+        syncWbDrawing();
+    };
+    
+    wbCanvas.addEventListener('mousedown', start);
+    wbCanvas.addEventListener('mousemove', draw);
+    wbCanvas.addEventListener('mouseup', end);
+    wbCanvas.addEventListener('mouseleave', end);
+    wbCanvas.addEventListener('touchstart', start);
+    wbCanvas.addEventListener('touchmove', draw);
+    wbCanvas.addEventListener('touchend', end);
+}
+
+function setWbTool(tool) {
+    wbTool = tool;
+    document.querySelectorAll('.wb-tool').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.textContent.includes(tool === 'pen' ? 'Pen' : 'Eraser')) {
+            btn.classList.add('active');
+        }
+    });
+    
+    if (wbTool === 'eraser') {
+        wbCtx.globalCompositeOperation = 'destination-out';
+        wbCtx.strokeStyle = 'white';
+    } else {
+        wbCtx.globalCompositeOperation = 'source-over';
+        wbCtx.strokeStyle = wbColor;
+    }
+    wbCtx.lineCap = 'round';
+    wbCtx.lineJoin = 'round';
+}
+
+function setWbColor(color) {
+    wbColor = color;
+    if (wbTool !== 'eraser') {
+        wbCtx.strokeStyle = color;
+    }
+    document.querySelectorAll('.wb-color').forEach(el => {
+        el.classList.remove('active');
+        if (el.style.backgroundColor === color) el.classList.add('active');
+    });
+}
+
+function setWbSize(size) {
+    wbSize = parseInt(size);
+    wbCtx.lineWidth = wbSize;
+}
+
+function clearWbCanvas() {
+    if (confirm("Clear the whiteboard for everyone?")) {
+        wbCtx.fillStyle = 'white';
+        wbCtx.fillRect(0, 0, wbCanvas.width, wbCanvas.height);
+        syncWbDrawing();
+    }
+}
+
+function syncWbDrawing() {
+    const db = getWbDb();
+    if (!db || !wbSessionCode) return;
+    if (wbSyncTimer) clearTimeout(wbSyncTimer);
+    
+    wbSyncTimer = setTimeout(() => {
+        try {
+            const drawingData = wbCanvas.toDataURL();
+            db.ref(`whiteboard/${wbSessionCode}/drawing`).set({
+                data: drawingData,
+                timestamp: Date.now()
+            });
+        } catch(e) {}
+    }, 100);
+}
+
+function endWbSession() {
+    if (!wbSessionCode) return;
+    const db = getWbDb();
+    if (db) {
+        db.ref(`whiteboard/${wbSessionCode}`).remove();
+    }
+    wbSessionCode = null;
+    document.getElementById('wbSession').style.display = 'none';
+    alert("Session ended.");
+}
+
+function copyWbCode() {
+    if (wbSessionCode) {
+        navigator.clipboard.writeText(wbSessionCode);
+        alert("Code copied!");
+    }
+}
+
+function addWbStartButton() {
+    const sidebar = document.querySelector('.sidebar');
+    if (!sidebar) { setTimeout(addWbStartButton, 1000); return; }
+    if (document.getElementById('wbStartBtn')) return;
+    
+    const btn = document.createElement('div');
+    btn.className = 'nav-item';
+    btn.id = 'wbStartBtn';
+    btn.innerHTML = '🎨 Start Whiteboard';
+    btn.onclick = startWbSession;
+    btn.style.background = '#10b981';
+    btn.style.color = 'white';
+    btn.style.marginTop = '10px';
+    sidebar.appendChild(btn);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(addWbStartButton, 2000);
+});
+</script>
 </body>
 </html>
 
