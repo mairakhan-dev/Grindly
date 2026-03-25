@@ -1318,6 +1318,513 @@ body {
   <div class="stat"><div class="stat-number">214+</div><div class="stat-label">active classes</div></div>
 </div>
 
+<!-- ===== SKETCHPAD FEATURE SECTION ===== -->
+<style>
+.sketchpad-showcase {
+    background: var(--card);
+    border-radius: 32px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    margin: 0 auto 80px;
+    max-width: 1300px;
+    transition: var(--transition);
+}
+
+.sketchpad-showcase:hover {
+    box-shadow: var(--shadow-glow);
+}
+
+.sketchpad-preview {
+    padding: 32px;
+}
+
+.sketchpad-demo {
+    background: var(--bg);
+    border-radius: 24px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    margin-bottom: 32px;
+}
+
+.sketchpad-demo-header {
+    padding: 16px 20px;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.sketchpad-demo-header h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text);
+}
+
+.sketchpad-demo-header h3 i {
+    color: var(--accent);
+}
+
+.sketchpad-demo-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    color: var(--text-light);
+    background: var(--bg);
+    padding: 4px 12px;
+    border-radius: 40px;
+    border: 1px solid var(--border);
+}
+
+.sketchpad-canvas-area {
+    position: relative;
+    background: #fff;
+    cursor: crosshair;
+}
+
+#homeSketchpadCanvas {
+    display: block;
+    background: #fff;
+    cursor: crosshair;
+    width: 100%;
+    height: auto;
+}
+
+.sketchpad-demo-tools {
+    padding: 16px 20px;
+    background: var(--card);
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.sketchpad-tools-left {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.sketchpad-tool {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+.sketchpad-tool:hover {
+    border-color: var(--accent);
+    transform: scale(1.05);
+}
+
+.sketchpad-tool.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+}
+
+.sketchpad-color-picker {
+    display: flex;
+    gap: 8px;
+    padding: 0 8px;
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+}
+
+.sketchpad-color {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: var(--transition);
+}
+
+.sketchpad-color:hover {
+    transform: scale(1.1);
+    border-color: var(--accent);
+}
+
+.sketchpad-color.active {
+    border-color: var(--accent);
+    transform: scale(1.1);
+}
+
+.sketchpad-size {
+    padding: 8px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.sketchpad-clear {
+    padding: 8px 20px;
+    border-radius: 30px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text-light);
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sketchpad-clear:hover {
+    border-color: var(--danger);
+    color: var(--danger);
+    transform: scale(1.05);
+}
+
+.sketchpad-features {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    margin-top: 16px;
+}
+
+.sketchpad-feature {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 16px;
+    background: var(--bg);
+    border-radius: 20px;
+    transition: var(--transition);
+}
+
+.sketchpad-feature:hover {
+    transform: translateY(-4px);
+    background: var(--card);
+    box-shadow: var(--shadow-md);
+}
+
+.sketchpad-feature-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--accent-glow);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent);
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.sketchpad-feature-text h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--text);
+}
+
+.sketchpad-feature-text p {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    line-height: 1.4;
+}
+
+@media (max-width: 900px) {
+    .sketchpad-features {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .sketchpad-preview {
+        padding: 20px;
+    }
+    
+    .sketchpad-features {
+        grid-template-columns: 1fr;
+    }
+    
+    .sketchpad-demo-tools {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .sketchpad-tools-left {
+        justify-content: center;
+    }
+    
+    .sketchpad-clear {
+        justify-content: center;
+    }
+}
+</style>
+
+<div class="sketchpad-showcase">
+    <div class="sketchpad-preview">
+        <div class="sketchpad-demo">
+            <div class="sketchpad-demo-header">
+                <h3><i class="fas fa-paintbrush-fine"></i> live whiteboard demo</h3>
+                <div class="sketchpad-demo-badge">
+                    <i class="fas fa-circle" style="color: #22c55e; font-size: 0.6rem;"></i>
+                    <span>try it yourself →</span>
+                </div>
+            </div>
+            
+            <div class="sketchpad-canvas-area">
+                <canvas id="homeSketchpadCanvas" width="800" height="400"></canvas>
+            </div>
+            
+            <div class="sketchpad-demo-tools">
+                <div class="sketchpad-tools-left">
+                    <button class="sketchpad-tool active" data-tool="pen" onclick="setHomeTool('pen')">
+                        <i class="fas fa-pen"></i>
+                    </button>
+                    <button class="sketchpad-tool" data-tool="eraser" onclick="setHomeTool('eraser')">
+                        <i class="fas fa-eraser"></i>
+                    </button>
+                    <div class="sketchpad-color-picker">
+                        <div class="sketchpad-color" style="background: #000000;" onclick="setHomeColor('#000000')"></div>
+                        <div class="sketchpad-color" style="background: #ff0000;" onclick="setHomeColor('#ff0000')"></div>
+                        <div class="sketchpad-color" style="background: #0000ff;" onclick="setHomeColor('#0000ff')"></div>
+                        <div class="sketchpad-color" style="background: #00ff00;" onclick="setHomeColor('#00ff00')"></div>
+                        <div class="sketchpad-color" style="background: #ffff00;" onclick="setHomeColor('#ffff00')"></div>
+                        <div class="sketchpad-color" style="background: #ff00ff;" onclick="setHomeColor('#ff00ff')"></div>
+                    </div>
+                    <select class="sketchpad-size" id="homePenSize" onchange="setHomeSize(this.value)">
+                        <option value="2">Small</option>
+                        <option value="4" selected>Medium</option>
+                        <option value="8">Large</option>
+                    </select>
+                </div>
+                <button class="sketchpad-clear" onclick="clearHomeCanvas()">
+                    <i class="fas fa-trash-alt"></i> Clear
+                </button>
+            </div>
+        </div>
+        
+        <div class="sketchpad-features">
+            <div class="sketchpad-feature">
+                <div class="sketchpad-feature-icon"><i class="fas fa-users"></i></div>
+                <div class="sketchpad-feature-text">
+                    <h4>real-time collaboration</h4>
+                    <p>Draw with classmates in real-time. Everyone sees every stroke instantly.</p>
+                </div>
+            </div>
+            <div class="sketchpad-feature">
+                <div class="sketchpad-feature-icon"><i class="fas fa-key"></i></div>
+                <div class="sketchpad-feature-text">
+                    <h4>simple 6‑digit codes</h4>
+                    <p>Teachers start sessions, students join with a code. No accounts needed.</p>
+                </div>
+            </div>
+            <div class="sketchpad-feature">
+                <div class="sketchpad-feature-icon"><i class="fas fa-palette"></i></div>
+                <div class="sketchpad-feature-text">
+                    <h4>full creative toolkit</h4>
+                    <p>Pen, eraser, colors, and adjustable sizes. Perfect for any subject.</p>
+                </div>
+            </div>
+            <div class="sketchpad-feature">
+                <div class="sketchpad-feature-icon"><i class="fas fa-mobile-alt"></i></div>
+                <div class="sketchpad-feature-text">
+                    <h4>works everywhere</h4>
+                    <p>Mobile, tablet, desktop – draw from any device with touch support.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ========== HOMEPAGE SKETCHPAD ==========
+let homeCanvas = null, homeCtx = null;
+let homeDrawing = false;
+let homeTool = 'pen';
+let homeColor = '#000000';
+let homeSize = 4;
+let homeLastX = 0, homeLastY = 0;
+
+function initHomeSketchpad() {
+    const canvas = document.getElementById('homeSketchpadCanvas');
+    if (!canvas) {
+        setTimeout(initHomeSketchpad, 100);
+        return;
+    }
+    
+    homeCanvas = canvas;
+    homeCtx = canvas.getContext('2d');
+    
+    // Set canvas size
+    const container = canvas.parentElement;
+    if (container) {
+        const width = Math.min(800, container.clientWidth - 20);
+        canvas.width = width;
+        canvas.height = 400;
+        canvas.style.width = '100%';
+        canvas.style.height = 'auto';
+    }
+    
+    // White background
+    homeCtx.fillStyle = '#ffffff';
+    homeCtx.fillRect(0, 0, homeCanvas.width, homeCanvas.height);
+    
+    setupHomeDrawing();
+    setHomeTool('pen');
+    setHomeColor('#000000');
+    setHomeSize(4);
+}
+
+function setupHomeDrawing() {
+    const getCoords = (e) => {
+        const rect = homeCanvas.getBoundingClientRect();
+        const scaleX = homeCanvas.width / rect.width;
+        const scaleY = homeCanvas.height / rect.height;
+        let clientX, clientY;
+        if (e.touches) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+        let x = (clientX - rect.left) * scaleX;
+        let y = (clientY - rect.top) * scaleY;
+        x = Math.max(0, Math.min(homeCanvas.width, x));
+        y = Math.max(0, Math.min(homeCanvas.height, y));
+        return { x, y };
+    };
+    
+    const start = (e) => {
+        e.preventDefault();
+        homeDrawing = true;
+        const coords = getCoords(e);
+        homeLastX = coords.x;
+        homeLastY = coords.y;
+        homeCtx.beginPath();
+        homeCtx.moveTo(homeLastX, homeLastY);
+        if (homeTool === 'pen' || homeTool === 'eraser') {
+            homeCtx.lineTo(homeLastX, homeLastY);
+            homeCtx.stroke();
+        }
+    };
+    
+    const draw = (e) => {
+        if (!homeDrawing) return;
+        e.preventDefault();
+        const coords = getCoords(e);
+        const x = coords.x, y = coords.y;
+        
+        if (homeTool === 'pen' || homeTool === 'eraser') {
+            homeCtx.lineTo(x, y);
+            homeCtx.stroke();
+            homeCtx.beginPath();
+            homeCtx.moveTo(x, y);
+        }
+    };
+    
+    const end = () => {
+        if (!homeDrawing) return;
+        homeDrawing = false;
+        homeCtx.beginPath();
+    };
+    
+    homeCanvas.removeEventListener('mousedown', start);
+    homeCanvas.removeEventListener('mousemove', draw);
+    homeCanvas.removeEventListener('mouseup', end);
+    homeCanvas.removeEventListener('mouseleave', end);
+    
+    homeCanvas.addEventListener('mousedown', start);
+    homeCanvas.addEventListener('mousemove', draw);
+    homeCanvas.addEventListener('mouseup', end);
+    homeCanvas.addEventListener('mouseleave', end);
+    homeCanvas.addEventListener('touchstart', start);
+    homeCanvas.addEventListener('touchmove', draw);
+    homeCanvas.addEventListener('touchend', end);
+}
+
+function setHomeTool(tool) {
+    homeTool = tool;
+    document.querySelectorAll('.sketchpad-tool').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.tool === tool) btn.classList.add('active');
+    });
+    
+    if (homeTool === 'eraser') {
+        homeCtx.globalCompositeOperation = 'destination-out';
+        homeCtx.strokeStyle = '#ffffff';
+    } else {
+        homeCtx.globalCompositeOperation = 'source-over';
+        homeCtx.strokeStyle = homeColor;
+    }
+    homeCtx.lineCap = 'round';
+    homeCtx.lineJoin = 'round';
+}
+
+function setHomeColor(color) {
+    homeColor = color;
+    if (homeTool !== 'eraser') {
+        homeCtx.strokeStyle = color;
+    }
+    document.querySelectorAll('.sketchpad-color').forEach(el => {
+        el.classList.remove('active');
+        if (el.style.backgroundColor === color) el.classList.add('active');
+    });
+}
+
+function setHomeSize(size) {
+    homeSize = parseInt(size);
+    homeCtx.lineWidth = homeSize;
+}
+
+function clearHomeCanvas() {
+    homeCtx.fillStyle = '#ffffff';
+    homeCtx.fillRect(0, 0, homeCanvas.width, homeCanvas.height);
+}
+
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(initHomeSketchpad, 500);
+});
+
+// Handle window resize
+window.addEventListener('resize', function() {
+    if (homeCanvas && homeCtx) {
+        const container = homeCanvas.parentElement;
+        if (container) {
+            const oldDrawing = homeCanvas.toDataURL();
+            const newWidth = Math.min(800, container.clientWidth - 20);
+            homeCanvas.width = newWidth;
+            homeCanvas.height = 400;
+            homeCanvas.style.width = '100%';
+            homeCanvas.style.height = 'auto';
+            
+            const img = new Image();
+            img.onload = () => {
+                homeCtx.drawImage(img, 0, 0, homeCanvas.width, homeCanvas.height);
+            };
+            img.src = oldDrawing;
+        }
+    }
+});
+</script>
+
 <footer class="footer">
   <p>© 2026 grindly · S-TIER: Study Groups · Battle Arena · Memory Wall · Focus Persona | A-TIER: Dual-Mode · Badges · Streaks · Analytics | B-TIER: Timer · Dashboard · Tasks · Themes · Toolkit</p>
   <p style="margin-top: 16px; font-size: 0.7rem;">✨ 9 students studying now · 6 class battles active · Join the community ✨</p>
@@ -2037,5 +2544,137 @@ document.querySelectorAll('.card').forEach(card => {
 });
 </script>
 
+<!-- ===== ADD SKETCHPAD WITH SCREENSHOT TO TEACHER MODE ===== -->
+<script>
+// Add Sketchpad slide with screenshot to Teacher Mode slideshow
+document.addEventListener('DOMContentLoaded', function() {
+    // Wait for slideshow to load
+    setTimeout(() => {
+        const teacherSlideshow = document.getElementById('teacherSlideshow');
+        const teacherDots = document.getElementById('teacherDots');
+        
+        if (!teacherSlideshow) return;
+        
+        // Check if sketchpad slide already exists
+        if (document.getElementById('sketchpadTeacherSlide')) return;
+        
+        // Create new slide for Sketchpad with screenshot
+        const newSlide = document.createElement('div');
+        newSlide.className = 'slide';
+        newSlide.id = 'sketchpadTeacherSlide';
+        newSlide.innerHTML = `
+            <div class="slide-content">
+                <div class="slide-image">
+                    <img src="sketchpad.png" alt="Live Sketchpad" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                <div class="slide-text">
+                    <h3><i class="fas fa-paintbrush-fine"></i> live sketchpad</h3>
+                    <p>Start real-time whiteboard sessions with your students. Draw together, solve problems, and collaborate instantly!</p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check"></i> 6‑digit session codes</li>
+                        <li><i class="fas fa-check"></i> real-time drawing sync</li>
+                        <li><i class="fas fa-check"></i> pen, eraser, colors & sizes</li>
+                        <li><i class="fas fa-check"></i> see who's drawing live</li>
+                        <li><i class="fas fa-check"></i> works on any device</li>
+                    </ul>
+                </div>
+            </div>
+        `;
+        
+        // Add to slideshow (insert after the first slide)
+        const slides = teacherSlideshow.querySelectorAll('.slide');
+        if (slides.length >= 1) {
+            teacherSlideshow.insertBefore(newSlide, slides[1]);
+        } else {
+            teacherSlideshow.appendChild(newSlide);
+        }
+        
+        // Update dots
+        if (teacherDots) {
+            const newDot = document.createElement('span');
+            newDot.className = 'nav-dot';
+            newDot.setAttribute('onclick', `goToTeacherSlide(${slides.length})`);
+            teacherDots.appendChild(newDot);
+        }
+        
+        // Update total slides count
+        const updatedSlides = teacherSlideshow.querySelectorAll('.slide');
+        const totalSlides = updatedSlides.length;
+        
+        // Fix navigation functions
+        window.showTeacherSlide = function(index) {
+            if (index < 0) index = totalSlides - 1;
+            if (index >= totalSlides) index = 0;
+            
+            const allSlides = teacherSlideshow.querySelectorAll('.slide');
+            const allDots = teacherDots.querySelectorAll('.nav-dot');
+            
+            allSlides.forEach(s => s.classList.remove('active'));
+            allDots.forEach(d => d.classList.remove('active'));
+            
+            allSlides[index].classList.add('active');
+            allDots[index].classList.add('active');
+            window.teacherSlide = index;
+        };
+        
+        // Update auto-advance interval
+        if (window.teacherInterval) clearInterval(window.teacherInterval);
+        window.teacherInterval = setInterval(() => {
+            if (window.teacherSlide + 1 >= totalSlides) {
+                showTeacherSlide(0);
+            } else {
+                showTeacherSlide(window.teacherSlide + 1);
+            }
+        }, 6000);
+        
+        console.log('✅ Sketchpad slide with screenshot added to Teacher Mode slideshow');
+    }, 500);
+});
+
+// Add Sketchpad to the Teacher card feature tags
+setTimeout(() => {
+    const teacherCard = document.querySelector('.card[data-mode="teacher"]');
+    if (teacherCard) {
+        const featureTags = teacherCard.querySelector('.feature-tags');
+        if (featureTags && !featureTags.innerHTML.includes('live sketchpad')) {
+            const sketchpadTag = document.createElement('span');
+            sketchpadTag.className = 'tag s-tier';
+            sketchpadTag.innerHTML = '🎨 live sketchpad';
+            featureTags.insertBefore(sketchpadTag, featureTags.firstChild);
+        }
+        
+        // Update feature count
+        const featureCount = teacherCard.querySelector('.feature-count');
+        if (featureCount) {
+            featureCount.innerHTML = '⚡ 28+ FEATURES · 214 ACTIVE CLASSES';
+        }
+        
+        // Update teacher card description to include sketchpad
+        const cardP = teacherCard.querySelector('p');
+        if (cardP && !cardP.innerHTML.includes('Sketchpad')) {
+            cardP.innerHTML = cardP.innerHTML.replace(
+                '<strong>⚔️ S-TIER:</strong>',
+                '<strong>⚔️ S-TIER:</strong> Live Sketchpad · '
+            );
+        }
+    }
+}, 500);
+</script>
+
+<style>
+/* Animation for the sketchpad slide */
+#sketchpadTeacherSlide .slide-image img {
+    transition: transform 0.3s ease;
+}
+
+#sketchpadTeacherSlide .slide-image:hover img {
+    transform: scale(1.02);
+}
+
+/* Optional: Add a subtle glow to the sketchpad slide when active */
+#sketchpadTeacherSlide.active .slide-image img {
+    box-shadow: 0 0 20px var(--accent-glow);
+}
+</style>
 </body>
 </html>
