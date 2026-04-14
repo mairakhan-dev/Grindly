@@ -2787,5 +2787,281 @@
             }
         }
     </script>
+    <script>
+    // ========== FIX: CORRECT DAMAGE APPLICATION ==========
+    // Override the problematic performAttack method
+    (function fixDamageLogic() {
+        const originalPerformAttack = window.FightingGame?.prototype?.performAttack;
+        
+        // Wait for game to initialize
+        const interval = setInterval(() => {
+            if (window.game && window.game instanceof window.FightingGame) {
+                clearInterval(interval);
+                
+                // Store reference to original method
+                const gamePrototype = Object.getPrototypeOf(window.game);
+                
+                // Replace performAttack with corrected version
+                gamePrototype.performAttack = function(type) {
+                    const now = Date.now();
+                    if (now - this.lastAttackTime < 200) return;
+                    this.lastAttackTime = now;
+                    
+                    const attacker = this.players.find(p => p.controlledBy === this.playerRole);
+                    const defender = this.players.find(p => p.controlledBy !== this.playerRole);
+                    
+                    if (!attacker || !defender) return;
+                    
+                    const dist = Math.abs(attacker.x - defender.x);
+                    if (dist < 200) {
+                        const move = MOVE_DATABASE[type];
+                        if (!move) return;
+                        
+                        const blocking = defender.isBlocking;
+                        let finalDmg = Math.floor(move.damage * (this.rageMode ? 1.5 : 1) * this.comboChain.multiplier);
+                        if (blocking) finalDmg = Math.floor(finalDmg * 0.2);
+                        
+                        // CRITICAL FIX: Only damage defender, not attacker
+                        const newDefenderHealth = Math.max(0, defender.health - finalDmg);
+                        
+                        // Update defender's health in Firebase ONLY
+                        if (this.battleRef) {
+                            const defenderHpPath = defender.id === 'kenji' ? 'player1/health' : 'player2/health';
+                            this.battleRef.child(defenderHpPath).set(newDefenderHealth);
+                        }
+                        
+                        // Visual effects
+                        this.hitStop = blocking ? 3 : 5;
+                        defender.hitLocked = true;
+                        defender.state = 'hurt';
+                        defender.stateTimer = 15;
+                        
+                        attacker.state = type;
+                        attacker.stateTimer = 15;
+                        attacker.attackTimer = 20;
+                        
+                        // Show damage number at defender's position
+                        const rect = this.canvas.getBoundingClientRect();
+                        const scaleX = this.canvas.width / 1200;
+                        const scaleY = this.canvas.height / 700;
+                        const scale = Math.min(scaleX, scaleY);
+                        const offsetX = (this.canvas.width - 1200 * scale) / 2;
+                        const offsetY = (this.canvas.height - 700 * scale) / 2;
+                        const screenX = rect.left + offsetX + defender.x * scale;
+                        const screenY = rect.top + offsetY + (defender.y - 60) * scale;
+                        
+                        if (!blocking) {
+                            this.showBattleMessage(`💥 -${finalDmg}`, '#ef4444');
+                            showDamageNumber(screenX, screenY, finalDmg);
+                            
+                            // Gain mana for successful hit
+                            attacker.special = Math.min(attacker.maxSpecial, attacker.special + 8);
+                            if (this.battleRef) {
+                                const attackerMpPath = attacker.id === 'kenji' ? 'player1/mana' : 'player2/mana';
+                                this.battleRef.child(attackerMpPath).set(attacker.special);
+                            }
+                            
+                            // Combo system
+                            this.comboChain.count++;
+                            this.comboChain.timer = this.comboChain.maxTimer;
+                            this.combo.count++;
+                            this.combo.timer = 30;
+                            
+                            document.getElementById('comboIndicator').style.display = 'block';
+                            document.getElementById('comboIndicator').innerHTML = `🔥 ${this.combo.count} HIT!`;
+                            
+                            if (this.combo.count % 5 === 0) {
+                                playSound('critical', 0.5);
+                                this.shockwaves.push({ x: defender.x, y: defender.y - 50, radius: 30, life: 1 });
+                                attacker.rage = Math.min(attacker.maxRage, attacker.rage + 40);
+                                this.flashWhite = 3;
+                            }
+                            
+                            // Blood particles at defender's position
+                            for (let i = 0; i < (this.rageMode ? 20 : 10); i++) {
+                                this.bloodParticles.push({
+                                    x: defender.x,
+                                    y: defender.y - 50,
+                                    vx: (Math.random() - 0.5) * 12,
+                                    vy: (Math.random() - 0.5) * 12 - 5,
+                                    life: 1,
+                                    size: 2 + Math.random() * 5,
+                                    color: '#B22222'
+                                });
+                            }
+                            
+                            this.shockwaves.push({ x: defender.x, y: defender.y - 50, radius: 20, life: 0.3 });
+                            
+                            // Gain rage for attacker
+                            attacker.rage = Math.min(attacker.maxRage, attacker.rage + this.rageGainPerHit);
+                            if (attacker.rage >= attacker.maxRage && !this.rageMode) this.activateRageMode();
+                            
+                            playSound('hit', 0.3);
+                        } else {
+                            // Blocked attack - no damage to defender
+                            this.showBattleMessage('🛡️ BLOCKED!', '#22c55e');
+                            showDamageNumber(screenX, screenY, finalDmg, false, false, true);
+                            
+                            for (let i = 0; i < 15; i++) {
+                                this.blockEffects.push({
+                                    x: defender.x,
+                                    y: defender.y - 50,
+                                    vx: (Math.random() - 0.5) * 10,
+                                    vy: (Math.random() - 0.5) * 10 - 5,
+                                    life: 0.8,
+                                    color: '#22c55e'
+                                });
+                            }
+                            this.comboChain.count = 0;
+                            this.comboChain.multiplier = 1;
+                            playSound('block', 0.4);
+                        }
+                        
+                        // Update UI
+                        document.getElementById('p1SpecialFill').style.width = this.players[0].special + '%';
+                        document.getElementById('p2SpecialFill').style.width = this.players[1].special + '%';
+                        document.getElementById('p1RageFill').style.width = this.players[0].rage + '%';
+                        document.getElementById('p2RageFill').style.width = this.players[1].rage + '%';
+                    }
+                };
+                
+                // Also fix useSpecialMove method
+                gamePrototype.useSpecialMove = function(move) {
+                    const my = this.players.find(p => p.controlledBy === this.playerRole);
+                    const opp = this.players.find(p => p.controlledBy !== this.playerRole);
+                    
+                    if (!my || !opp || this.gameOver) return;
+                    if (my.hitLocked || my.state === 'hurt' || my.attackTimer > 0) {
+                        this.showBattleMessage('❌ CANNOT ACT!', '#ef4444');
+                        return;
+                    }
+                    if (Math.abs(my.x - opp.x) > 250) {
+                        this.showBattleMessage('❌ TOO FAR!', '#ef4444');
+                        return;
+                    }
+                    if (my.special < move.manaCost) {
+                        this.showBattleMessage(`❌ NEED ${move.manaCost} MP`, '#ef4444');
+                        return;
+                    }
+                    
+                    // Deduct mana from attacker
+                    my.special -= move.manaCost;
+                    if (this.battleRef) {
+                        const mpPath = my.id === 'kenji' ? 'player1/mana' : 'player2/mana';
+                        this.battleRef.child(mpPath).set(my.special);
+                    }
+                    
+                    if (move.heal) {
+                        // HEAL - update attacker's health (self-heal)
+                        const newHealth = Math.min(100, my.health + move.heal);
+                        if (this.battleRef) {
+                            const hpPath = my.id === 'kenji' ? 'player1/health' : 'player2/health';
+                            this.battleRef.child(hpPath).set(newHealth);
+                        }
+                        
+                        const rect = this.canvas.getBoundingClientRect();
+                        const scaleX = this.canvas.width / 1200;
+                        const scaleY = this.canvas.height / 700;
+                        const scale = Math.min(scaleX, scaleY);
+                        const offsetX = (this.canvas.width - 1200 * scale) / 2;
+                        const offsetY = (this.canvas.height - 700 * scale) / 2;
+                        const screenX = rect.left + offsetX + my.x * scale;
+                        const screenY = rect.top + offsetY + (my.y - 60) * scale;
+                        showDamageNumber(screenX, screenY, move.heal, false, true);
+                        
+                        this.showBattleMessage(`💚 +${move.heal} HP`, '#10b981');
+                        playSound('heal', 0.5);
+                        
+                        for (let i = 0; i < 20; i++) {
+                            this.specialEffects.push({
+                                x: my.x,
+                                y: my.y - 50,
+                                vx: (Math.random() - 0.5) * 8,
+                                vy: (Math.random() - 0.5) * 8 - 5,
+                                life: 1,
+                                color: '#10b981'
+                            });
+                        }
+                    } else {
+                        // ATTACK - damage OPPONENT only
+                        const chainBonus = this.comboChain.multiplier;
+                        const dmgBoost = this.rageMode ? 1.5 : 1;
+                        const crit = Math.random() < 0.2;
+                        let finalDmg = Math.floor(move.damage * dmgBoost * chainBonus);
+                        
+                        this.hitStop = 5;
+                        
+                        if (crit) {
+                            finalDmg += Math.floor(move.damage * 0.5);
+                            this.showBattleMessage(`✨ CRITICAL! ${finalDmg}`, '#ffd700');
+                            playSound('critical', 0.6);
+                            this.flashWhite = 5;
+                            this.shakeIntensity = 40;
+                        } else {
+                            this.showBattleMessage(`💥 -${finalDmg}`, '#ef4444');
+                            playSound('hit', 0.3);
+                        }
+                        
+                        // CRITICAL FIX: Only damage opponent
+                        const newOppHealth = Math.max(0, opp.health - finalDmg);
+                        
+                        if (this.battleRef) {
+                            const oppHpPath = opp.id === 'kenji' ? 'player1/health' : 'player2/health';
+                            this.battleRef.child(oppHpPath).set(newOppHealth);
+                        }
+                        
+                        const rect = this.canvas.getBoundingClientRect();
+                        const scaleX = this.canvas.width / 1200;
+                        const scaleY = this.canvas.height / 700;
+                        const scale = Math.min(scaleX, scaleY);
+                        const offsetX = (this.canvas.width - 1200 * scale) / 2;
+                        const offsetY = (this.canvas.height - 700 * scale) / 2;
+                        const screenX = rect.left + offsetX + opp.x * scale;
+                        const screenY = rect.top + offsetY + (opp.y - 60) * scale;
+                        showDamageNumber(screenX, screenY, finalDmg, crit);
+                        
+                        opp.hitLocked = true;
+                        opp.state = 'hurt';
+                        opp.stateTimer = 15;
+                        opp.x += (my.facing > 0 ? 80 : -80);
+                        opp.x = Math.max(100, Math.min(1100, opp.x));
+                        
+                        this.shakeIntensity = 35;
+                        
+                        for (let i = 0; i < (this.rageMode ? 40 : 20); i++) {
+                            this.bloodParticles.push({
+                                x: opp.x,
+                                y: opp.y - 50,
+                                vx: (Math.random() - 0.5) * 15,
+                                vy: (Math.random() - 0.5) * 15 - 5,
+                                life: 1.2,
+                                size: 3 + Math.random() * 6,
+                                color: crit ? '#8B0000' : '#B22222'
+                            });
+                        }
+                        
+                        this.shockwaves.push({ x: opp.x, y: opp.y - 50, radius: 30, life: 0.5 });
+                        
+                        my.rage = Math.min(my.maxRage, my.rage + this.rageGainPerHit);
+                        if (my.rage >= my.maxRage && !this.rageMode) this.activateRageMode();
+                        
+                        this.comboChain.count++;
+                        this.comboChain.timer = this.comboChain.maxTimer;
+                        playSound('combo', 0.2);
+                    }
+                    
+                    my.attackTimer = 20;
+                    my.state = 'punch';
+                    my.stateTimer = 15;
+                    
+                    document.getElementById('p1RageFill').style.width = this.players[0].rage + '%';
+                    document.getElementById('p2RageFill').style.width = this.players[1].rage + '%';
+                };
+                
+                console.log("✅ Damage logic fixed! Attacks now properly damage opponents.");
+            }
+        }, 100);
+    })();
+</script>
 </body>
 </html>
