@@ -19503,72 +19503,40 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('🎯 Cursor tracking system ready');
 })();
 </script>
-<!-- ========== PRODUCTION READY - COPY THIS ENTIRE BLOCK AT THE END OF YOUR HTML ========== -->
+<!-- ========== WORKING EXPORT/IMPORT SYSTEM ========== -->
 <style>
-.grindly-auth-container {
-    background: var(--card, white);
-    border-radius: 60px;
-    padding: 8px 20px;
-    margin-bottom: 24px;
+.ei-bar {
+    background: white;
+    border-radius: 50px;
+    padding: 10px 20px;
+    margin-bottom: 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 12px;
-    border: 1px solid var(--border, #e2e8f0);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    gap: 10px;
+    border: 1px solid #ddd;
 }
-.grindly-logo {
-    font-weight: 800;
-    font-size: 1.2rem;
-    background: linear-gradient(135deg, #4f46e5, #8b5cf6);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-}
-.grindly-btn {
+.ei-btn {
     padding: 8px 20px;
     border-radius: 40px;
-    font-weight: 600;
+    border: 1px solid #ccc;
+    background: white;
     cursor: pointer;
-    border: 1px solid var(--border, #e2e8f0);
-    background: var(--card, white);
-    color: var(--text, #1e293b);
-    font-size: 0.85rem;
-    transition: all 0.2s;
+    font-weight: 600;
 }
-.grindly-btn-primary {
+.ei-btn-primary {
     background: #4f46e5;
     color: white;
     border: none;
 }
-.grindly-btn-primary:hover {
-    background: #4338ca;
-    transform: translateY(-2px);
-}
-.grindly-user-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: #e0e7ff;
-    padding: 5px 16px;
-    border-radius: 40px;
-}
-.grindly-sync-badge {
-    background: #10b981;
-    color: white;
-    padding: 2px 8px;
-    border-radius: 20px;
-    font-size: 0.7rem;
-}
-.grindly-modal-overlay {
+.ei-modal {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     background: rgba(0,0,0,0.8);
-    backdrop-filter: blur(4px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -19577,456 +19545,216 @@ document.addEventListener('DOMContentLoaded', () => {
     opacity: 0;
     transition: 0.2s;
 }
-.grindly-modal-overlay.active {
+.ei-modal.active {
     visibility: visible;
     opacity: 1;
 }
-.grindly-modal-content {
-    background: var(--card, white);
-    border-radius: 28px;
-    max-width: 380px;
+.ei-modal-content {
+    background: white;
+    border-radius: 24px;
+    padding: 30px;
     width: 90%;
-    padding: 32px;
+    max-width: 500px;
     text-align: center;
-    border: 1px solid var(--border, #e2e8f0);
 }
-.grindly-modal-content h3 {
-    margin-bottom: 20px;
-    color: var(--text, #1e293b);
-}
-.grindly-modal-content input {
+.ei-modal-content textarea {
     width: 100%;
-    padding: 12px 16px;
-    margin: 10px 0;
-    border-radius: 40px;
-    border: 1px solid var(--border, #ddd);
-    background: var(--bg, white);
-    font-size: 1rem;
+    height: 150px;
+    padding: 12px;
+    margin: 15px 0;
+    border-radius: 16px;
+    border: 1px solid #ddd;
+    font-family: monospace;
+    font-size: 12px;
+    resize: vertical;
 }
-.grindly-toast {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    background: #10b981;
-    color: white;
-    padding: 12px 24px;
-    border-radius: 40px;
-    z-index: 999999;
-    font-weight: 500;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    animation: grindlySlideIn 0.3s ease;
-}
-.grindly-toast.error {
-    background: #ef4444;
-}
-@keyframes grindlySlideIn {
-    from { opacity: 0; transform: translateX(100px); }
-    to { opacity: 1; transform: translateX(0); }
+.ei-code {
+    background: #f1f5f9;
+    padding: 15px;
+    border-radius: 16px;
+    font-family: monospace;
+    font-size: 11px;
+    word-break: break-all;
+    margin: 15px 0;
+    max-height: 200px;
+    overflow: auto;
 }
 </style>
 
 <script>
 (function() {
-    'use strict';
+    // Show current logged in status
+    let savedEmail = localStorage.getItem('ei_user_email');
+    let isLoggedIn = !!savedEmail;
     
-    // ========== STATE ==========
-    let currentUser = null;
-    
-    // ========== STORAGE KEYS ==========
-    const USERS_KEY = 'grindly_production_users';
-    const CURRENT_USER_KEY = 'grindly_current_user';
-    
-    // ========== GET ALL USERS ==========
-    function getUsers() {
-        const users = localStorage.getItem(USERS_KEY);
-        return users ? JSON.parse(users) : {};
-    }
-    
-    // ========== SAVE USERS ==========
-    function saveUsers(users) {
-        localStorage.setItem(USERS_KEY, JSON.stringify(users));
-    }
-    
-    // ========== CAPTURE ALL PAGE DATA ==========
-    function capturePageState() {
-        const state = {
-            version: '1.0',
+    // Capture ALL current data
+    function captureAllData() {
+        let allData = {
             timestamp: Date.now(),
             localStorage: {},
             windowData: {}
         };
         
-        // Capture ALL localStorage items (except our auth keys)
+        // Get all localStorage
         for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key && !key.startsWith('grindly_') && key !== USERS_KEY && key !== CURRENT_USER_KEY) {
-                state.localStorage[key] = localStorage.getItem(key);
+            let key = localStorage.key(i);
+            if (key && !key.startsWith('ei_')) {
+                allData.localStorage[key] = localStorage.getItem(key);
             }
         }
         
-        // Capture window objects
-        const windowsToCapture = ['studyData', 'tasks', 'assignments', 'userClasses', 'currentUserName', 'currentUserId'];
-        for (const prop of windowsToCapture) {
-            if (window[prop] !== undefined) {
-                try {
-                    state.windowData[prop] = JSON.parse(JSON.stringify(window[prop]));
-                } catch(e) {
-                    state.windowData[prop] = window[prop];
-                }
-            }
-        }
+        // Get window objects
+        try {
+            if (window.studyData) allData.windowData.studyData = JSON.parse(JSON.stringify(window.studyData));
+            if (window.tasks) allData.windowData.tasks = JSON.parse(JSON.stringify(window.tasks));
+            if (window.assignments) allData.windowData.assignments = JSON.parse(JSON.stringify(window.assignments));
+            if (window.userClasses) allData.windowData.userClasses = JSON.parse(JSON.stringify(window.userClasses));
+            if (window.currentUserName) allData.windowData.currentUserName = window.currentUserName;
+        } catch(e) {}
         
-        return state;
+        return allData;
     }
     
-    // ========== RESTORE PAGE STATE ==========
-    function restorePageState(state) {
-        if (!state) return false;
-        
-        console.log('🔄 Restoring page state...');
+    // Restore all data
+    function restoreAllData(data) {
+        if (!data) return false;
         
         // Restore localStorage
-        for (const [key, value] of Object.entries(state.localStorage)) {
+        for (let [key, value] of Object.entries(data.localStorage || {})) {
             localStorage.setItem(key, value);
         }
         
         // Restore window objects
-        for (const [prop, value] of Object.entries(state.windowData)) {
-            try {
-                window[prop] = value;
-            } catch(e) {}
-        }
+        try {
+            if (data.windowData.studyData) window.studyData = data.windowData.studyData;
+            if (data.windowData.tasks) window.tasks = data.windowData.tasks;
+            if (data.windowData.assignments) window.assignments = data.windowData.assignments;
+            if (data.windowData.userClasses) window.userClasses = data.windowData.userClasses;
+            if (data.windowData.currentUserName) window.currentUserName = data.windowData.currentUserName;
+        } catch(e) {}
         
-        // Trigger UI refreshes
+        // Refresh UI
         if (typeof window.renderTasks === 'function') window.renderTasks();
-        if (typeof window.renderDashboardTasks === 'function') window.renderDashboardTasks();
         if (typeof window.renderAssignments === 'function') window.renderAssignments();
         if (typeof window.updateUI === 'function') window.updateUI();
         if (typeof window.updateStreakUI === 'function') window.updateStreakUI();
-        if (typeof window.updateAllStatistics === 'function') window.updateAllStatistics();
-        if (typeof window.renderClassesList === 'function') window.renderClassesList();
-        if (typeof window.updateClassSelector === 'function') window.updateClassSelector();
         
-        // Update DOM elements directly
-        const streakEl = document.getElementById('streakDisplay') || document.getElementById('streakNumber');
+        // Update displays
+        let streakEl = document.getElementById('streakDisplay') || document.getElementById('streakNumber');
         if (streakEl && window.studyData) streakEl.textContent = window.studyData.streak || 0;
-        
-        const hoursEl = document.getElementById('totalHoursDisplay');
+        let hoursEl = document.getElementById('totalHoursDisplay');
         if (hoursEl && window.studyData) hoursEl.textContent = (window.studyData.totalStudyHours || 0).toFixed(1);
         
-        const tasksEl = document.getElementById('tasksCompletedDisplay');
-        if (tasksEl && window.tasks) tasksEl.textContent = window.tasks.filter(t => t.completed).length;
-        
         return true;
     }
     
-    // ========== SAVE CURRENT STATE TO USER ==========
-    function saveToUser(email) {
-        const users = getUsers();
-        if (users[email]) {
-            users[email].state = capturePageState();
-            users[email].lastSaved = Date.now();
-            saveUsers(users);
-            console.log('💾 Saved state for:', email);
-            return true;
-        }
-        return false;
+    // Export data
+    function exportData() {
+        let allData = captureAllData();
+        let json = JSON.stringify(allData);
+        let compressed = btoa(encodeURIComponent(json));
+        return compressed;
     }
     
-    // ========== LOAD USER STATE ==========
-    function loadFromUser(email) {
-        const users = getUsers();
-        const user = users[email];
-        if (user && user.state) {
-            restorePageState(user.state);
-            console.log('📂 Loaded state for:', email);
-            return true;
+    // Import data
+    function importData(code) {
+        try {
+            let json = decodeURIComponent(atob(code));
+            let data = JSON.parse(json);
+            return restoreAllData(data);
+        } catch(e) {
+            alert('Invalid backup code');
+            return false;
         }
-        return false;
     }
     
-    // ========== CREATE ACCOUNT ==========
-    function createAccount(email, password) {
-        if (!email || !email.includes('@')) {
-            showToast('Enter a valid email', 'error');
-            return false;
-        }
-        if (!password || password.length < 3) {
-            showToast('Password must be at least 3 characters', 'error');
-            return false;
-        }
-        
-        const users = getUsers();
-        
-        if (users[email]) {
-            showToast('Account already exists. Please sign in.', 'error');
-            return false;
-        }
-        
-        // Create new account with current page state
-        users[email] = {
-            password: password,
-            state: capturePageState(),
-            createdAt: Date.now()
-        };
-        saveUsers(users);
-        
-        currentUser = email;
-        localStorage.setItem(CURRENT_USER_KEY, email);
-        
-        updateAuthUI();
-        showToast(`✅ Account created! Welcome ${email}`);
-        return true;
+    // UI
+    let exportModal, importModal;
+    
+    function showExportModal() {
+        let code = exportData();
+        document.getElementById('exportCodeArea').value = code;
+        exportModal.classList.add('active');
     }
     
-    // ========== SIGN IN ==========
-    function signIn(email, password) {
-        if (!email || !password) {
-            showToast('Enter email and password', 'error');
-            return false;
-        }
-        
-        const users = getUsers();
-        const user = users[email];
-        
-        if (!user) {
-            showToast('Account not found. Create one first.', 'error');
-            return false;
-        }
-        
-        if (user.password !== password) {
-            showToast('Incorrect password', 'error');
-            return false;
-        }
-        
-        // Restore user's saved state
-        if (user.state) {
-            restorePageState(user.state);
-        }
-        
-        currentUser = email;
-        localStorage.setItem(CURRENT_USER_KEY, email);
-        
-        updateAuthUI();
-        showToast(`🎉 Welcome back! Your data restored.`);
-        
-        // Optional: reload to ensure everything is fresh
-        setTimeout(() => {
-            if (confirm('Data restored successfully! Refresh page to see everything?')) {
-                window.location.reload();
-            }
-        }, 1000);
-        
-        return true;
-    }
-    
-    // ========== SIGN OUT ==========
-    function signOut() {
-        if (currentUser) {
-            saveToUser(currentUser);
-        }
-        currentUser = null;
-        localStorage.removeItem(CURRENT_USER_KEY);
-        updateAuthUI();
-        showToast('Signed out');
-        setTimeout(() => window.location.reload(), 500);
-    }
-    
-    // ========== AUTO SAVE ==========
-    let autoSaveInterval = null;
-    function startAutoSave() {
-        if (autoSaveInterval) clearInterval(autoSaveInterval);
-        autoSaveInterval = setInterval(() => {
-            if (currentUser) {
-                saveToUser(currentUser);
-            }
-        }, 30000); // Save every 30 seconds
-    }
-    
-    // ========== UI ==========
-    let signupModal, signinModal;
-    
-    function showSignupModal() { signupModal.classList.add('active'); }
-    function showSigninModal() { signinModal.classList.add('active'); }
-    function closeModals() {
-        signupModal.classList.remove('active');
-        signinModal.classList.remove('active');
+    function showImportModal() {
+        importModal.classList.add('active');
     }
     
     function createModals() {
-        // Signup Modal
-        signupModal = document.createElement('div');
-        signupModal.className = 'grindly-modal-overlay';
-        signupModal.innerHTML = `
-            <div class="grindly-modal-content">
-                <h3>📝 Create Account</h3>
-                <input type="email" id="gSignupEmail" placeholder="Email address">
-                <input type="password" id="gSignupPassword" placeholder="Password (min 3 chars)">
-                <div style="display: flex; gap: 12px; justify-content: center; margin-top: 20px;">
-                    <button class="grindly-btn" id="gCloseSignupBtn">Cancel</button>
-                    <button class="grindly-btn grindly-btn-primary" id="gConfirmSignupBtn">Create Account</button>
-                </div>
+        exportModal = document.createElement('div');
+        exportModal.className = 'ei-modal';
+        exportModal.innerHTML = `
+            <div class="ei-modal-content">
+                <h3>📤 Export Your Data</h3>
+                <p>Copy this code to transfer to another device:</p>
+                <textarea id="exportCodeArea" readonly></textarea>
+                <button class="ei-btn ei-btn-primary" id="copyExportBtn">📋 Copy Code</button>
+                <button class="ei-btn" id="closeExportBtn" style="margin-top:10px;">Close</button>
             </div>
         `;
-        document.body.appendChild(signupModal);
+        document.body.appendChild(exportModal);
         
-        // Signin Modal
-        signinModal = document.createElement('div');
-        signinModal.className = 'grindly-modal-overlay';
-        signinModal.innerHTML = `
-            <div class="grindly-modal-content">
-                <h3>🔐 Sign In</h3>
-                <input type="email" id="gSigninEmail" placeholder="Email address">
-                <input type="password" id="gSigninPassword" placeholder="Password">
-                <div style="display: flex; gap: 12px; justify-content: center; margin-top: 20px;">
-                    <button class="grindly-btn" id="gCloseSigninBtn">Cancel</button>
-                    <button class="grindly-btn grindly-btn-primary" id="gConfirmSigninBtn">Sign In</button>
-                </div>
-                <p style="margin-top: 20px; font-size: 0.8rem;">No account? <a href="#" id="gSwitchToSignup" style="color: #4f46e5;">Create one</a></p>
+        importModal = document.createElement('div');
+        importModal.className = 'ei-modal';
+        importModal.innerHTML = `
+            <div class="ei-modal-content">
+                <h3>📥 Import Data</h3>
+                <p>Paste the backup code from your other device:</p>
+                <textarea id="importCodeArea" placeholder="Paste code here..."></textarea>
+                <button class="ei-btn ei-btn-primary" id="doImportBtn">Import & Restore</button>
+                <button class="ei-btn" id="closeImportBtn" style="margin-top:10px;">Cancel</button>
             </div>
         `;
-        document.body.appendChild(signinModal);
+        document.body.appendChild(importModal);
         
-        // Event listeners
-        document.getElementById('gCloseSignupBtn').onclick = closeModals;
-        document.getElementById('gConfirmSignupBtn').onclick = () => {
-            const email = document.getElementById('gSignupEmail').value.trim();
-            const pwd = document.getElementById('gSignupPassword').value;
-            if (createAccount(email, pwd)) {
-                closeModals();
-                document.getElementById('gSignupEmail').value = '';
-                document.getElementById('gSignupPassword').value = '';
+        document.getElementById('closeExportBtn').onclick = () => exportModal.classList.remove('active');
+        document.getElementById('copyExportBtn').onclick = () => {
+            let code = document.getElementById('exportCodeArea').value;
+            navigator.clipboard.writeText(code);
+            alert('Code copied!');
+        };
+        
+        document.getElementById('closeImportBtn').onclick = () => importModal.classList.remove('active');
+        document.getElementById('doImportBtn').onclick = () => {
+            let code = document.getElementById('importCodeArea').value;
+            if (importData(code)) {
+                alert('✅ Data restored! Refreshing page...');
+                importModal.classList.remove('active');
+                setTimeout(() => window.location.reload(), 1000);
             }
         };
         
-        document.getElementById('gCloseSigninBtn').onclick = closeModals;
-        document.getElementById('gConfirmSigninBtn').onclick = () => {
-            const email = document.getElementById('gSigninEmail').value.trim();
-            const pwd = document.getElementById('gSigninPassword').value;
-            if (signIn(email, pwd)) {
-                closeModals();
-            }
-        };
-        document.getElementById('gSwitchToSignup').onclick = (e) => {
-            e.preventDefault();
-            closeModals();
-            showSignupModal();
-        };
-        
-        // Close on background click
-        signupModal.onclick = (e) => { if (e.target === signupModal) closeModals(); };
-        signinModal.onclick = (e) => { if (e.target === signinModal) closeModals(); };
+        exportModal.onclick = (e) => { if (e.target === exportModal) exportModal.classList.remove('active'); };
+        importModal.onclick = (e) => { if (e.target === importModal) importModal.classList.remove('active'); };
     }
     
-    function updateAuthUI() {
-        const container = document.getElementById('grindlyAuthButtons');
-        if (!container) return;
+    function createBar() {
+        let target = document.querySelector('.main-content') || document.querySelector('main') || document.body;
+        if (document.getElementById('eiBar')) return;
         
-        if (currentUser) {
-            container.innerHTML = `
-                <div class="grindly-user-info">
-                    👤 ${currentUser}
-                    <span class="grindly-sync-badge">● Synced</span>
-                </div>
-                <button class="grindly-btn" id="grindlySignOutBtn">Sign Out</button>
-            `;
-            document.getElementById('grindlySignOutBtn')?.addEventListener('click', signOut);
-        } else {
-            container.innerHTML = `
-                <button class="grindly-btn" id="grindlyShowSignupBtn">📝 Create Account</button>
-                <button class="grindly-btn grindly-btn-primary" id="grindlyShowSigninBtn">🔑 Sign In</button>
-            `;
-            document.getElementById('grindlyShowSignupBtn')?.addEventListener('click', showSignupModal);
-            document.getElementById('grindlyShowSigninBtn')?.addEventListener('click', showSigninModal);
-        }
-    }
-    
-    function createAuthBar() {
-        // Find best place to insert
-        let target = document.querySelector('.main-content');
-        if (!target) target = document.querySelector('main');
-        if (!target) target = document.body;
-        
-        if (document.getElementById('grindlyAuthBar')) return;
-        
-        const authBar = document.createElement('div');
-        authBar.id = 'grindlyAuthBar';
-        authBar.className = 'grindly-auth-container';
-        authBar.innerHTML = `
-            <div class="grindly-logo">🎓 Grindly Learn</div>
-            <div id="grindlyAuthButtons"></div>
+        let bar = document.createElement('div');
+        bar.id = 'eiBar';
+        bar.className = 'ei-bar';
+        bar.innerHTML = `
+            <div style="font-weight:bold;">🎓 Grindly</div>
+            <div style="display:flex; gap:10px;">
+                <button class="ei-btn" id="eiExportBtn">📤 Export Backup</button>
+                <button class="ei-btn ei-btn-primary" id="eiImportBtn">📥 Import Backup</button>
+            </div>
         `;
-        target.insertBefore(authBar, target.firstChild);
+        target.insertBefore(bar, target.firstChild);
         
-        updateAuthUI();
+        document.getElementById('eiExportBtn').onclick = showExportModal;
+        document.getElementById('eiImportBtn').onclick = showImportModal;
     }
     
-    function showToast(message, type = 'success') {
-        const toast = document.createElement('div');
-        toast.className = 'grindly-toast' + (type === 'error' ? ' error' : '');
-        toast.textContent = message;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
-    }
-    
-    // ========== CHECK EXISTING SESSION ==========
-    function checkSession() {
-        const savedUser = localStorage.getItem(CURRENT_USER_KEY);
-        if (savedUser) {
-            const users = getUsers();
-            if (users[savedUser]) {
-                currentUser = savedUser;
-                if (users[savedUser].state) {
-                    restorePageState(users[savedUser].state);
-                }
-                updateAuthUI();
-                console.log('✅ Session restored for:', savedUser);
-            } else {
-                localStorage.removeItem(CURRENT_USER_KEY);
-            }
-        }
-    }
-    
-    // ========== HOOK PAGE CHANGES ==========
-    function hookPageChanges() {
-        // Save before page unload
-        window.addEventListener('beforeunload', () => {
-            if (currentUser) saveToUser(currentUser);
-        });
-        
-        // Hook common functions if they exist
-        const functionsToHook = ['addStudyHours', 'markStudyToday', 'addTask', 'toggleTask', 'deleteTask', 'addAssignment', 'toggleAssignment', 'joinClass', 'leaveClass'];
-        for (const fnName of functionsToHook) {
-            const original = window[fnName];
-            if (original && typeof original === 'function') {
-                window[fnName] = function() {
-                    const result = original.apply(this, arguments);
-                    if (currentUser) setTimeout(() => saveToUser(currentUser), 500);
-                    return result;
-                };
-            }
-        }
-    }
-    
-    // ========== INIT ==========
-    function init() {
-        createModals();
-        createAuthBar();
-        checkSession();
-        startAutoSave();
-        hookPageChanges();
-        console.log('✅ Production account system ready');
-    }
-    
-    // Start when ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        init();
-    }
+    createModals();
+    createBar();
+    console.log('✅ Export/Import system ready. Use Export to save, Import on other device!');
 })();
 </script>
-<!-- ========== END PRODUCTION CODE ========== -->
+<!-- ========== END EXPORT/IMPORT SYSTEM ========== -->
 </body>
 </html>
 
