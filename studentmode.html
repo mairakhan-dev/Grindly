@@ -19503,6 +19503,496 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('🎯 Cursor tracking system ready');
 })();
 </script>
+  <!-- ========== GOOGLE AUTH FOR GRINDLYLEARN.COM ========== -->
+<style>
+.auth-top-bar {
+    background: var(--card);
+    border-radius: 60px;
+    padding: 8px 24px;
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.auth-brand {
+    font-weight: 700;
+    font-size: 1.1rem;
+    background: linear-gradient(135deg, var(--accent), #8b5cf6);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+.auth-buttons {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.auth-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    border-radius: 40px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+}
+.auth-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.auth-btn img {
+    width: 18px;
+    height: 18px;
+}
+.auth-btn-primary {
+    background: var(--accent);
+    color: white;
+    border: none;
+}
+.auth-btn-primary:hover {
+    background: var(--accent-dark);
+}
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--accent-light);
+    padding: 6px 16px 6px 12px;
+    border-radius: 50px;
+}
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+.user-name {
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+.sync-badge {
+    background: #10b981;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 0.6rem;
+    font-weight: 600;
+}
+.auth-status {
+    font-size: 0.7rem;
+    padding: 4px 12px;
+    border-radius: 40px;
+}
+.auth-status-online {
+    background: #d1fae5;
+    color: #065f46;
+}
+.auth-status-offline {
+    background: #fee2e2;
+    color: #991b1b;
+}
+</style>
+
+<script>
+(function() {
+    'use strict';
+    
+    let currentUser = null;
+    let authBarCreated = false;
+    
+    // ========== CAPTURE ALL APP DATA ==========
+    function captureAllData() {
+        const data = {
+            timestamp: Date.now(),
+            profile: { name: 'Student' },
+            studyData: {},
+            tasks: [],
+            assignments: [],
+            classes: []
+        };
+        
+        try {
+            if (typeof window.currentUserName !== 'undefined' && window.currentUserName) {
+                data.profile.name = window.currentUserName;
+            } else {
+                data.profile.name = localStorage.getItem('studentName') || 'Student';
+            }
+            
+            if (typeof window.studyData !== 'undefined' && window.studyData) {
+                data.studyData = {
+                    streak: window.studyData.streak || 0,
+                    totalHours: window.studyData.totalStudyHours || (window.studyData.totalMinutes / 60) || 0,
+                    totalMinutes: window.studyData.totalMinutes || 0,
+                    lastStudyDate: window.studyData.lastStudyDate || null,
+                    studySessions: window.studyData.studySessions || [],
+                    dailyStats: window.studyData.dailyStats || [],
+                    weeklyPattern: window.studyData.weeklyPattern || [0,0,0,0,0,0,0],
+                    streakHistory: window.studyData.streakHistory || []
+                };
+            }
+            
+            if (typeof window.tasks !== 'undefined' && Array.isArray(window.tasks)) {
+                data.tasks = window.tasks;
+            } else {
+                const saved = localStorage.getItem('studentTasks');
+                if (saved) data.tasks = JSON.parse(saved);
+            }
+            
+            if (typeof window.assignments !== 'undefined' && Array.isArray(window.assignments)) {
+                data.assignments = window.assignments;
+            } else {
+                const saved = localStorage.getItem('studentAssignments');
+                if (saved) data.assignments = JSON.parse(saved);
+            }
+            
+            if (typeof window.userClasses !== 'undefined' && Array.isArray(window.userClasses)) {
+                data.classes = window.userClasses;
+            } else {
+                const saved = localStorage.getItem('studentUserClasses');
+                if (saved) data.classes = JSON.parse(saved);
+            }
+            
+        } catch(e) { console.warn(e); }
+        
+        return data;
+    }
+    
+    // ========== RESTORE DATA ==========
+    function restoreAllData(data) {
+        if (!data) return false;
+        
+        try {
+            if (data.profile && data.profile.name) {
+                if (typeof window.currentUserName !== 'undefined') window.currentUserName = data.profile.name;
+                localStorage.setItem('studentName', data.profile.name);
+                document.querySelectorAll('#studentName, #profileName').forEach(inp => { if(inp) inp.value = data.profile.name; });
+            }
+            
+            if (data.studyData && typeof window.studyData !== 'undefined') {
+                window.studyData.streak = data.studyData.streak || 0;
+                window.studyData.totalStudyHours = data.studyData.totalHours || 0;
+                window.studyData.totalMinutes = data.studyData.totalMinutes || 0;
+                window.studyData.lastStudyDate = data.studyData.lastStudyDate || null;
+                window.studyData.studySessions = data.studyData.studySessions || [];
+                window.studyData.dailyStats = data.studyData.dailyStats || [];
+                window.studyData.weeklyPattern = data.studyData.weeklyPattern || [0,0,0,0,0,0,0];
+                window.studyData.streakHistory = data.studyData.streakHistory || [];
+                localStorage.setItem('studentStudyData', JSON.stringify(window.studyData));
+            }
+            
+            if (data.tasks && Array.isArray(data.tasks) && typeof window.tasks !== 'undefined') {
+                window.tasks = data.tasks;
+                if (typeof window.saveTasks === 'function') window.saveTasks();
+                if (typeof window.renderTasks === 'function') window.renderTasks();
+                if (typeof window.renderDashboardTasks === 'function') window.renderDashboardTasks();
+                localStorage.setItem('studentTasks', JSON.stringify(window.tasks));
+            }
+            
+            if (data.assignments && Array.isArray(data.assignments) && typeof window.assignments !== 'undefined') {
+                window.assignments = data.assignments;
+                if (typeof window.saveAssignments === 'function') window.saveAssignments();
+                if (typeof window.renderAssignments === 'function') window.renderAssignments();
+                localStorage.setItem('studentAssignments', JSON.stringify(window.assignments));
+            }
+            
+            if (data.classes && Array.isArray(data.classes) && typeof window.userClasses !== 'undefined') {
+                window.userClasses = data.classes;
+                localStorage.setItem('studentUserClasses', JSON.stringify(window.userClasses));
+                if (typeof window.updateClassSelector === 'function') window.updateClassSelector();
+                if (typeof window.renderClassesList === 'function') window.renderClassesList();
+            }
+            
+            if (typeof window.updateUI === 'function') window.updateUI();
+            if (typeof window.updateStreakUI === 'function') window.updateStreakUI();
+            if (typeof window.updateAllStatistics === 'function') window.updateAllStatistics();
+            
+            const streakEl = document.getElementById('streakDisplay');
+            if (streakEl) streakEl.textContent = data.studyData?.streak || 0;
+            const hoursEl = document.getElementById('totalHoursDisplay');
+            if (hoursEl) hoursEl.textContent = (data.studyData?.totalHours || 0).toFixed(1);
+            const tasksEl = document.getElementById('tasksCompletedDisplay');
+            if (tasksEl) tasksEl.textContent = data.tasks?.filter(t => t.completed).length || 0;
+            
+            return true;
+        } catch(e) { return false; }
+    }
+    
+    // ========== SAVE/LOAD FOR USER ==========
+    function saveDataForUser(uid) {
+        const data = captureAllData();
+        localStorage.setItem(`google_user_data_${uid}`, JSON.stringify(data));
+        console.log('💾 Data saved for user');
+    }
+    
+    function loadDataForUser(uid) {
+        const saved = localStorage.getItem(`google_user_data_${uid}`);
+        if (saved) {
+            restoreAllData(JSON.parse(saved));
+            return true;
+        }
+        return false;
+    }
+    
+    function updateCurrentUserData() {
+        if (currentUser) saveDataForUser(currentUser.uid);
+    }
+    
+    // ========== GOOGLE AUTH (works on grindlylearn.com) ==========
+    async function signUpWithGoogle() {
+        if (!window.firebase || !window.firebase.auth) {
+            showMessage("Loading... Please wait a moment.", "error");
+            return;
+        }
+        
+        const provider = new firebase.auth.GoogleAuthProvider();
+        provider.addScope('profile');
+        provider.addScope('email');
+        
+        try {
+            showMessage("Creating your account...", "info");
+            const result = await firebase.auth().signInWithPopup(provider);
+            const user = result.user;
+            
+            currentUser = {
+                uid: user.uid,
+                name: user.displayName || user.email,
+                email: user.email,
+                photoURL: user.photoURL
+            };
+            
+            localStorage.setItem('google_user', JSON.stringify(currentUser));
+            saveDataForUser(user.uid);
+            
+            updateAuthUI();
+            showMessage(`✅ Account created! Welcome ${currentUser.name}!`, "success");
+            
+        } catch(error) {
+            console.error("Sign up error:", error);
+            if (error.message.includes("authorized domain")) {
+                showMessage("Please deploy to grindlylearn.com or add 127.0.0.1 to Firebase authorized domains.", "error");
+            } else {
+                showMessage("Failed: " + error.message, "error");
+            }
+        }
+    }
+    
+    async function signInWithGoogle() {
+        if (!window.firebase || !window.firebase.auth) {
+            showMessage("Loading... Please wait a moment.", "error");
+            return;
+        }
+        
+        const provider = new firebase.auth.GoogleAuthProvider();
+        provider.addScope('profile');
+        provider.addScope('email');
+        
+        try {
+            showMessage("Signing in...", "info");
+            const result = await firebase.auth().signInWithPopup(provider);
+            const user = result.user;
+            
+            currentUser = {
+                uid: user.uid,
+                name: user.displayName || user.email,
+                email: user.email,
+                photoURL: user.photoURL
+            };
+            
+            localStorage.setItem('google_user', JSON.stringify(currentUser));
+            
+            const hasData = loadDataForUser(user.uid);
+            if (hasData) {
+                showMessage(`🎉 Welcome back ${currentUser.name}!`, "success");
+            } else {
+                saveDataForUser(user.uid);
+                showMessage(`✅ Signed in as ${currentUser.name}`, "success");
+            }
+            
+            updateAuthUI();
+            
+        } catch(error) {
+            console.error("Sign in error:", error);
+            if (error.message.includes("authorized domain")) {
+                showMessage("Please deploy to grindlylearn.com first, then sign in.", "error");
+            } else {
+                showMessage("Sign in failed: " + error.message, "error");
+            }
+        }
+    }
+    
+    async function signOut() {
+        if (window.firebase && window.firebase.auth) {
+            try { await firebase.auth().signOut(); } catch(e) {}
+        }
+        currentUser = null;
+        localStorage.removeItem('google_user');
+        updateAuthUI();
+        showMessage("Signed out successfully", "success");
+    }
+    
+    function checkExistingSession() {
+        const savedUser = localStorage.getItem('google_user');
+        if (savedUser) {
+            try {
+                currentUser = JSON.parse(savedUser);
+                loadDataForUser(currentUser.uid);
+                updateAuthUI();
+                console.log('✅ Session restored:', currentUser.name);
+            } catch(e) {}
+        } else {
+            updateAuthUI();
+        }
+    }
+    
+    // ========== CREATE AUTH BAR ==========
+    function createAuthBar() {
+        if (authBarCreated) return;
+        
+        const mainContent = document.querySelector('.main-content');
+        if (!mainContent) {
+            setTimeout(createAuthBar, 500);
+            return;
+        }
+        
+        if (document.getElementById('googleAuthTopBar')) return;
+        
+        const authBar = document.createElement('div');
+        authBar.id = 'googleAuthTopBar';
+        authBar.className = 'auth-top-bar';
+        authBar.innerHTML = `
+            <div class="auth-brand">🎓 Grindly Learn</div>
+            <div id="googleAuthButtonsContainer" class="auth-buttons"></div>
+        `;
+        
+        mainContent.insertBefore(authBar, mainContent.firstChild);
+        authBarCreated = true;
+        
+        updateAuthUI();
+    }
+    
+    function updateAuthUI() {
+        const container = document.getElementById('googleAuthButtonsContainer');
+        if (!container) return;
+        
+        if (currentUser) {
+            container.innerHTML = `
+                <div class="user-info">
+                    ${currentUser.photoURL ? `<img src="${currentUser.photoURL}" class="user-avatar" alt="">` : '👤'}
+                    <span class="user-name">${currentUser.name}</span>
+                    <span class="sync-badge">● Synced</span>
+                </div>
+                <button class="auth-btn" id="googleSignOutBtn">🚪 Sign Out</button>
+            `;
+            const signOutBtn = document.getElementById('googleSignOutBtn');
+            if (signOutBtn) signOutBtn.addEventListener('click', signOut);
+        } else {
+            container.innerHTML = `
+                <button class="auth-btn" id="googleSignUpBtn">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="">
+                    Create Account
+                </button>
+                <button class="auth-btn auth-btn-primary" id="googleSignInBtn">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" style="filter: brightness(0) invert(1);">
+                    Sign In
+                </button>
+            `;
+            const signUpBtn = document.getElementById('googleSignUpBtn');
+            const signInBtn = document.getElementById('googleSignInBtn');
+            if (signUpBtn) signUpBtn.addEventListener('click', signUpWithGoogle);
+            if (signInBtn) signInBtn.addEventListener('click', signInWithGoogle);
+        }
+        
+        let statusSpan = document.getElementById('authStatusSpan');
+        if (!statusSpan && document.getElementById('googleAuthTopBar')) {
+            statusSpan = document.createElement('span');
+            statusSpan.id = 'authStatusSpan';
+            statusSpan.className = 'auth-status';
+            document.getElementById('googleAuthTopBar').appendChild(statusSpan);
+        }
+        
+        if (statusSpan) {
+            if (currentUser) {
+                statusSpan.innerHTML = '✅ Cloud Sync Active';
+                statusSpan.className = 'auth-status auth-status-online';
+            } else {
+                statusSpan.innerHTML = '🔒 Sign in to save data across devices';
+                statusSpan.className = 'auth-status auth-status-offline';
+            }
+        }
+    }
+    
+    function showMessage(msg, type) {
+        if (typeof window.showNotification === 'function') {
+            window.showNotification(msg, type);
+        } else {
+            const toast = document.createElement('div');
+            toast.textContent = msg;
+            toast.style.position = 'fixed';
+            toast.style.bottom = '20px';
+            toast.style.right = '20px';
+            toast.style.background = type === 'error' ? '#ef4444' : '#10b981';
+            toast.style.color = 'white';
+            toast.style.padding = '12px 24px';
+            toast.style.borderRadius = '40px';
+            toast.style.zIndex = '20001';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3500);
+        }
+    }
+    
+    // ========== AUTO-SAVE ==========
+    function hookFunctions() {
+        const funcs = ['addStudyHours', 'markStudyToday', 'addTask', 'toggleTask', 'deleteTask', 'addAssignment', 'toggleAssignment', 'joinClass', 'leaveClass'];
+        funcs.forEach(name => {
+            const original = window[name];
+            if (original && typeof original === 'function') {
+                window[name] = function() {
+                    const result = original.apply(this, arguments);
+                    if (currentUser) setTimeout(() => updateCurrentUserData(), 500);
+                    return result;
+                };
+            }
+        });
+    }
+    
+    // ========== INIT ==========
+    function init() {
+        createAuthBar();
+        
+        let attempts = 0;
+        const checkFirebase = setInterval(() => {
+            attempts++;
+            if (window.firebase && window.firebase.auth) {
+                clearInterval(checkFirebase);
+                console.log('✅ Firebase Auth ready');
+                checkExistingSession();
+                hookFunctions();
+            } else if (attempts > 30) {
+                clearInterval(checkFirebase);
+                console.log('⚠️ Firebase not loaded');
+                updateAuthUI();
+            }
+        }, 500);
+    }
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();
+</script>
+<!-- ========== END GOOGLE AUTH ========== -->
 </body>
 </html>
 
