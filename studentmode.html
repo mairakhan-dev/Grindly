@@ -21772,6 +21772,196 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 console.log("✅ Student classroom enhancement loaded - resources now have Preview buttons and Comment modals!");
+  // ================================================================
+// ========== STUDENT RESOURCE PREVIEW – FIX ==========
+// ================================================================
+(function() {
+    'use strict';
+
+    console.log('📁 Student Resource Preview fix loading...');
+
+    // ----- Helper: get resources from global or localStorage -----
+    function getResources() {
+        if (typeof resources !== 'undefined' && resources.length) return resources;
+        try {
+            const classCode = localStorage.getItem('studentCurrentClass') || '';
+            const data = localStorage.getItem(`class_${classCode}_resources`);
+            if (data) return JSON.parse(data);
+        } catch (e) {}
+        return [];
+    }
+
+    // ----- Create the modal (if not exists) -----
+    function createModal() {
+        if (document.getElementById('studentResourceModal')) return;
+
+        const modal = document.createElement('div');
+        modal.id = 'studentResourceModal';
+        modal.className = 'modal';
+        modal.style.cssText = `
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            backdrop-filter: blur(4px);
+        `;
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width:600px; max-height:90vh; overflow-y:auto; background: var(--card); border-radius: var(--radius-lg); padding: var(--spacing-xl); position: relative; border: 1px solid var(--border);">
+                <button class="modal-close" onclick="document.getElementById('studentResourceModal').style.display='none'" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.8rem;cursor:pointer;color:var(--text-muted);">&times;</button>
+                <h3 id="studentResourceModalTitle" style="margin-bottom:12px;font-weight:700;">Resource</h3>
+                <div id="studentResourceModalBody"></div>
+                <div id="studentResourceModalActions" style="margin-top:20px;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;"></div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        // Click outside closes modal
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) this.style.display = 'none';
+        });
+
+        console.log('✅ Resource modal created.');
+    }
+
+    // ----- Open resource preview (called by the button) -----
+    window.openResourcePopup = function(resourceId, title, description, url, fileData, fileName, fileSize) {
+        console.log('📖 Opening resource:', resourceId, title);
+
+        // Ensure modal exists
+        createModal();
+        const modal = document.getElementById('studentResourceModal');
+        if (!modal) { console.error('Modal not found'); return; }
+
+        // Find the resource in the global resources array (if available)
+        let resource = getResources().find(r => r.id === resourceId);
+        if (!resource) {
+            // Construct from passed parameters
+            resource = {
+                id: resourceId || 'unknown',
+                title: title || 'Resource',
+                description: description || '',
+                url: url || '',
+                fileData: fileData || null,
+                fileName: fileName || null,
+                fileSize: fileSize || 0
+            };
+        }
+
+        // Set title
+        document.getElementById('studentResourceModalTitle').textContent = resource.title || 'Resource';
+
+        // Build body
+        let bodyHtml = `
+            <div style="background:var(--bg);padding:var(--spacing-md);border-radius:var(--radius);margin-bottom:16px;">
+                <strong>📄 Description:</strong>
+                <p style="margin-top:8px;line-height:1.6;">${resource.description || 'No description provided.'}</p>
+            </div>
+        `;
+
+        let actionsHtml = '';
+
+        // Handle file preview if fileData exists
+        if (resource.fileData && resource.fileName) {
+            const ext = resource.fileName.split('.').pop().toLowerCase();
+            const isImage = ['jpg','jpeg','png','gif','webp','svg'].includes(ext);
+            const isPdf = ext === 'pdf';
+
+            if (isImage) {
+                bodyHtml += `
+                    <div style="background:var(--bg);padding:var(--spacing-md);border-radius:var(--radius);margin-bottom:16px;text-align:center;">
+                        <strong>🖼️ Preview:</strong>
+                        <div style="margin-top:8px;"><img src="${resource.fileData}" alt="${resource.fileName}" style="max-width:100%;max-height:300px;border-radius:var(--radius);"></div>
+                        <div style="font-size:0.8rem;color:var(--text-muted);margin-top:8px;">📎 ${resource.fileName} (${Math.round(resource.fileSize/1024)} KB)</div>
+                    </div>
+                `;
+                actionsHtml += `<button class="btn btn-primary" onclick="window.open('${resource.fileData}','_blank')">📥 Open Image</button>`;
+            } else if (isPdf) {
+                bodyHtml += `
+                    <div style="background:var(--bg);padding:var(--spacing-md);border-radius:var(--radius);margin-bottom:16px;">
+                        <strong>📄 PDF Preview:</strong>
+                        <iframe src="${resource.fileData}" style="width:100%;height:400px;border:none;border-radius:var(--radius);margin-top:8px;"></iframe>
+                        <div style="font-size:0.8rem;color:var(--text-muted);margin-top:8px;">📎 ${resource.fileName} (${Math.round(resource.fileSize/1024)} KB)</div>
+                    </div>
+                `;
+                actionsHtml += `<button class="btn btn-primary" onclick="window.open('${resource.fileData}','_blank')">📥 Open PDF</button>`;
+            } else {
+                bodyHtml += `
+                    <div style="background:var(--bg);padding:var(--spacing-md);border-radius:var(--radius);margin-bottom:16px;">
+                        <strong>📎 Attached File:</strong>
+                        <div style="margin-top:8px;">${resource.fileName} (${Math.round(resource.fileSize/1024)} KB)</div>
+                    </div>
+                `;
+                actionsHtml += `<button class="btn btn-primary" onclick="window.open('${resource.fileData}','_blank')">📥 Download</button>`;
+            }
+        } else if (resource.url) {
+            bodyHtml += `
+                <div style="background:var(--bg);padding:var(--spacing-md);border-radius:var(--radius);margin-bottom:16px;">
+                    <strong>🔗 Resource Link:</strong>
+                    <div style="margin-top:8px;word-break:break-all;"><a href="${resource.url}" target="_blank" style="color:var(--accent);">${resource.url}</a></div>
+                </div>
+            `;
+            actionsHtml += `<button class="btn btn-primary" onclick="window.open('${resource.url}','_blank')">🔗 Open Link</button>`;
+        } else {
+            bodyHtml += `
+                <div style="background:var(--bg);padding:var(--spacing-md);border-radius:var(--radius);margin-bottom:16px;">
+                    <strong>⚠️ No preview available for this resource.</strong>
+                </div>
+            `;
+        }
+
+        document.getElementById('studentResourceModalBody').innerHTML = bodyHtml;
+        document.getElementById('studentResourceModalActions').innerHTML = actionsHtml;
+
+        modal.style.display = 'flex';
+    };
+
+    // ----- Also attach direct click listeners to preview buttons (for safety) -----
+    function attachDirectListeners() {
+        document.addEventListener('click', function(e) {
+            // Find if the click is on a preview button or inside a resource card
+            const previewBtn = e.target.closest('.student-preview-btn, [onclick*="openResourcePopup"]');
+            if (previewBtn) {
+                // If the button has an onclick attribute, it will call openResourcePopup.
+                // We already defined it globally, so it should work.
+                // But if not, we can extract the resource ID from the parent.
+                const card = previewBtn.closest('.classroom-item');
+                if (card) {
+                    const resourceId = card.dataset.resourceId || card.dataset.id;
+                    if (resourceId) {
+                        e.preventDefault();
+                        // Call our function
+                        window.openResourcePopup(resourceId);
+                    }
+                }
+                // Let the onclick handle it if it exists.
+            }
+        });
+        console.log('✅ Direct click listeners attached.');
+    }
+
+    // ----- Initialise -----
+    function init() {
+        // Create modal
+        createModal();
+        // Attach direct listeners after a short delay
+        setTimeout(attachDirectListeners, 500);
+        console.log('✅ Student resource preview fix ready.');
+        console.log('ℹ️ openResourcePopup() is now defined. Click any preview button to test.');
+    }
+
+    // Run when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+
+})();
 </script>
 </body>
 </html>
