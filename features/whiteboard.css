@@ -1,0 +1,74 @@
+.wb-session-header {
+    padding: var(--spacing-lg);
+    background: var(--accent);
+    color: white;
+    text-align: center;
+}
+
+.wb-session-code {
+    font-size: 2rem;
+    font-family: monospace;
+    letter-spacing: 5px;
+    background: white;
+    color: var(--accent);
+    padding: 10px 20px;
+    border-radius: 10px;
+    display: inline-block;
+    margin: 10px 0;
+}
+
+.wb-tools {
+    padding: var(--spacing-md);
+    background: var(--bg);
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border);
+    justify-content: center;
+}
+
+.wb-tool {
+    padding: 8px 16px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 0.875rem;
+}
+
+.wb-tool.active {
+    background: var(--accent);
+    color: white;
+}
+
+.wb-color {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+.wb-color.active {
+    border-color: var(--accent);
+    transform: scale(1.1);
+}
+
+#wbCanvas {
+    display: block;
+    background: white;
+    width: 100%;
+    height: auto;
+    cursor: crosshair;
+}
+
+.wb-participants {
+    padding: var(--spacing-md);
+    background: var(--accent-light);
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .wb-session-code { font-size: 1.2rem; letter-spacing: 3px; }
+    .wb-tool { padding: 5px 10px; font-size: 0.75rem; }
+}
