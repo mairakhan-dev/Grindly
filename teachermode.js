@@ -16310,3 +16310,59 @@ if (typeof updateClassStreakChain === 'undefined') {
 }
 
 console.log("✅ All fixes applied - teachermode.js is now crash-resistant");
+function renderClassPulse() {
+  const widget = document.getElementById('classPulseWidget');
+  if (!widget) return;
+  const realStudents = (students || []).filter(s => !s.isTeacher);
+  if (!realStudents.length) return;
+
+  const totalStudents = realStudents.length;
+  const activeToday = realStudents.filter(s => {
+    if (!s.lastActive || s.lastActive === 'Unknown') return false;
+    const diff = (Date.now() - new Date(s.lastActive)) / (1000 * 60 * 60);
+    return diff <= 24;
+  }).length;
+  const avgStreak = realStudents.reduce((sum, s) => sum + (s.streak || 0), 0) / totalStudents;
+  const confidence = checkinData && (checkinData.confident + checkinData.okay + checkinData.struggling) > 0
+    ? Math.round((checkinData.confident / (checkinData.confident + checkinData.okay + checkinData.struggling)) * 100)
+    : 0;
+
+  const pulse = Math.round(
+    (activeToday / totalStudents) * 40 +
+    Math.min(avgStreak / 10, 1) * 35 +
+    (confidence / 100) * 25
+  );
+
+  const num = document.getElementById('pulseNumber');
+  const active = document.getElementById('pulseActive');
+  const streak = document.getElementById('pulseStreak');
+  const conf = document.getElementById('pulseConfidence');
+  const title = document.getElementById('pulseTitle');
+  const desc = document.getElementById('pulseDesc');
+
+  if (num) num.textContent = pulse;
+  if (active) active.textContent = activeToday;
+  if (streak) streak.textContent = avgStreak.toFixed(1);
+  if (conf) conf.textContent = confidence + '%';
+
+  // Update ring
+  const ring = widget.querySelector('.pulse-ring-progress');
+  if (ring) {
+    const circumference = 540.35;
+    const offset = circumference - (pulse / 100) * circumference;
+    ring.style.strokeDashoffset = offset;
+  }
+
+  // State colors
+  if (pulse < 34) {
+    widget.dataset.state = 'cold';
+    if (title) title.textContent = 'Building momentum';
+  } else if (pulse < 67) {
+    widget.dataset.state = 'mid';
+    if (title) title.textContent = 'Steady and warm';
+  } else {
+    widget.dataset.state = 'warm';
+    if (title) title.textContent = 'Your class is on fire 🔥';
+  }
+  if (desc) desc.textContent = `${activeToday} of ${totalStudents} students active today.`;
+}

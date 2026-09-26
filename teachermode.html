@@ -17,7 +17,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..800;1,9..144,400..800&family=Inter:ital,opsz,wght@0,14..32,300..900;1,14..32,300..900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Quicksand:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -309,7 +311,76 @@
       
       <!-- Dashboard Section -->
       <div id="dashboard" class="dashboard-content" style="grid-column: span 12; display: block;">
+   <div class="pulse-widget" id="classPulseWidget" data-state="warm">
+  <div class="pulse-ring-wrapper">
+    <svg class="pulse-ring-svg" viewBox="0 0 200 200" aria-hidden="true">
+      <defs>
+        <linearGradient id="pulseGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#ffaa33"/>
+          <stop offset="50%" stop-color="#ff4714"/>
+          <stop offset="100%" stop-color="#d61f00"/>
+        </linearGradient>
+        <linearGradient id="pulseCold" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#60a5fa"/>
+          <stop offset="100%" stop-color="#3b82f6"/>
+        </linearGradient>
+        <linearGradient id="pulseMid" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#34d399"/>
+          <stop offset="100%" stop-color="#10b981"/>
+        </linearGradient>
+        <linearGradient id="pulseWarm" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#ffaa33"/>
+          <stop offset="50%" stop-color="#ff4714"/>
+          <stop offset="100%" stop-color="#d61f00"/>
+        </linearGradient>
+      </defs>
+      <circle class="pulse-ring-track" cx="100" cy="100" r="86"/>
+      <circle class="pulse-ring-progress" cx="100" cy="100" r="86"
+              stroke-dasharray="540.35" stroke-dashoffset="151.3"/>
+    </svg>
+    <div class="pulse-ring-value">
+      <div class="pulse-ring-number" id="pulseNumber">72</div>
+      <div class="pulse-ring-label">Pulse</div>
+    </div>
+  </div>
 
+  <div class="pulse-info">
+    <h2 id="pulseTitle">Your class is on fire 🔥</h2>
+    <p class="pulse-desc" id="pulseDesc">18 of 22 students active today. Streaks are climbing.</p>
+
+    <div class="pulse-metrics">
+      <div class="pulse-metric">
+        <span class="pulse-metric-value" id="pulseActive">18</span>
+        <span class="pulse-metric-label">Active today</span>
+      </div>
+      <div class="pulse-metric">
+        <span class="pulse-metric-value" id="pulseStreak">7.2</span>
+        <span class="pulse-metric-label">Avg streak</span>
+      </div>
+      <div class="pulse-metric">
+        <span class="pulse-metric-value" id="pulseConfidence">94%</span>
+        <span class="pulse-metric-label">Confidence</span>
+      </div>
+    </div>
+
+    <div class="pulse-history" aria-hidden="true">
+      <span style="--h:42%"></span>
+      <span style="--h:50%"></span>
+      <span style="--h:46%"></span>
+      <span style="--h:58%"></span>
+      <span style="--h:64%"></span>
+      <span style="--h:72%"></span>
+      <span style="--h:68%"></span>
+      <span style="--h:78%"></span>
+      <span style="--h:82%"></span>
+      <span style="--h:88%"></span>
+      <span style="--h:92%"></span>
+      <span style="--h:86%"></span>
+      <span style="--h:94%"></span>
+      <span style="--h:100%"></span>
+    </div>
+  </div>
+</div>
         
         <!-- Quick Stats -->
         <div class="quick-stats">
