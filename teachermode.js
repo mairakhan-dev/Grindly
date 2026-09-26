@@ -16366,3 +16366,9 @@ function renderClassPulse() {
   }
   if (desc) desc.textContent = `${activeToday} of ${totalStudents} students active today.`;
 }
+setTimeout(() => {
+  document.querySelectorAll('.dashboard-section').forEach(section => {
+    const header = section.querySelector('[data-section="overview"]');
+    if (header) section.remove();
+  });
+}, 2000);
