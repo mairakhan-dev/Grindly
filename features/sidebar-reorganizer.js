@@ -187,7 +187,11 @@
     
     const quickStats = dashboard.querySelector('.quick-stats');
     const proTips = dashboard.querySelectorAll('.pro-tip');
-    const teacherToolkit = dashboard.querySelector('.content-card:has(h2:contains("Teacher Toolkit"))');
+    
+const teacherToolkit = Array.from(dashboard.querySelectorAll('.content-card')).find(card => {
+    const h2 = card.querySelector('h2');
+    return h2 && h2.textContent.includes('Teacher Toolkit');
+});
     const formsSection = dashboard.querySelector('.forms-section');
     const contentSection = dashboard.querySelector('.content-section');
     const streakChain = dashboard.querySelector('.streak-chain-container');
