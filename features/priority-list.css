@@ -1,0 +1,322 @@
+.priority-list-container {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0 !important;
+  height: fit-content;
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+.priority-list-container:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  border-color: var(--accent);
+}
+
+.priority-list-container h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.priority-list-container h3::before {
+  content: '📌';
+  font-size: 1.2rem;
+}
+
+/* Input area */
+.priority-input-area {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  width: 100%;
+}
+
+.priority-input-area input {
+  flex: 1;
+  min-width: 0; /* Prevents input from overflowing */
+  padding: 10px 14px !important;
+  border: 2px solid var(--border) !important;
+  border-radius: 12px !important;
+  background: var(--bg) !important;
+  color: var(--text) !important;
+  font-size: 0.9rem;
+  min-height: 42px;
+  box-sizing: border-box;
+}
+
+.priority-input-area input:focus {
+  border-color: var(--accent) !important;
+  outline: none;
+}
+
+.priority-input-area button {
+  padding: 10px 20px !important;
+  background: var(--accent) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 12px !important;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  white-space: nowrap;
+  min-height: 42px;
+  flex-shrink: 0; /* Prevents button from shrinking */
+  transition: all 0.2s ease;
+}
+
+.priority-input-area button:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(79, 70, 229, 0.2);
+}
+
+/* Priority items list */
+.priority-items {
+  max-height: 250px;
+  overflow-y: auto;
+  margin-bottom: 16px;
+  padding-right: 4px;
+}
+
+.priority-items::-webkit-scrollbar {
+  width: 4px;
+}
+
+.priority-items::-webkit-scrollbar-track {
+  background: var(--bg);
+  border-radius: 4px;
+}
+
+.priority-items::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 4px;
+}
+
+.priority-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--bg);
+  border-radius: 10px;
+  margin-bottom: 6px;
+  border: 1px solid var(--border);
+  transition: all 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.priority-item:hover {
+  border-color: var(--accent);
+  transform: translateX(2px);
+}
+
+.priority-item-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0; /* Allows text to truncate */
+}
+
+.priority-item-left input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--accent);
+  flex-shrink: 0;
+}
+
+.priority-item-left span {
+  font-size: 0.9rem;
+  color: var(--text);
+  word-break: break-word;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.priority-item-left span.completed {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.priority-item-actions {
+  display: flex;
+  gap: 4px;
+  opacity: 0.4;
+  transition: opacity 0.2s ease;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.priority-item:hover .priority-item-actions {
+  opacity: 1;
+}
+
+.priority-item-actions button {
+  background: none;
+  border: none;
+  padding: 4px 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  border-radius: 6px;
+  color: var(--text-muted);
+  transition: all 0.2s ease;
+}
+
+.priority-item-actions button:hover {
+  background: var(--accent-light);
+  color: var(--accent);
+}
+
+.priority-item-actions .delete-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
+}
+
+/* Footer with stats - FIXED TO PREVENT OVERFLOW */
+.priority-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  flex-wrap: wrap;
+}
+
+.priority-stats {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.priority-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  background: var(--bg);
+  padding: 4px 10px;
+  border-radius: 30px;
+  border: 1px solid var(--border);
+  white-space: nowrap;
+  flex-shrink: 1;
+  min-width: fit-content;
+}
+
+.priority-stat span {
+  font-weight: 600;
+  color: var(--accent);
+  margin-left: 2px;
+}
+
+.priority-clear-btn {
+  background: none;
+  border: 1px solid var(--danger);
+  padding: 6px 14px;
+  border-radius: 30px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--danger);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+  max-width: 130px;
+}
+
+.priority-clear-btn:hover:not(:disabled) {
+  background: var(--danger);
+  color: white;
+  transform: translateY(-1px);
+}
+
+.priority-clear-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+  border-color: var(--border);
+  color: var(--text-muted);
+}
+
+/* Empty state */
+.priority-empty {
+  text-align: center;
+  padding: 30px 20px;
+  background: var(--bg);
+  border-radius: 12px;
+  margin-bottom: 16px;
+  border: 2px dashed var(--border);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.priority-empty-icon {
+  font-size: 2rem;
+  margin-bottom: 8px;
+  opacity: 0.4;
+}
+
+.priority-empty-text {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* Animation */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.priority-item {
+  animation: slideIn 0.3s ease;
+}
+
+/* Responsive - for very small screens */
+@media (max-width: 500px) {
+  .priority-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .priority-stats {
+    justify-content: center;
+  }
+  
+  .priority-clear-btn {
+    width: 100%;
+    max-width: none;
+    text-align: center;
+  }
+  
+  .priority-input-area {
+    flex-direction: column;
+  }
+  
+  .priority-input-area button {
+    width: 100%;
+  }
+}
