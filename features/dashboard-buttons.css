@@ -1,0 +1,48 @@
+
+/* Simple button bar - sits on top, doesn't change anything else */
+.dashboard-button-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 10px 0;
+  flex-wrap: wrap;
+}
+
+.dashboard-section-btn {
+  padding: 8px 16px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 30px;
+  font-size: 0.9rem;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dashboard-section-btn:hover {
+  border-color: var(--accent);
+  background: var(--accent-light);
+}
+
+.dashboard-section-btn.active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+/* Hide/show sections - doesn't affect layout */
+.dashboard-content-wrapper {
+  width: 100%;
+}
+
+.dashboard-section-group {
+  width: 100%;
+}
+
+.dashboard-section-group.hidden {
+  display: none;
+}
