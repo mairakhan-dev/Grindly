@@ -3353,3 +3353,35 @@ body::before {
   .sidebar { width: 280px !important; max-width: 86% !important; }
   .main-content { margin-left: 0 !important; }
 }
+/* Whiteboard — make sure it shows and stays above the notebook background */
+#wbSession {
+  position: relative;
+  z-index: 50;
+  display: none;
+}
+#wbSession[style*="display: block"],
+#wbSession[style*="display:block"],
+#wbSession.show,
+.wb-session.show {
+  display: block !important;
+}
+
+/* Start Whiteboard button — make sure it lives in the sidebar */
+#wbStartBtn {
+  display: flex !important;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--ember-soft);
+  border: 1px solid var(--ember);
+  color: var(--ember) !important;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: all 0.15s ease;
+}
+#wbStartBtn:hover {
+  background: var(--gradient-flame) !important;
+  color: #fff !important;
+}

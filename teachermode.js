@@ -16372,3 +16372,48 @@ setTimeout(() => {
     if (header) section.remove();
   });
 }, 2000);
+// Re-add the whiteboard button after the sidebar reorganizer finishes
+(function ensureWhiteboardButton() {
+  function tryAdd() {
+    const sidebar = document.querySelector('.sidebar');
+    if (!sidebar) { setTimeout(tryAdd, 500); return; }
+    if (document.getElementById('wbStartBtn')) return;
+
+    const btn = document.createElement('div');
+    btn.className = 'nav-item';
+    btn.id = 'wbStartBtn';
+    btn.innerHTML = '🎨 Start Whiteboard';
+    btn.onclick = function () {
+      if (typeof window.startWbSession === 'function') {
+        window.startWbSession();
+      } else {
+        // fallback: show the session manually with a fresh code
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        const codeEl = document.getElementById('wbCodeDisplay');
+        const wrap = document.getElementById('wbSession');
+        if (codeEl) codeEl.textContent = code;
+        if (wrap) {
+          wrap.style.display = 'block';
+          wrap.classList.add('show');
+          wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+    };
+
+    // Prefer to insert into the nav list inside the sidebar
+    const nav = sidebar.querySelector('.sidebar-nav');
+    const navSection = sidebar.querySelector('.sidebar-section .section-content') ||
+                       sidebar.querySelector('.sidebar-section');
+
+    if (nav && nav.parentNode) {
+      nav.appendChild(btn);
+    } else if (navSection) {
+      navSection.appendChild(btn);
+    } else {
+      sidebar.appendChild(btn);
+    }
+  }
+
+  // Try multiple times because the reorganizer runs at different moments
+  [1000, 2000, 3000, 4000, 5000].forEach(t => setTimeout(tryAdd, t));
+})();
