@@ -261,25 +261,39 @@
   <!-- Main Content -->
   <main class="main-content">
     
-    
-      <!-- ═══════════════════════════════════════════════════════════
-     TEACHER HEADER · self-contained · nothing can hide it
-     ═══════════════════════════════════════════════════════════ -->
-<div class="tm-header">
-  <h1 class="tm-title">Welcome to Your Classroom</h1>
-  <p class="tm-sub">Manage announcements, assignments, and track student progress</p>
+    <!-- ═══ TEACHER HEADER · fully inlined, cannot be hidden ═══ -->
+<div id="tmHeaderFinal" style="display:block !important; visibility:visible !important; opacity:1 !important; position:relative !important; margin:0 0 24px 0 !important; padding:0 !important; color:#1a1a2e !important; z-index:5 !important;">
 
-  <div class="tm-bar">
-    <input type="text" class="tm-search" placeholder="🔍 Search students by id..." oninput="searchStudents()" id="studentSearch">
-    <button class="tm-btn tm-btn-primary" onclick="refreshStudents()">🔄 Refresh</button>
-    <button class="tm-btn" onclick="window.location.href='index.html'">🏠 Home</button>
-    <button class="tm-btn" onclick="togglePresentationMode()">📺 Presentation Mode</button>
-    <button class="tm-btn tm-bell" onclick="showNotifications()">
-      🔔 Notifications
-      <span id="notificationCountDesktop" class="tm-badge" style="display:none;">0</span>
-    </button>
-    <button class="tm-btn tm-warn" onclick="toggleDemoMode()" id="demoModeBtn">🌐 Demo Mode: ON</button>
+  <h1 style="display:block !important; visibility:visible !important; opacity:1 !important; font-family:'Poppins',system-ui,sans-serif !important; font-size:1.6rem !important; font-weight:700 !important; line-height:1.15 !important; letter-spacing:-0.02em !important; margin:0 0 6px 0 !important; padding:0 !important; color:#ff4714 !important; -webkit-text-fill-color:#ff4714 !important; background:none !important; text-shadow:none !important; filter:none !important;">
+    Welcome to Your Classroom
+  </h1>
+
+  <p style="display:block !important; visibility:visible !important; opacity:1 !important; font-family:'Inter',system-ui,sans-serif !important; font-size:0.9375rem !important; font-weight:500 !important; line-height:1.5 !important; margin:0 0 16px 0 !important; padding:0 !important; color:#5a5a7a !important; -webkit-text-fill-color:#5a5a7a !important; max-width:660px !important;">
+    Manage announcements, assignments, and track student progress
+  </p>
+
+  <div style="display:flex !important; visibility:visible !important; opacity:1 !important; flex-wrap:wrap !important; gap:8px !important; align-items:center !important; padding:10px !important; background:#ffffff !important; border:1px solid rgba(60,42,15,0.10) !important; border-radius:16px !important; margin:0 0 16px 0 !important;">
+    <input type="text" id="studentSearch" placeholder="🔍 Search students by id..." oninput="searchStudents()" style="display:block !important; flex:1 1 200px !important; min-width:0 !important; padding:10px 14px !important; border:2px solid rgba(60,42,15,0.10) !important; border-radius:12px !important; background:#faf5e8 !important; color:#1a1a2e !important; font-family:'Inter',sans-serif !important; font-size:14px !important; font-weight:500 !important; min-height:42px !important; outline:none !important;">
+    <button type="button" onclick="refreshStudents()" style="display:inline-flex !important; visibility:visible !important; opacity:1 !important; align-items:center !important; gap:6px !important; padding:10px 16px !important; border:1px solid transparent !important; border-radius:12px !important; background:linear-gradient(135deg,#ffaa33 0%,#ff4714 50%,#d61f00 100%) !important; color:#ffffff !important; -webkit-text-fill-color:#ffffff !important; font-family:'Inter',sans-serif !important; font-size:13px !important; font-weight:700 !important; cursor:pointer !important; min-height:42px !important; white-space:nowrap !important;">🔄 Refresh</button>
+    <button type="button" onclick="window.location.href='index.html'" style="display:inline-flex !important; visibility:visible !important; opacity:1 !important; align-items:center !important; gap:6px !important; padding:10px 16px !important; border:1px solid rgba(60,42,15,0.10) !important; border-radius:12px !important; background:#ffffff !important; color:#1a1a2e !important; -webkit-text-fill-color:#1a1a2e !important; font-family:'Inter',sans-serif !important; font-size:13px !important; font-weight:700 !important; cursor:pointer !important; min-height:42px !important; white-space:nowrap !important;">🏠 Home</button>
+    <button type="button" onclick="togglePresentationMode()" style="display:inline-flex !important; visibility:visible !important; opacity:1 !important; align-items:center !important; gap:6px !important; padding:10px 16px !important; border:1px solid rgba(60,42,15,0.10) !important; border-radius:12px !important; background:#ffffff !important; color:#1a1a2e !important; -webkit-text-fill-color:#1a1a2e !important; font-family:'Inter',sans-serif !important; font-size:13px !important; font-weight:700 !important; cursor:pointer !important; min-height:42px !important; white-space:nowrap !important;">📺 Presentation Mode</button>
+    <button type="button" onclick="showNotifications()" style="display:inline-flex !important; visibility:visible !important; opacity:1 !important; align-items:center !important; gap:6px !important; padding:10px 16px !important; border:1px solid rgba(60,42,15,0.10) !important; border-radius:12px !important; background:#ffffff !important; color:#1a1a2e !important; -webkit-text-fill-color:#1a1a2e !important; font-family:'Inter',sans-serif !important; font-size:13px !important; font-weight:700 !important; cursor:pointer !important; min-height:42px !important; white-space:nowrap !important; position:relative !important;">🔔 Notifications</button>
+    <button type="button" onclick="toggleDemoMode()" id="demoModeBtn" style="display:inline-flex !important; visibility:visible !important; opacity:1 !important; align-items:center !important; gap:6px !important; padding:10px 16px !important; border:1px solid transparent !important; border-radius:12px !important; background:linear-gradient(135deg,#f59e0b,#d97706) !important; color:#ffffff !important; -webkit-text-fill-color:#ffffff !important; font-family:'Inter',sans-serif !important; font-size:13px !important; font-weight:700 !important; cursor:pointer !important; min-height:42px !important; white-space:nowrap !important;">🌐 Demo Mode: ON</button>
   </div>
+
+  <div id="tmTabs" style="display:flex !important; visibility:visible !important; opacity:1 !important; gap:4px !important; padding:5px !important; background:#faf5e8 !important; border:1px solid rgba(60,42,15,0.10) !important; border-radius:999px !important; overflow-x:auto !important; overflow-y:hidden !important; -webkit-overflow-scrolling:touch !important; min-height:48px !important;">
+    <button type="button" class="tm-tab active" data-section="dashboard" style="display:inline-flex !important; visibility:visible !important; opacity:1 !important; align-items:center !important; gap:6px !important; padding:9px 16px !important; border:none !important; border-radius:999px !important; background:linear-gradient(135deg,#ffaa33 0%,#ff4714 50%,#d61f00 100%) !important; color:#ffffff !important; -webkit-text-fill-color:#ffffff !important; font-family:'Inter',sans-serif !important; font-size:13px !important; font-weight:700 !important; cursor:pointer !important; white-space:nowrap !important; flex-shrink:0 !important; min-height:38px !important;">📊 Dashboard</button>
+    <button type="button" class="tm-tab" data-section="announcements" style="display:inline-flex !important; visibility:visible !important; opacity:1 !important; align-items:center !important; gap:6px !important; padding:9px 16px !important; border:none !important; border-radius:999px !important; background:transparent !important; color:#5a5a7a !important; -webkit-text-fill-color:#5a5a7a !important; font-family:'Inter',sans-serif !important; font-size:13px !important; font-weight:600 !important; cursor:pointer !important; white-space:nowrap !important; flex-shrink:0 !important; min-height:38px !important;">📢 Announcements</button>
+    <button type="button" class="tm-tab" data-section="assignments" style="display:inline-flex !important; visibility:visible !important; opacity:1 !important; align-items:center !important; gap:6px !important; padding:9px 16px !important; border:none !important; border-radius:999px !important; background:transparent !important; color:#5a5a7a !important; -webkit-text-fill-color:#5a5a7a !important; font-family:'Inter',sans-serif !important; font-size:13px !important; font-weight:600 !important; cursor:pointer !important; white-space:nowrap !important; flex-shrink:0 !important; min-height:38px !important;">📚 Assignments</button>
+    <button type="button" class="tm-tab" data-section="resources" style="display:inline-flex !important; visibility:visible !important; opacity:1 !important; align-items:center !important; gap:6px !important; padding:9px 16px !important; border:none !important; border-radius:999px !important; background:transparent !important; color:#5a5a7a !important; -webkit-text-fill-color:#5a5a7a !important; font-family:'Inter',sans-serif !important; font-size:13px !important; font-weight:600 !important; cursor:pointer !important; white-space:nowrap !important; flex-shrink:0 !important; min-height:38px !important;">📁 Resources</button>
+    <button type="button" class="tm-tab" data-section="polls" style="display:inline-flex !important; visibility:visible !important; opacity:1 !important; align-items:center !important; gap:6px !important; padding:9px 16px !important; border:none !important; border-radius:999px !important; background:transparent !important; color:#5a5a7a !important; -webkit-text-fill-color:#5a5a7a !important; font-family:'Inter',sans-serif !important; font-size:13px !important; font-weight:600 !important; cursor:pointer !important; white-space:nowrap !important; flex-shrink:0 !important; min-height:38px !important;">🗳️ Polls</button>
+    <button type="button" class="tm-tab" data-section="students" style="display:inline-flex !important; visibility:visible !important; opacity:1 !important; align-items:center !important; gap:6px !important; padding:9px 16px !important; border:none !important; border-radius:999px !important; background:transparent !important; color:#5a5a7a !important; -webkit-text-fill-color:#5a5a7a !important; font-family:'Inter',sans-serif !important; font-size:13px !important; font-weight:600 !important; cursor:pointer !important; white-space:nowrap !important; flex-shrink:0 !important; min-height:38px !important;">👥 Students</button>
+    <button type="button" class="tm-tab" data-section="checkins" style="display:inline-flex !important; visibility:visible !important; opacity:1 !important; align-items:center !important; gap:6px !important; padding:9px 16px !important; border:none !important; border-radius:999px !important; background:transparent !important; color:#5a5a7a !important; -webkit-text-fill-color:#5a5a7a !important; font-family:'Inter',sans-serif !important; font-size:13px !important; font-weight:600 !important; cursor:pointer !important; white-space:nowrap !important; flex-shrink:0 !important; min-height:38px !important;">😊 Check-ins</button>
+    <button type="button" class="tm-tab" data-section="exitTickets" style="display:inline-flex !important; visibility:visible !important; opacity:1 !important; align-items:center !important; gap:6px !important; padding:9px 16px !important; border:none !important; border-radius:999px !important; background:transparent !important; color:#5a5a7a !important; -webkit-text-fill-color:#5a5a7a !important; font-family:'Inter',sans-serif !important; font-size:13px !important; font-weight:600 !important; cursor:pointer !important; white-space:nowrap !important; flex-shrink:0 !important; min-height:38px !important;">🎫 Exit Tickets</button>
+    <button type="button" class="tm-tab" data-section="settings" style="display:inline-flex !important; visibility:visible !important; opacity:1 !important; align-items:center !important; gap:6px !important; padding:9px 16px !important; border:none !important; border-radius:999px !important; background:transparent !important; color:#5a5a7a !important; -webkit-text-fill-color:#5a5a7a !important; font-family:'Inter',sans-serif !important; font-size:13px !important; font-weight:600 !important; cursor:pointer !important; white-space:nowrap !important; flex-shrink:0 !important; min-height:38px !important;">⚙️ Settings</button>
+  </div>
+</div>
+
 
   <div class="tm-tabs" id="tmTabs">
     <button class="tm-tab active" data-section="dashboard">📊 Dashboard</button>
@@ -2307,23 +2321,26 @@
 </style>
 
 <script>
-/* ─── Wire the tabs to showSection() ─── */
 document.addEventListener('DOMContentLoaded', function () {
   var tabs = document.querySelectorAll('.tm-tab');
+  var ACTIVE = "display:inline-flex !important; visibility:visible !important; opacity:1 !important; align-items:center !important; gap:6px !important; padding:9px 16px !important; border:none !important; border-radius:999px !important; background:linear-gradient(135deg,#ffaa33 0%,#ff4714 50%,#d61f00 100%) !important; color:#ffffff !important; -webkit-text-fill-color:#ffffff !important; font-family:'Inter',sans-serif !important; font-size:13px !important; font-weight:700 !important; cursor:pointer !important; white-space:nowrap !important; flex-shrink:0 !important; min-height:38px !important;";
+  var IDLE   = "display:inline-flex !important; visibility:visible !important; opacity:1 !important; align-items:center !important; gap:6px !important; padding:9px 16px !important; border:none !important; border-radius:999px !important; background:transparent !important; color:#5a5a7a !important; -webkit-text-fill-color:#5a5a7a !important; font-family:'Inter',sans-serif !important; font-size:13px !important; font-weight:600 !important; cursor:pointer !important; white-space:nowrap !important; flex-shrink:0 !important; min-height:38px !important;";
+
   tabs.forEach(function (tab) {
     tab.addEventListener('click', function () {
-      tabs.forEach(function (t) { t.classList.remove('active'); });
+      tabs.forEach(function (t) {
+        t.classList.remove('active');
+        t.setAttribute('style', IDLE);
+      });
       tab.classList.add('active');
+      tab.setAttribute('style', ACTIVE);
+
       var section = tab.getAttribute('data-section');
-      if (section && typeof showSection === 'function') {
-        showSection(section);
-      }
-      // Also sync the sidebar's active state
+      if (section && typeof showSection === 'function') showSection(section);
+
       document.querySelectorAll('.sidebar .nav-item').forEach(function (n) {
         n.classList.remove('active');
-        if (n.textContent.toLowerCase().indexOf(section) !== -1) {
-          n.classList.add('active');
-        }
+        if (n.textContent.toLowerCase().indexOf(section) !== -1) n.classList.add('active');
       });
     });
   });
