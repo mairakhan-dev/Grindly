@@ -16524,3 +16524,17 @@ function toggleSidebar() {
   if (backdrop) backdrop.classList.toggle('show', isOpen);
   document.body.classList.toggle('drawer-open', isOpen);
 }
+(function () {
+  function escapeStacking() {
+    if (window.innerWidth >= 1021) return;
+    var sidebar  = document.querySelector('.sidebar');
+    var backdrop = document.getElementById('sidebarBackdrop');
+    if (sidebar  && sidebar.parentElement  !== document.body) document.body.appendChild(sidebar);
+    if (backdrop && backdrop.parentElement !== document.body) document.body.appendChild(backdrop);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', escapeStacking);
+  } else {
+    escapeStacking();
+  }
+})();

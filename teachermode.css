@@ -4633,3 +4633,131 @@ html body .mobile-header { z-index: 1000 !important; }
   .stat-number { font-size: 1.15rem !important; }
   .stat-label { font-size: 0.5625rem !important; }
 }
+/* ============================================================
+   DASHBOARD · 2 CARDS PER ROW
+   ============================================================ */
+
+/* Both main sections become 2-col grids */
+.forms-section,
+.content-section {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+  align-items: start !important;
+}
+
+/* Cards flow first, pro-tips are pushed to the bottom */
+.forms-section > :not(.pro-tip),
+.content-section > :not(.pro-tip) {
+  order: 1;
+  min-width: 0;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+/* Pro-tips span full width and appear after the cards */
+.forms-section > .pro-tip,
+.content-section > .pro-tip {
+  order: 100;
+  grid-column: 1 / -1;
+  margin: 0 !important;
+}
+
+/* Compact the cards so they fit nicely at half width */
+.forms-section .form-card,
+.content-section .content-card {
+  padding: 14px !important;
+}
+.forms-section .form-card h2,
+.content-section .content-header h2 {
+  font-size: 1rem !important;
+  margin-bottom: 8px !important;
+  white-space: normal !important;
+}
+.forms-section .form-card > * + *,
+.content-section .content-body > * + * {
+  margin-top: 10px !important;
+}
+.forms-section .form-group {
+  margin-bottom: 10px !important;
+}
+.forms-section .form-card input,
+.forms-section .form-card textarea,
+.forms-section .form-card select {
+  padding: 9px 11px !important;
+  font-size: 14px !important;
+  min-height: 40px !important;
+}
+.forms-section .form-card textarea {
+  min-height: 72px !important;
+}
+.forms-section .form-card .btn-submit,
+.forms-section .form-card .btn-challenge {
+  padding: 10px 14px !important;
+  font-size: 0.8125rem !important;
+  min-height: 40px !important;
+  margin-top: 8px !important;
+}
+.content-section .content-header {
+  padding: 12px 14px !important;
+}
+.content-section .content-body {
+  padding: 12px 14px !important;
+  max-height: 260px !important;
+}
+
+/* Class Code card — shrink the giant code text so it fits half-width */
+.forms-section .class-code-display {
+  padding: 18px 14px !important;
+  margin: 0 !important;
+}
+.forms-section .class-code-display h2 {
+  font-size: 1rem !important;
+  margin-bottom: 6px !important;
+}
+.forms-section .class-code-display .code {
+  font-size: 1.5rem !important;
+  letter-spacing: 0.15em !important;
+  margin: 12px 0 !important;
+}
+.forms-section .class-code-display .btn {
+  padding: 8px 12px !important;
+  font-size: 0.75rem !important;
+  min-height: 38px !important;
+}
+
+/* At tablet/desktop the two sections sit side-by-side as before,
+   but still 2-col internally. Slightly roomier padding. */
+@media (min-width: 769px) {
+  .forms-section,
+  .content-section {
+    gap: 16px !important;
+  }
+  .forms-section .form-card,
+  .content-section .content-card {
+    padding: 16px !important;
+  }
+  .forms-section .class-code-display .code {
+    font-size: 1.75rem !important;
+  }
+}
+
+/* Ultra-small phones: keep 2-col but tighten further */
+@media (max-width: 380px) {
+  .forms-section,
+  .content-section {
+    gap: 10px !important;
+  }
+  .forms-section .form-card,
+  .content-section .content-card {
+    padding: 11px !important;
+  }
+  .forms-section .form-card h2,
+  .content-section .content-header h2 {
+    font-size: 0.875rem !important;
+  }
+  .forms-section .class-code-display .code {
+    font-size: 1.15rem !important;
+    letter-spacing: 0.1em !important;
+  }
+}
