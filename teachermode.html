@@ -294,11 +294,7 @@
   </div>
 </div>
       
-      <div class="pro-tip">
-        <strong>💡 Pro Tip</strong>
-        Use the search bar to quickly find specific students. Click on any student to view their detailed progress and study habits.
-      </div>
-    </div>
+     
     
     <!-- Toast Container -->
     <div id="toastContainer" class="toast-container"></div>
@@ -2113,149 +2109,9 @@
 </div>
 
  
-<script>
-(function () {
-  function escapeStacking() {
-    if (window.innerWidth >= 1021) return;
-    var sidebar  = document.querySelector('.sidebar');
-    var backdrop = document.getElementById('sidebarBackdrop');
-    if (sidebar  && sidebar.parentElement  !== document.body) document.body.appendChild(sidebar);
-    if (backdrop && backdrop.parentElement !== document.body) document.body.appendChild(backdrop);
-  }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', escapeStacking);
-  } else {
-    escapeStacking();
-  }
-})();
-</script>
-<script>
-(function () {
-  function escapeStacking() {
-    if (window.innerWidth >= 1021) return;
-    var sidebar  = document.querySelector('.sidebar');
-    var backdrop = document.getElementById('sidebarBackdrop');
-    if (sidebar  && sidebar.parentElement  !== document.body) document.body.appendChild(sidebar);
-    if (backdrop && backdrop.parentElement !== document.body) document.body.appendChild(backdrop);
-  }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', escapeStacking);
-  } else {
-    escapeStacking();
-  }
-})();
-</script>
-<script>
-(function removeContentMgmt() {
-  var targets = ['Content Management', 'content management'];
-  function sweep() {
-    document.querySelectorAll('h1,h2,h3,h4,div,span,p').forEach(function (el) {
-      if (el.children.length > 0) return;
-      var txt = (el.textContent || '').trim();
-      if (targets.some(function (t) { return txt.indexOf(t) !== -1; })) {
-        // Remove the smallest reasonable wrapper (the header/section around it)
-        var wrapper = el.closest('.section-header, .content-header, .dashboard-section, [class*="header"]');
-        if (wrapper) wrapper.remove();
-        else el.remove();
-      }
-    });
-  }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () {
-      sweep();
-      // Re-run once after your other scripts have injected their headers
-      setTimeout(sweep, 300);
-    });
-  } else {
-    sweep();
-    setTimeout(sweep, 300);
-  }
-})();
-</script>
 
-<script>
-(function () {
-  function unHide() {
-    var targets = [
-      document.getElementById('dashboardHeader'),
-      document.querySelector('.dashboard-header'),
-      document.querySelector('.controls-bar'),
-      document.querySelector('.dashboard-button-bar')
-    ];
-    targets.forEach(function (el) {
-      if (!el) return;
-      // Remove inline display:none / visibility:hidden
-      if (el.style.display === 'none') el.style.display = '';
-      if (el.style.visibility === 'hidden') el.style.visibility = '';
-      if (el.style.opacity === '0') el.style.opacity = '';
-      if (el.hasAttribute('hidden')) el.removeAttribute('hidden');
-      // Force-show
-      el.style.setProperty('display', el.classList.contains('dashboard-header') || el.id === 'dashboardHeader' ? 'block' : 'flex', 'important');
-      el.style.setProperty('visibility', 'visible', 'important');
-      el.style.setProperty('opacity', '1', 'important');
-    });
-  }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () {
-      unHide();
-      setTimeout(unHide, 300);
-      setTimeout(unHide, 1000);
-    });
-  } else {
-    unHide();
-    setTimeout(unHide, 300);
-    setTimeout(unHide, 1000);
-  }
-})();
-</script>
-<script>
-(function forceVisibleChrome(){
-  var SEL = [
-    '#dashboardHeader', '.dashboard-header',
-    '.controls-bar', '.dashboard-button-bar',
-    '#dashboardHeader h1', '.dashboard-header h1',
-    '.dashboard-subtitle', '.time-greeting',
-    '.controls-bar .btn', '.controls-bar .btn-icon',
-    '.dashboard-section-btn'
-  ].join(',');
 
-  function fix(){
-    document.querySelectorAll(SEL).forEach(function(el){
-      el.style.removeProperty('display');
-      el.style.removeProperty('opacity');
-      el.style.removeProperty('visibility');
-      el.style.removeProperty('filter');
-      el.style.removeProperty('mix-blend-mode');
-      el.style.removeProperty('transform');
-      el.style.removeProperty('clip-path');
-      el.style.removeProperty('text-shadow');
-      el.style.removeProperty('background');
-      el.style.removeProperty('background-image');
-      el.style.removeProperty('background-color');
-      el.style.removeProperty('background-clip');
-      el.style.removeProperty('-webkit-background-clip');
-      el.style.removeProperty('-webkit-text-fill-color');
-      el.style.removeProperty('-webkit-text-stroke');
-      el.style.removeProperty('color');
 
-      // Force-visible via inline !important (beats any stylesheet)
-      el.style.setProperty('opacity', '1', 'important');
-      el.style.setProperty('visibility', 'visible', 'important');
-      el.style.setProperty('-webkit-text-fill-color', 'currentColor', 'important');
-      el.style.setProperty('background-clip', 'initial', 'important');
-      el.style.setProperty('-webkit-background-clip', 'initial', 'important');
-    });
-  }
-
-  ['DOMContentLoaded', 'load'].forEach(function(ev){
-    document.addEventListener(ev, fix);
-  });
-  setTimeout(fix, 100);
-  setTimeout(fix, 500);
-  setTimeout(fix, 1500);
-  setTimeout(fix, 3000);
-})();
-</script>
 
 <style>
 /* ═══════════════════════════════════════════════════════════
