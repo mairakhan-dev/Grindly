@@ -4132,3 +4132,205 @@ body.focus-mode .focus-mode-panel { display: block; }
     }
   }
 }
+
+
+/* ---------- 1 · JOIN WHITEBOARD · modal overlay ---------- */
+#joinWbContainer {
+  display: none !important;
+}
+#joinWbContainer.wb-visible {
+  display: flex !important;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(60, 42, 15, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: wbFadeIn 0.22s ease;
+}
+@keyframes wbFadeIn { from { opacity: 0; } to { opacity: 1; } }
+#joinWbContainer .join-wb-header {
+  border-radius: var(--radius-xl, 26px);
+  width: 100%;
+  max-width: 460px;
+  padding: 40px 32px;
+  position: relative;
+  box-shadow: 0 40px 90px rgba(60, 42, 15, 0.30);
+  animation: wbSlideUp 0.3s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+@keyframes wbSlideUp {
+  from { opacity: 0; transform: translateY(20px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.wb-close-btn {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+  border: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  transition: background 0.15s ease;
+  font-family: inherit;
+}
+.wb-close-btn:hover { background: rgba(255, 255, 255, 0.38); }
+
+/* Active session already uses `.active-wb-session { display: none }` — keep it
+   as a full-screen overlay when the student joins. */
+#activeWbSession.show {
+  display: block !important;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: var(--bg);
+  overflow-y: auto;
+  padding: 20px;
+}
+
+/* ---------- 2 · SIDEBAR NAV · bigger rectangles ---------- */
+.sidebar .sidebar-nav {
+  gap: 8px !important;
+}
+.sidebar .sidebar-nav .nav-item,
+.sidebar .sidebar-nav .sidebar-btn {
+  padding: 14px 18px !important;
+  border-radius: 10px !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  min-height: 48px;
+  line-height: 1.2;
+  letter-spacing: 0.005em;
+}
+.sidebar .sidebar-nav .nav-item:hover {
+  transform: translateX(4px) !important;
+  box-shadow: 0 4px 12px rgba(60, 42, 15, 0.06);
+}
+.sidebar .sidebar-nav .nav-item.active {
+  box-shadow: 0 8px 22px var(--ember-glow, rgba(255,71,20,0.38)) !important;
+}
+
+/* ---------- 3 · ENGAGEMENT HEATMAP · every theme ---------- */
+body.light,
+body:not([class*="theme-"]):not(.dark):not(.ocean):not(.forest):not(.sunset):not(.purple):not(.rainbow):not(.premium) {
+  --heat-0: rgba(255, 71, 20, 0.06);
+}
+body.dark {
+  --heat-0: rgba(255, 255, 255, 0.06);
+  --heat-1: rgba(255, 87, 34, 0.28);
+  --heat-2: rgba(255, 87, 34, 0.50);
+  --heat-3: rgba(255, 87, 34, 0.72);
+  --heat-4: rgba(255, 87, 34, 0.95);
+}
+body.ocean {
+  --heat-0: rgba(2, 132, 199, 0.08);
+  --heat-1: rgba(2, 132, 199, 0.28);
+  --heat-2: rgba(2, 132, 199, 0.50);
+  --heat-3: rgba(2, 132, 199, 0.72);
+  --heat-4: rgba(2, 132, 199, 0.95);
+}
+body.forest {
+  --heat-0: rgba(5, 150, 105, 0.08);
+  --heat-1: rgba(5, 150, 105, 0.28);
+  --heat-2: rgba(5, 150, 105, 0.50);
+  --heat-3: rgba(5, 150, 105, 0.72);
+  --heat-4: rgba(5, 150, 105, 0.95);
+}
+body.sunset {
+  --heat-0: rgba(234, 88, 12, 0.08);
+  --heat-1: rgba(234, 88, 12, 0.28);
+  --heat-2: rgba(234, 88, 12, 0.50);
+  --heat-3: rgba(234, 88, 12, 0.72);
+  --heat-4: rgba(234, 88, 12, 0.95);
+}
+body.purple {
+  --heat-0: rgba(179, 136, 255, 0.08);
+  --heat-1: rgba(179, 136, 255, 0.28);
+  --heat-2: rgba(179, 136, 255, 0.50);
+  --heat-3: rgba(179, 136, 255, 0.72);
+  --heat-4: rgba(179, 136, 255, 0.95);
+}
+body.rainbow {
+  --heat-0: rgba(255, 122, 217, 0.08);
+  --heat-1: rgba(255, 122, 217, 0.30);
+  --heat-2: rgba(168, 85, 247, 0.55);
+  --heat-3: rgba(59, 130, 246, 0.75);
+  --heat-4: rgba(34, 197, 94, 0.95);
+}
+body.premium {
+  --heat-0: rgba(64, 201, 255, 0.08);
+  --heat-1: rgba(64, 201, 255, 0.30);
+  --heat-2: rgba(64, 201, 255, 0.55);
+  --heat-3: rgba(108, 92, 231, 0.75);
+  --heat-4: rgba(192, 132, 252, 0.95);
+}
+.aggregate-heatmap-cell,
+.heatmap-cell,
+.calendar-day {
+  background: var(--heat-0);
+}
+.aggregate-heatmap-cell {
+  min-height: 26px;
+  border: 1px solid var(--border);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.aggregate-heatmap-cell.level-0 { background: var(--heat-0); }
+.aggregate-heatmap-cell.level-1 { background: var(--heat-1); }
+.aggregate-heatmap-cell.level-2 { background: var(--heat-2); }
+.aggregate-heatmap-cell.level-3 { background: var(--heat-3); }
+.aggregate-heatmap-cell.level-4 { background: var(--heat-4); }
+.aggregate-heatmap-cell:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px var(--ember-soft, rgba(255,71,20,0.12));
+}
+.heatmap-cell.level-0, .calendar-day.level-0 { background: var(--heat-0); }
+.heatmap-cell.level-1, .calendar-day.level-1 { background: var(--heat-1); }
+.heatmap-cell.level-2, .calendar-day.level-2 { background: var(--heat-2); }
+.heatmap-cell.level-3, .calendar-day.level-3 { background: var(--heat-3); }
+.heatmap-cell.level-4, .calendar-day.level-4 { background: var(--heat-4); }
+
+/* ---------- 4 · CLASSROOM SECTIONS · spacing ---------- */
+#inClassView > * + * {
+  margin-top: var(--space-10, 72px) !important;
+}
+#inClassView .content-card {
+  margin-bottom: 0 !important;
+}
+#inClassView .content-card + .content-card,
+#inClassView .content-card + .pro-tip,
+#inClassView .pro-tip + .content-card {
+  margin-top: var(--space-10, 72px) !important;
+}
+#classroom.dashboard-content > * + * {
+  margin-top: var(--space-8, 56px);
+}
+#teacherAnnouncements > * + *,
+#teacherResources > * + *,
+#teacherPolls > * + * {
+  margin-top: var(--space-5, 32px) !important;
+}
+
+/* Mobile: slightly tighter */
+@media (max-width: 768px) {
+  #inClassView > * + *,
+  #inClassView .content-card + .content-card,
+  #inClassView .content-card + .pro-tip,
+  #inClassView .pro-tip + .content-card {
+    margin-top: var(--space-6, 40px) !important;
+  }
+  #classroom.dashboard-content > * + * {
+    margin-top: var(--space-5, 32px);
+  }
+}
+

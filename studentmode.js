@@ -8056,3 +8056,82 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
+/* ---------- Join Whiteboard · open as modal, close cleanly ---------- */
+(function () {
+  'use strict';
+
+  function wire() {
+    var joinBtn = document.getElementById('joinWbBtn');
+    var joinBox = document.getElementById('joinWbContainer');
+    if (!joinBox) return;
+
+    // Inject the × close button once
+    var header = joinBox.querySelector('.join-wb-header');
+    if (header && !header.querySelector('.wb-close-btn')) {
+      var xBtn = document.createElement('button');
+      xBtn.type = 'button';
+      xBtn.className = 'wb-close-btn';
+      xBtn.setAttribute('aria-label', 'Close');
+      xBtn.innerHTML = '✕';
+      xBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        joinBox.classList.remove('wb-visible');
+        joinBox.style.display = '';
+      });
+      header.appendChild(xBtn);
+    }
+
+    // Backdrop click closes (but not clicks on inner content)
+    if (!joinBox._wbBound) {
+      joinBox._wbBound = true;
+      joinBox.addEventListener('click', function (e) {
+        if (e.target === joinBox) {
+          joinBox.classList.remove('wb-visible');
+          joinBox.style.display = '';
+        }
+      });
+      // ESC closes
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && joinBox.classList.contains('wb-visible')) {
+          joinBox.classList.remove('wb-visible');
+          joinBox.style.display = '';
+        }
+      });
+    }
+
+    // Replace the sidebar button's original onclick so we control the modal
+    if (joinBtn && !joinBtn._wbWired) {
+      joinBtn._wbWired = true;
+      joinBtn.onclick = function (e) {
+        if (e) e.preventDefault();
+        joinBox.style.display = '';           // clear any leftover inline
+        joinBox.classList.add('wb-visible');
+        setTimeout(function () {
+          var input = document.getElementById('wbCodeInput');
+          if (input) input.focus();
+        }, 120);
+      };
+    }
+  }
+
+  // Poll for the sidebar button (it's created by a feature script ~2s in)
+  var tries = 0;
+  var iv = setInterval(function () {
+    wire();
+    tries++;
+    if (document.getElementById('joinWbBtn') && document.getElementById('joinWbContainer')) {
+      // Once both exist, keep polling a bit longer in case sidebar reorgs rebuild them
+      if (tries > 12) clearInterval(iv);
+    }
+    if (tries > 40) clearInterval(iv);
+  }, 250);
+
+  // Re-wire whenever the sidebar's nav list is rebuilt by the reorganizer
+  document.addEventListener('DOMContentLoaded', function () {
+    var nav = document.querySelector('.sidebar-nav');
+    if (nav && window.MutationObserver) {
+      new MutationObserver(function () { wire(); })
+        .observe(nav, { childList: true, subtree: false });
+    }
+  });
+})();
