@@ -477,11 +477,12 @@
           <div class="forms-section">
             <!-- Class Code Display -->
             <div class="form-card class-code-display">
-              <h2 style="color: white;">🏫 Class Code</h2>
+               <h2>🏫 Class Code</h2>
+
               <div class="code" id="currentClassCodeDisplay">------</div>
               <div style="display: flex; gap: var(--spacing-sm); margin-top: var(--spacing-lg);">
-                <button class="btn btn-secondary" onclick="copyClassCode()" style="flex: 1; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.3); color: white;">📋 Copy</button>
-                <button class="btn btn-danger" onclick="showDeleteClassModal()" style="flex: 1; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.3); color: white;">🗑️ Delete</button>
+                <button class="btn btn-secondary" onclick="copyClassCode()" style="flex: 1;">📋 Copy</button>
+<button class="btn btn-danger" onclick="showDeleteClassModal()" style="flex: 1;">🗑️ Delete</button>
               </div>
             </div>
             
@@ -2067,7 +2068,122 @@
     <canvas id="wbCanvas" width="900" height="500"></canvas>
 </div>
 
- 
+ <script>
+// ============ INLINE MOJIBAKE SAFETY NET ============
+// Runs early and continuously to catch mojibake from any source.
+(function () {
+  const MAP = {
+    // Teacher toolkit icons
+    'ðŸŽ¯': '🎯', 'ðŸ¤': '🤝', 'âœ…': '✅', 'ðŸ“Š': '📊',
+    'ðŸš¨': '🚨', 'ðŸ†': '🏆', 'ðŸ“': '📝', 'ðŸ“Œ': '📌',
+    // General emoji mojibake
+    'ðŸ“¢': '📢', 'ðŸ“š': '📚', 'ðŸ“': '📁', 'ðŸ—³️': '🗳️',
+    'ðŸ‘¥': '👥', 'ðŸ“ˆ': '📈', 'âš™ï¸️': '⚙️', 'ðŸ“‹': '📋',
+    'ðŸ“‰': '📉', 'ðŸ“Ž': '📍', 'ðŸ“‘': '📑', 'ðŸ“’': '📒',
+    'ðŸ““': '📓', 'ðŸ“”': '📔', 'ðŸ“•': '📕', 'ðŸ“–': '📖',
+    'ðŸ“—': '📗', 'ðŸ“˜': '📘', 'ðŸ“™': '📙',
+    // Check-in emojis
+    'ðŸ˜Š': '😊', 'ðŸ˜': '😐', 'ðŸ˜•': '😕',
+    // Arrows and symbols
+    'â†': '←', 'â†’': '→', 'â†‘': '↑', 'â†“': '↓',
+    'âœ”ï¸️': '✔️', 'âœ–ï¸️': '✖️', 'âŒ': '❌',
+    'âš ï¸️': '⚠️', 'â„¹ï¸️': 'ℹ️',
+    // Celebration
+    'ðŸŽ‰': '🎉', 'ðŸŽŠ': '🎊', 'ðŸŽˆ': '🎈', 'ðŸŽ': '🎁',
+    'ðŸŽ€': '🎀', 'ðŸŽ“': '🎓', 'ðŸŽ¯': '🎯', 'ðŸŽ¨': '🎨',
+    'ðŸŽ®': '🎮', 'ðŸŽµ': '🎵', 'ðŸŽ¶': '🎶',
+    // Hands and gestures
+    'ðŸ‘': '👍', 'ðŸ‘Ž': '👎', 'ðŸ‘': '👏', 'ðŸ™Œ': '🙌',
+    'ðŸ™': '🙏', 'ðŸ‘‹': '👋',
+    // Faces
+    'ðŸ˜€': '😀', 'ðŸ˜ƒ': '😃', 'ðŸ˜„': '😄', 'ðŸ˜†': '😆',
+    'ðŸ˜‰': '😉', 'ðŸ˜‹': '😋', 'ðŸ˜Œ': '😌', 'ðŸ˜': '😍',
+    'ðŸ˜Ž': '😎', 'ðŸ˜ ': '😠', 'ðŸ˜¡': '😡', 'ðŸ˜¢': '😢',
+    'ðŸ˜­': '😭', 'ðŸ¤”': '🤔', 'ðŸ¤—': '🤗', 'ðŸ¤©': '🤩',
+    // Nature and weather
+    'â˜€ï¸️': '☀️', 'â˜ï¸️': '☁️', 'â˜”ï¸️': '☔', 'âš¡': '⚡',
+    'ðŸŒ™': '🌙', 'ðŸŒŸ': '🌟', 'â­': '⭐',
+    // Fire
+    'ðŸ”¥': '🔥',
+    // Numbers
+    '1ï¸âƒ£': '1️⃣', '2ï¸âƒ£': '2️⃣', '3ï¸âƒ£': '3️⃣',
+    // Misc
+    'ðŸ’¡': '💡', 'ðŸ’°': '💰', 'ðŸ’¯': '💯', 'ðŸ’”': '🔔',
+    'ðŸ”“': '🔓', 'ðŸ”’': '🔒', 'ðŸ”': '🔄',
+    'ðŸ•’': '🕒', 'ðŸ“±': '📱', 'ðŸ’»': '💻', 'ðŸ–¥ï¸️': '🖥️',
+    // Hearts
+    'â¤ï¸️': '❤️', 'ðŸ’™': '💙', 'ðŸ’š': '💚', 'ðŸ’›': '💛',
+    'ðŸ’œ': '💜', 'ðŸ–¤': '🖤',
+  };
+
+  function fixNode(node) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      let t = node.nodeValue;
+      let changed = false;
+      for (const bad in MAP) {
+        if (t.indexOf(bad) !== -1) {
+          t = t.split(bad).join(MAP[bad]);
+          changed = true;
+        }
+      }
+      if (changed) node.nodeValue = t;
+      return;
+    }
+    if (node.nodeType !== Node.ELEMENT_NODE) return;
+    const tag = node.tagName;
+    if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'NOSCRIPT' || tag === 'CODE' || tag === 'PRE' || tag === 'TEXTAREA') return;
+
+    for (let i = 0; i < node.childNodes.length; i++) {
+      fixNode(node.childNodes[i]);
+    }
+
+    // Also fix placeholder / value / title attributes
+    if (node.placeholder) {
+      for (const bad in MAP) {
+        if (node.placeholder.indexOf(bad) !== -1) {
+          node.placeholder = node.placeholder.split(bad).join(MAP[bad]);
+        }
+      }
+    }
+    if (node.title) {
+      for (const bad in MAP) {
+        if (node.title.indexOf(bad) !== -1) {
+          node.title = node.title.split(bad).join(MAP[bad]);
+        }
+      }
+    }
+  }
+
+  function sweep() {
+    fixNode(document.body);
+  }
+
+  // Run ASAP
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', sweep);
+  } else {
+    sweep();
+  }
+
+  // Run again shortly after (in case content renders late)
+  setTimeout(sweep, 300);
+  setTimeout(sweep, 1000);
+  setTimeout(sweep, 2500);
+  setTimeout(sweep, 5000);
+
+  // Watch for dynamic content
+  const observer = new MutationObserver(muts => {
+    muts.forEach(m => {
+      m.addedNodes.forEach(n => {
+        if (n.nodeType === Node.ELEMENT_NODE) fixNode(n);
+      });
+    });
+  });
+  document.addEventListener('DOMContentLoaded', () => {
+    observer.observe(document.body, { childList: true, subtree: true });
+  });
+})();
+</script>
 
 
 </body>

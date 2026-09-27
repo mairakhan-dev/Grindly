@@ -3385,3 +3385,47 @@ body::before {
   background: var(--gradient-flame) !important;
   color: #fff !important;
 }
+/* ==========================================================================
+   CLASS CODE DISPLAY — fix invisible text in light theme
+   ========================================================================== */
+
+/* Heading */
+.class-code-display h2 {
+  color: var(--text) !important;
+}
+
+/* Code number — keep the gradient (already has it) */
+.class-code-display .code {
+  color: var(--accent) !important;
+  -webkit-text-fill-color: transparent !important;
+  background: var(--gradient-flame) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+}
+
+/* Buttons inside the class-code block — override the inline white */
+.class-code-display .btn,
+.class-code-display .btn-secondary,
+.class-code-display .btn-danger {
+  background: var(--card) !important;
+  color: var(--text) !important;
+  border: 2px solid var(--border) !important;
+  font-weight: 700 !important;
+  padding: 12px 18px !important;
+}
+
+.class-code-display .btn:hover {
+  background: var(--gradient-flame) !important;
+  color: #fff !important;
+  border-color: transparent !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 22px var(--accent-glow) !important;
+}
+
+/* Delete button keeps its danger tone on hover */
+.class-code-display .btn-danger:hover {
+  background: var(--danger) !important;
+  color: #fff !important;
+  border-color: var(--danger) !important;
+  box-shadow: 0 8px 22px rgba(220, 38, 38, 0.3) !important;
+}
