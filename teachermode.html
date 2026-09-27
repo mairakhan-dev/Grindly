@@ -13,19 +13,9 @@
 <meta charset="UTF-8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Quicksand:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
@@ -43,7 +33,7 @@
 <script src="features teachermode/mojibake-fix.js" defer></script>
 <link rel="stylesheet" href="features teachermode/dashboard-buttons.css">
 <script src="features teachermode/dashboard-buttons.js" defer></script>
-<script src="features teachermdoe/resource-modal-fix.js" defer></script>
+<script src="features teachermode/resource-modal-fix.js" defer></script>
 <script src="features teachermode/final-challenge-streak.js" defer></script>
 
 <title>Grindly | Teacher Mode</title>
@@ -2115,233 +2105,8 @@
     <canvas id="wbCanvas" width="900" height="500"></canvas>
 </div>
 
- <script>
-// ============ INLINE MOJIBAKE SAFETY NET ============
-// Runs early and continuously to catch mojibake from any source.
-(function () {
-  const MAP = {
-    // Teacher toolkit icons
-    'ðŸŽ¯': '🎯', 'ðŸ¤': '🤝', 'âœ…': '✅', 'ðŸ“Š': '📊',
-    'ðŸš¨': '🚨', 'ðŸ†': '🏆', 'ðŸ“': '📝', 'ðŸ“Œ': '📌',
-    // General emoji mojibake
-    'ðŸ“¢': '📢', 'ðŸ“š': '📚', 'ðŸ“': '📁', 'ðŸ—³️': '🗳️',
-    'ðŸ‘¥': '👥', 'ðŸ“ˆ': '📈', 'âš™ï¸️': '⚙️', 'ðŸ“‹': '📋',
-    'ðŸ“‰': '📉', 'ðŸ“Ž': '📍', 'ðŸ“‘': '📑', 'ðŸ“’': '📒',
-    'ðŸ““': '📓', 'ðŸ“”': '📔', 'ðŸ“•': '📕', 'ðŸ“–': '📖',
-    'ðŸ“—': '📗', 'ðŸ“˜': '📘', 'ðŸ“™': '📙',
-    // Check-in emojis
-    'ðŸ˜Š': '😊', 'ðŸ˜': '😐', 'ðŸ˜•': '😕',
-    // Arrows and symbols
-    'â†': '←', 'â†’': '→', 'â†‘': '↑', 'â†“': '↓',
-    'âœ”ï¸️': '✔️', 'âœ–ï¸️': '✖️', 'âŒ': '❌',
-    'âš ï¸️': '⚠️', 'â„¹ï¸️': 'ℹ️',
-    // Celebration
-    'ðŸŽ‰': '🎉', 'ðŸŽŠ': '🎊', 'ðŸŽˆ': '🎈', 'ðŸŽ': '🎁',
-    'ðŸŽ€': '🎀', 'ðŸŽ“': '🎓', 'ðŸŽ¯': '🎯', 'ðŸŽ¨': '🎨',
-    'ðŸŽ®': '🎮', 'ðŸŽµ': '🎵', 'ðŸŽ¶': '🎶',
-    // Hands and gestures
-    'ðŸ‘': '👍', 'ðŸ‘Ž': '👎', 'ðŸ‘': '👏', 'ðŸ™Œ': '🙌',
-    'ðŸ™': '🙏', 'ðŸ‘‹': '👋',
-    // Faces
-    'ðŸ˜€': '😀', 'ðŸ˜ƒ': '😃', 'ðŸ˜„': '😄', 'ðŸ˜†': '😆',
-    'ðŸ˜‰': '😉', 'ðŸ˜‹': '😋', 'ðŸ˜Œ': '😌', 'ðŸ˜': '😍',
-    'ðŸ˜Ž': '😎', 'ðŸ˜ ': '😠', 'ðŸ˜¡': '😡', 'ðŸ˜¢': '😢',
-    'ðŸ˜­': '😭', 'ðŸ¤”': '🤔', 'ðŸ¤—': '🤗', 'ðŸ¤©': '🤩',
-    // Nature and weather
-    'â˜€ï¸️': '☀️', 'â˜ï¸️': '☁️', 'â˜”ï¸️': '☔', 'âš¡': '⚡',
-    'ðŸŒ™': '🌙', 'ðŸŒŸ': '🌟', 'â­': '⭐',
-    // Fire
-    'ðŸ”¥': '🔥',
-    // Numbers
-    '1ï¸âƒ£': '1️⃣', '2ï¸âƒ£': '2️⃣', '3ï¸âƒ£': '3️⃣',
-    // Misc
-    'ðŸ’¡': '💡', 'ðŸ’°': '💰', 'ðŸ’¯': '💯', 'ðŸ’”': '🔔',
-    'ðŸ”“': '🔓', 'ðŸ”’': '🔒', 'ðŸ”': '🔄',
-    'ðŸ•’': '🕒', 'ðŸ“±': '📱', 'ðŸ’»': '💻', 'ðŸ–¥ï¸️': '🖥️',
-    // Hearts
-    'â¤ï¸️': '❤️', 'ðŸ’™': '💙', 'ðŸ’š': '💚', 'ðŸ’›': '💛',
-    'ðŸ’œ': '💜', 'ðŸ–¤': '🖤',
-  };
+ 
 
-  function fixNode(node) {
-    if (node.nodeType === Node.TEXT_NODE) {
-      let t = node.nodeValue;
-      let changed = false;
-      for (const bad in MAP) {
-        if (t.indexOf(bad) !== -1) {
-          t = t.split(bad).join(MAP[bad]);
-          changed = true;
-        }
-      }
-      if (changed) node.nodeValue = t;
-      return;
-    }
-    if (node.nodeType !== Node.ELEMENT_NODE) return;
-    const tag = node.tagName;
-    if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'NOSCRIPT' || tag === 'CODE' || tag === 'PRE' || tag === 'TEXTAREA') return;
-
-    for (let i = 0; i < node.childNodes.length; i++) {
-      fixNode(node.childNodes[i]);
-    }
-
-    // Also fix placeholder / value / title attributes
-    if (node.placeholder) {
-      for (const bad in MAP) {
-        if (node.placeholder.indexOf(bad) !== -1) {
-          node.placeholder = node.placeholder.split(bad).join(MAP[bad]);
-        }
-      }
-    }
-    if (node.title) {
-      for (const bad in MAP) {
-        if (node.title.indexOf(bad) !== -1) {
-          node.title = node.title.split(bad).join(MAP[bad]);
-        }
-      }
-    }
-  }
-
-  function sweep() {
-    fixNode(document.body);
-  }
-
-  // Run ASAP
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', sweep);
-  } else {
-    sweep();
-  }
-
-  // Run again shortly after (in case content renders late)
-  setTimeout(sweep, 300);
-  setTimeout(sweep, 1000);
-  setTimeout(sweep, 2500);
-  setTimeout(sweep, 5000);
-
-  // Watch for dynamic content
-  const observer = new MutationObserver(muts => {
-    muts.forEach(m => {
-      m.addedNodes.forEach(n => {
-        if (n.nodeType === Node.ELEMENT_NODE) fixNode(n);
-      });
-    });
-  });
-  document.addEventListener('DOMContentLoaded', () => {
-    observer.observe(document.body, { childList: true, subtree: true });
-  });
-})();
-</script>
-
-<script>
-// ============ PULSE WIDGET SAFETY NET ============
-// Re-inserts the pulse widget if a reorganizer wipes it, and keeps it updated.
-(function () {
-  const PULSE_HTML = `
-    <div class="pulse-widget" id="classPulseWidget" data-state="mid">
-      <div class="pulse-ring-wrapper">
-        <svg class="pulse-ring-svg" viewBox="0 0 200 200" aria-hidden="true">
-          <defs>
-            <linearGradient id="pulseGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#ffaa33"/>
-              <stop offset="50%" stop-color="#ff4714"/>
-              <stop offset="100%" stop-color="#d61f00"/>
-            </linearGradient>
-            <linearGradient id="pulseCold" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#60a5fa"/>
-              <stop offset="100%" stop-color="#3b82f6"/>
-            </linearGradient>
-            <linearGradient id="pulseMid" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#34d399"/>
-              <stop offset="100%" stop-color="#10b981"/>
-            </linearGradient>
-            <linearGradient id="pulseWarm" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#ffaa33"/>
-              <stop offset="50%" stop-color="#ff4714"/>
-              <stop offset="100%" stop-color="#d61f00"/>
-            </linearGradient>
-          </defs>
-          <circle class="pulse-ring-track" cx="100" cy="100" r="86"/>
-          <circle class="pulse-ring-progress" cx="100" cy="100" r="86"
-                  stroke-dasharray="540.35" stroke-dashoffset="540.35"/>
-        </svg>
-        <div class="pulse-ring-value">
-          <div class="pulse-ring-number" id="pulseNumber">—</div>
-          <div class="pulse-ring-label">Pulse</div>
-        </div>
-      </div>
-      <div class="pulse-info">
-        <h2 id="pulseTitle">Reading your class…</h2>
-        <p class="pulse-desc" id="pulseDesc">Loading live data.</p>
-        <div class="pulse-metrics">
-          <div class="pulse-metric">
-            <span class="pulse-metric-value" id="pulseActive">—</span>
-            <span class="pulse-metric-label">Active today</span>
-          </div>
-          <div class="pulse-metric">
-            <span class="pulse-metric-value" id="pulseStreak">—</span>
-            <span class="pulse-metric-label">Avg streak</span>
-          </div>
-          <div class="pulse-metric">
-            <span class="pulse-metric-value" id="pulseConfidence">—</span>
-            <span class="pulse-metric-label">Confidence</span>
-          </div>
-        </div>
-        <div class="pulse-history" id="pulseHistory" aria-hidden="true"></div>
-      </div>
-    </div>
-  `;
-
-  function ensurePulse() {
-    const dashboard = document.getElementById('dashboard');
-    if (!dashboard) { setTimeout(ensurePulse, 500); return; }
-
-    let widget = document.getElementById('classPulseWidget');
-    if (widget) {
-      // Already exists — nothing to insert
-      return;
-    }
-
-    // Find where to insert — after the dashboard button bar, before quick-stats
-    const wrapper = dashboard.querySelector('#dashboard-content-wrapper') || dashboard;
-    const buttonBar = wrapper.querySelector('#dashboard-button-bar');
-    const quickStats = wrapper.querySelector('.quick-stats');
-
-    const temp = document.createElement('div');
-    temp.innerHTML = PULSE_HTML.trim();
-    const newNode = temp.firstElementChild;
-
-    if (buttonBar && buttonBar.nextSibling) {
-      wrapper.insertBefore(newNode, buttonBar.nextSibling);
-    } else if (quickStats && quickStats.parentNode) {
-      quickStats.parentNode.insertBefore(newNode, quickStats);
-    } else {
-      wrapper.insertBefore(newNode, wrapper.firstChild);
-    }
-
-    console.log('[Pulse] Widget inserted into dashboard');
-  }
-
-  // Try many times because reorganizers run on different schedules
-  [500, 1000, 1500, 2000, 3000, 4000, 6000].forEach(t => setTimeout(ensurePulse, t));
-
-  // Also watch for the dashboard content changing
-  document.addEventListener('DOMContentLoaded', () => {
-    const dashboard = document.getElementById('dashboard');
-    if (!dashboard) return;
-    const obs = new MutationObserver(() => {
-      if (!document.getElementById('classPulseWidget')) ensurePulse();
-    });
-    obs.observe(dashboard, { childList: true, subtree: false });
-  });
-
-  // Keep rendering pulse data if the function exists
-  setInterval(() => {
-    if (typeof window.renderClassPulse === 'function') {
-      try { window.renderClassPulse(); } catch (e) {}
-    }
-  }, 8000);
-})();
-</script>
 </body>
 </html>
 
