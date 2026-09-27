@@ -8284,3 +8284,65 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 60);
   }, true);
 })();
+
+(function () {
+  'use strict';
+
+  function openDrawer() {
+    var side = document.getElementById('sidebar');
+    var ov = document.getElementById('mobileOverlay');
+    if (!side) return;
+    side.classList.add('active');
+    if (ov) ov.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeDrawer() {
+    var side = document.getElementById('sidebar');
+    var ov = document.getElementById('mobileOverlay');
+    if (!side) return;
+    side.classList.remove('active');
+    if (ov) ov.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  // Intercept the existing hamburger — run in capture phase
+  document.addEventListener('click', function (e) {
+    var burger = e.target.closest('#mobileMenuToggle, .mobile-menu-toggle');
+    if (burger && window.innerWidth <= 900) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      var side = document.getElementById('sidebar');
+      if (side && side.classList.contains('active')) closeDrawer();
+      else openDrawer();
+      return;
+    }
+
+    // Close on overlay click
+    if (e.target.id === 'mobileOverlay' || e.target.classList.contains('mobile-overlay')) {
+      closeDrawer();
+      return;
+    }
+
+    // Close when tapping a nav item inside the drawer
+    if (window.innerWidth <= 900) {
+      var navHit = e.target.closest('.sidebar .nav-item, .sidebar .sidebar-btn');
+      if (navHit) setTimeout(closeDrawer, 80);
+    }
+  }, true);
+
+  // ESC closes
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && window.innerWidth <= 900) closeDrawer();
+  });
+
+  // Reset on orientation / resize
+  window.addEventListener('resize', function () {
+    if (window.innerWidth > 900) {
+      document.body.style.overflow = '';
+      var side = document.getElementById('sidebar');
+      var ov = document.getElementById('mobileOverlay');
+      if (side) side.classList.remove('active');
+      if (ov) ov.classList.remove('active');
+    }
+  });
+})();

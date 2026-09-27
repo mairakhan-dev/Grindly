@@ -5298,3 +5298,89 @@ body.premium {
   .mobile-nav-controls { display: none !important; }
 }
 
+@media (max-width: 900px) {
+  /* 1 · Break the stacking context on .app-layout so the sidebar
+        can stack directly against the overlay at body level. */
+  .app-layout {
+    position: static !important;
+    z-index: auto !important;
+    transform: none !important;
+    filter: none !important;
+    perspective: none !important;
+    contain: none !important;
+  }
+
+  /* 2 · Overlay sits BELOW the sidebar, no blur at all (the blur was
+        both the visible artifact and the click-stealer). */
+  .mobile-overlay,
+  #mobileOverlay {
+    display: none;
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 1100 !important;
+    background: rgba(60, 42, 15, 0.45) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    pointer-events: none !important;
+    transition: opacity 0.22s ease !important;
+    opacity: 0 !important;
+  }
+  .mobile-overlay.active,
+  #mobileOverlay.active {
+    display: block !important;
+    pointer-events: auto !important;
+    opacity: 1 !important;
+  }
+
+  /* 3 · Sidebar sits ABOVE the overlay */
+  .sidebar,
+  #sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 84vw !important;
+    max-width: 320px !important;
+    height: 100vh !important;
+    transform: translateX(-105%) !important;
+    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    z-index: 1200 !important;
+    padding: 20px 16px 100px !important;
+    margin: 0 !important;
+
+    /* Scrollability */
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior: contain !important;
+    touch-action: pan-y !important;
+
+    /* Must be interactive when active */
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+
+    border-right: 1px solid var(--border) !important;
+    box-shadow: 8px 0 40px rgba(60, 42, 15, 0.22) !important;
+  }
+  .sidebar.active,
+  #sidebar.active {
+    transform: translateX(0) !important;
+  }
+
+  /* 4 · Sidebar's own children must be clickable */
+  .sidebar *,
+  #sidebar * {
+    pointer-events: auto;
+  }
+
+  /* 5 · Make sure the drawer never gets clipped by an ancestor */
+  body {
+    overflow-x: hidden !important;
+  }
+
+  /* 6 · Hamburger always above everything so it stays tappable */
+  .mobile-menu-toggle {
+    position: relative !important;
+    z-index: 1201 !important;
+  }
+}
