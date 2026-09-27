@@ -16544,3 +16544,20 @@ function renderClassPulse() {
     }).join('');
   }
 }
+
+function closeSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  const backdrop = document.getElementById('sidebarBackdrop');
+  if (sidebar) sidebar.classList.remove('active');
+  if (backdrop) backdrop.classList.remove('show');
+  document.body.classList.remove('drawer-open');
+}
+
+function toggleSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  const backdrop = document.getElementById('sidebarBackdrop');
+  if (!sidebar) return;
+  const isOpen = sidebar.classList.toggle('active');
+  if (backdrop) backdrop.classList.toggle('show', isOpen);
+  document.body.classList.toggle('drawer-open', isOpen);
+}
