@@ -5322,3 +5322,88 @@ html body .mobile-header { z-index: 1000 !important; }
     display: block !important;
   }
 }
+
+/* ============================================================
+   FORCE-VISIBLE CHROME · header · controls · tabs
+   Resets every property that can hide text
+   ============================================================ */
+
+#dashboardHeader,
+.dashboard-header,
+.controls-bar,
+.dashboard-button-bar,
+#dashboardHeader h1,
+.dashboard-header h1,
+.dashboard-subtitle,
+.time-greeting,
+.controls-bar .btn,
+.controls-bar .btn-icon,
+.dashboard-section-btn {
+  opacity: 1 !important;
+  visibility: visible !important;
+  filter: none !important;
+  mix-blend-mode: normal !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  text-shadow: none !important;
+  clip-path: none !important;
+  mask: none !important;
+  -webkit-mask: none !important;
+  transform: none !important;
+  /* Kill the transparent-text gradient trick */
+  -webkit-text-fill-color: currentColor !important;
+  background-clip: initial !important;
+  -webkit-background-clip: initial !important;
+  background-image: none !important;
+  -webkit-text-stroke: 0 !important;
+}
+
+/* Give text + buttons a solid, visible color */
+#dashboardHeader h1,
+.dashboard-header h1 {
+  color: var(--ember) !important;
+  background: none !important;
+  -webkit-background-clip: initial !important;
+  background-clip: initial !important;
+}
+
+.dashboard-subtitle,
+.time-greeting {
+  color: var(--text-muted) !important;
+  background: none !important;
+}
+
+.controls-bar .btn,
+.controls-bar .btn-icon,
+.dashboard-section-btn {
+  color: var(--text) !important;
+  background-color: var(--card) !important;
+  background-image: none !important;
+  border: 1px solid var(--border) !important;
+}
+
+.controls-bar .btn-primary,
+.controls-bar .btn-primary:hover {
+  background: var(--gradient-flame) !important;
+  background-color: var(--ember) !important;
+  color: #fff !important;
+  border-color: transparent !important;
+}
+
+.dashboard-section-btn.active {
+  background: var(--gradient-flame) !important;
+  background-color: var(--ember) !important;
+  color: #fff !important;
+  border-color: transparent !important;
+}
+
+/* Search input */
+.controls-bar .search-bar input,
+.controls-bar input[type="text"] {
+  color: var(--text) !important;
+  background-color: var(--ink-2) !important;
+}
+.controls-bar .search-bar input::placeholder {
+  color: var(--text-faint) !important;
+  opacity: 1 !important;
+}

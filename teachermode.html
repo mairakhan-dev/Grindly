@@ -2200,6 +2200,54 @@
   }
 })();
 </script>
+<script>
+(function forceVisibleChrome(){
+  var SEL = [
+    '#dashboardHeader', '.dashboard-header',
+    '.controls-bar', '.dashboard-button-bar',
+    '#dashboardHeader h1', '.dashboard-header h1',
+    '.dashboard-subtitle', '.time-greeting',
+    '.controls-bar .btn', '.controls-bar .btn-icon',
+    '.dashboard-section-btn'
+  ].join(',');
+
+  function fix(){
+    document.querySelectorAll(SEL).forEach(function(el){
+      el.style.removeProperty('display');
+      el.style.removeProperty('opacity');
+      el.style.removeProperty('visibility');
+      el.style.removeProperty('filter');
+      el.style.removeProperty('mix-blend-mode');
+      el.style.removeProperty('transform');
+      el.style.removeProperty('clip-path');
+      el.style.removeProperty('text-shadow');
+      el.style.removeProperty('background');
+      el.style.removeProperty('background-image');
+      el.style.removeProperty('background-color');
+      el.style.removeProperty('background-clip');
+      el.style.removeProperty('-webkit-background-clip');
+      el.style.removeProperty('-webkit-text-fill-color');
+      el.style.removeProperty('-webkit-text-stroke');
+      el.style.removeProperty('color');
+
+      // Force-visible via inline !important (beats any stylesheet)
+      el.style.setProperty('opacity', '1', 'important');
+      el.style.setProperty('visibility', 'visible', 'important');
+      el.style.setProperty('-webkit-text-fill-color', 'currentColor', 'important');
+      el.style.setProperty('background-clip', 'initial', 'important');
+      el.style.setProperty('-webkit-background-clip', 'initial', 'important');
+    });
+  }
+
+  ['DOMContentLoaded', 'load'].forEach(function(ev){
+    document.addEventListener(ev, fix);
+  });
+  setTimeout(fix, 100);
+  setTimeout(fix, 500);
+  setTimeout(fix, 1500);
+  setTimeout(fix, 3000);
+})();
+</script>
 </body>
 </html>
 
