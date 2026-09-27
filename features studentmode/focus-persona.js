@@ -1,5 +1,4 @@
-/ ========== FOCUS PERSONA FEATURE - CANVAS BASED (GUARANTEED TO WORK) ==========
-(function() {
+function() {
     'use strict';
     console.log('🎴 Initializing Focus Persona Card feature...');
     
