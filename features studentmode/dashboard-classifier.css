@@ -1,0 +1,511 @@
+
+  /* ===== MOBILE DASHBOARD CLASSIFYING SECTIONS - STACKED VERTICAL ===== */
+@media (max-width: 767px) {
+  /* Make the student-view-bar vertical and compact */
+  .student-view-bar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    padding: 12px !important;
+    margin-bottom: 16px !important;
+    gap: 10px !important;
+  }
+  
+  .student-view-bar h2 {
+    font-size: 1.1rem !important;
+    text-align: center !important;
+    margin-bottom: 4px !important;
+  }
+  
+  .student-view-options {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 6px !important;
+    width: 100% !important;
+    overflow: visible !important;
+  }
+  
+  .student-view-btn {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 10px 12px !important;
+    font-size: 0.95rem !important;
+    border-radius: 30px !important;
+    gap: 8px !important;
+    background: var(--card) !important;
+    border: 1px solid var(--border) !important;
+  }
+  
+  .student-view-btn.active {
+    background: var(--accent) !important;
+    color: white !important;
+    border-color: var(--accent) !important;
+  }
+  
+  .student-view-btn span {
+    font-size: 1rem !important;
+  }
+  
+  /* Make the quick stats vertical stack too */
+  .quick-stats {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    margin-bottom: 20px !important;
+  }
+  
+  .stat-card {
+    width: 100% !important;
+    padding: 12px 16px !important;
+    min-height: auto !important;
+    gap: 12px !important;
+  }
+  
+  .stat-icon {
+    width: 36px !important;
+    height: 36px !important;
+    font-size: 1.1rem !important;
+  }
+  
+  .stat-number {
+    font-size: 1.3rem !important;
+  }
+  
+  .stat-label {
+    font-size: 0.8rem !important;
+  }
+  
+  /* Ensure the dashboard sections stack properly */
+  .study-progress-section,
+  .tasks-section,
+  .tools-section {
+    width: 100% !important;
+    margin-bottom: 20px !important;
+  }
+  
+  /* Make content cards stack vertically */
+  .dashboard-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 20px !important;
+  }
+  
+  .forms-section,
+  .content-section {
+    width: 100% !important;
+    margin: 0 !important;
+  }
+  
+  /* Remove any grid layouts */
+  .dashboard-grid > * {
+    grid-column: span 12 !important;
+    width: 100% !important;
+  }
+  
+  /* Hide/show sections properly */
+  .hide-study .study-progress-section,
+  .hide-tasks .tasks-section,
+  .hide-tools .tools-section {
+    display: none !important;
+  }
+}
+
+/* Extra small devices (below 480px) */
+@media (max-width: 479px) {
+  .student-view-bar {
+    padding: 10px !important;
+  }
+  
+  .student-view-bar h2 {
+    font-size: 1rem !important;
+  }
+  
+  .student-view-btn {
+    padding: 8px 10px !important;
+    font-size: 0.85rem !important;
+  }
+  
+  .stat-card {
+    padding: 10px 12px !important;
+  }
+  
+  .stat-icon {
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 1rem !important;
+  }
+  
+  .stat-number {
+    font-size: 1.2rem !important;
+  }
+}
+
+/* Very small devices (below 360px) */
+@media (max-width: 359px) {
+  .student-view-btn {
+    padding: 7px 8px !important;
+    font-size: 0.8rem !important;
+  }
+  
+  .student-view-btn span {
+    font-size: 0.9rem !important;
+  }
+  
+  .stat-card {
+    padding: 8px 10px !important;
+  }
+  
+  .stat-icon {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 0.9rem !important;
+  }
+  
+  .stat-number {
+    font-size: 1rem !important;
+  }
+  
+  .stat-label {
+    font-size: 0.7rem !important;
+  }
+}
+
+   
+.bottom-features {
+    margin-top: 40px;
+    border-top: 1px solid var(--border);
+    padding-top: 24px;
+}
+
+.bottom-features-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.bottom-feature-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 16px;
+    transition: all 0.2s ease;
+}
+
+.bottom-feature-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.bottom-feature-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+}
+
+.bottom-feature-header i {
+    color: var(--accent);
+    font-size: 1rem;
+}
+
+.bottom-feature-header span {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--text);
+}
+
+.bottom-feature-content {
+    font-size: 0.8rem;
+}
+
+/* Quick Notes */
+.quick-notes-bottom {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.quick-notes-bottom textarea {
+    width: 100%;
+    height: 80px;
+    padding: 8px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    font-size: 0.75rem;
+    resize: vertical;
+}
+
+.quick-notes-bottom .notes-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.notes-actions button {
+    padding: 4px 12px;
+    font-size: 0.7rem;
+}
+
+/* Stats Compare */
+.stats-compare-bottom {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.stat-compare-item {
+    background: var(--bg);
+    padding: 6px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.stat-compare-item i {
+    color: var(--success);
+    font-size: 0.7rem;
+}
+
+/* Teach Mode - With Text Inputs */
+.teach-bottom {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.teach-bottom input {
+    padding: 8px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    font-size: 0.75rem;
+}
+
+.teach-bullets-bottom {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.teach-bullet-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.teach-bullet-check {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.teach-bullet-check.filled {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+}
+
+.teach-bullet-input {
+    flex: 1;
+    padding: 6px 10px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    font-size: 0.7rem;
+}
+
+.teach-bullet-input:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.teach-bottom .teach-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: space-between;
+    margin-top: 4px;
+}
+
+.teach-actions button {
+    padding: 5px 10px;
+    font-size: 0.7rem;
+    flex: 1;
+}
+
+/* Daily Challenge */
+.challenge-bottom {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.challenge-text {
+    font-size: 0.85rem;
+    font-weight: 500;
+    background: var(--accent-light);
+    padding: 10px;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.challenge-bottom button {
+    width: 100%;
+    padding: 8px;
+    font-size: 0.75rem;
+}
+
+.challenge-tip {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+@media (max-width: 1000px) {
+    .bottom-features-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .bottom-features-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* View Buttons */
+.student-view-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding: 16px 20px;
+  background: var(--card);
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.student-view-bar h2 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text);
+}
+
+.student-view-options {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.student-view-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 30px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.student-view-btn:hover {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  transform: translateY(-2px);
+}
+
+.student-view-btn.active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+/* Section visibility */
+.study-progress-section,
+.tasks-section,
+.classroom-section,
+.tools-section {
+  transition: opacity 0.3s ease;
+}
+
+.hide-study .study-progress-section,
+.hide-tasks .tasks-section,
+.hide-class .classroom-section,
+.hide-tools .tools-section {
+  display: none !important;
+}
+
+/* Quick Stats - one line */
+.quick-stats {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 12px !important;
+  margin-bottom: 24px !important;
+}
+
+.stat-card {
+  background: var(--card) !important;
+  border-radius: 12px !important;
+  padding: 16px 12px !important;
+  border: 1px solid var(--border) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.stat-icon {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 10px !important;
+  font-size: 1.2rem !important;
+}
+
+.stat-number {
+  font-size: 1.5rem !important;
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
+  margin-bottom: 4px !important;
+}
+
+.stat-label {
+  font-size: 0.75rem !important;
+}
+
+@media (max-width: 768px) {
+  .student-view-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .student-view-options {
+    width: 100%;
+  }
+  
+  .student-view-btn {
+    flex: 1;
+    justify-content: center;
+  }
+  
+  .quick-stats {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
