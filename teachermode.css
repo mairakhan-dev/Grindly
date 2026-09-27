@@ -4194,6 +4194,118 @@ body.presentation-mode #presentation { display: block !important; }
     }
   }
 }
+/* ============================================================
+   FIX · SIDEBAR BACKDROP / STACKING CONTEXT TRAP
+   Drop this at the VERY END of teachermode.css.
+   Problem: .sidebar lives inside .app-layout, and .app-layout
+   had position:relative + z-index:1 — a stacking context. So the
+   sidebar's high z-index was trapped inside it, and the body-level
+   backdrop painted on top, blurring the sidebar and stealing clicks.
+   ============================================================ */
+
+/* 1 · Remove the stacking trap on .app-layout. */
+.app-layout {
+  position: static !important;
+  z-index: auto !important;
+  transform: none !important;
+  filter: none !important;
+  perspective: none !important;
+  isolation: auto !important;
+  contain: none !important;
+  will-change: auto !important;
+  opacity: 1 !important;
+}
+
+/* 2 · Push the notebook paper to the very back so we don't need
+       .app-layout to be a stacking context just to keep it visible. */
+body::before,
+body::after {
+  z-index: -1 !important;
+}
+body.dark::before, body.ocean::before, body.forest::before,
+body.sunset::before, body.purple::before, body.aurora::before,
+body.obsidian::before, body.celestial::before, body.rainbow::before,
+body.premium::before,
+body.dark::after, body.ocean::after, body.forest::after,
+body.sunset::after, body.purple::after, body.aurora::after,
+body.obsidian::after, body.celestial::after {
+  z-index: -1 !important;
+}
+
+/* 3 · Backdrop: BELOW the sidebar, ABOVE the main content.
+       pointer-events only switch on when it's actually visible. */
+.sidebar-backdrop {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 900 !important;
+  background: rgba(60, 42, 15, 0.45) !important;
+  backdrop-filter: blur(3px) !important;
+  -webkit-backdrop-filter: blur(3px) !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transition: opacity 0.24s ease, visibility 0.24s ease !important;
+}
+.sidebar-backdrop.show,
+.sidebar-backdrop.active,
+.sidebar-backdrop[style*="display: block"],
+.sidebar-backdrop[style*="display:block"] {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+/* 4 · Sidebar paints ABOVE the backdrop — crisp, clickable, no blur. */
+.sidebar {
+  z-index: 1200 !important;
+  pointer-events: auto !important;
+}
+.sidebar *,
+.sidebar a,
+.sidebar button,
+.sidebar select,
+.sidebar input,
+.sidebar label,
+.sidebar .nav-item,
+.sidebar .sidebar-nav,
+.sidebar .class-switcher,
+.sidebar .theme-selector,
+.sidebar .logout-btn,
+.sidebar .sidebar-stats,
+.sidebar .challenges-section {
+  pointer-events: auto !important;
+}
+
+/* 5 · Header + toggle stay above the backdrop, so hamburger
+       still works while the drawer is open. */
+.mobile-header { z-index: 1000 !important; }
+.sidebar-toggle { z-index: 1300 !important; }
+
+/* 6 · Neutralise the old student-mode overlay if it's still in the DOM. */
+.mobile-overlay,
+#mobileOverlay {
+  display: none !important;
+  pointer-events: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  opacity: 0 !important;
+}
+
+/* 7 · Prevent background scroll while the drawer is open. */
+body.drawer-open,
+body.sidebar-open,
+body.sidebar-active {
+  overflow: hidden !important;
+}
+
+/* 8 · Desktop: sidebar is always-on, backdrop is irrelevant. */
+@media (min-width: 1021px) {
+  .sidebar-backdrop { display: none !important; }
+  .sidebar { z-index: 100 !important; }
+  .mobile-header { z-index: 90 !important; }
+}
+
+
 
 /* ============================================================
    FIX · SIDEBAR BACKDROP / STACKING CONTEXT TRAP
