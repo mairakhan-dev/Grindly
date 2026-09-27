@@ -5184,3 +5184,141 @@ html body .mobile-header { z-index: 1000 !important; }
     margin-right: 0 !important;
   }
 }
+
+/* ============================================================
+   CONTENT SIZING · hug sidebar · capped width · equal gutters
+   ============================================================ */
+
+@media (min-width: 1021px) {
+  .main-content {
+    margin-left: var(--sidebar-width) !important;
+    padding: 32px !important;
+  }
+  .main-content > * {
+    max-width: 1280px !important;   /* ← bump to 1400px if you want it wider */
+    width: 100% !important;
+    margin-left: auto !important;   /* centers within the padded area */
+    margin-right: auto !important;  /* so left and right gutters are equal */
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1020px) {
+  .main-content {
+    padding: 20px !important;
+  }
+  .main-content > * {
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+}
+
+/* ============================================================
+   FORCE-VISIBLE · header, controls bar, tab bar
+   ============================================================ */
+
+#dashboardHeader,
+.dashboard-header {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: static !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  clip: auto !important;
+  clip-path: none !important;
+  transform: none !important;
+}
+
+#dashboardHeader > *,
+.dashboard-header > * {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+#dashboardHeader h1,
+.dashboard-header h1 {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  color: var(--ember) !important;
+  -webkit-text-fill-color: var(--ember) !important;
+  background: none !important;
+  -webkit-background-clip: initial !important;
+  background-clip: initial !important;
+}
+
+#dashboardSubtitle,
+.dashboard-subtitle,
+.time-greeting {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  color: var(--text-muted) !important;
+}
+
+.controls-bar {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: static !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  clip-path: none !important;
+  transform: none !important;
+  flex-wrap: wrap !important;
+}
+
+.controls-bar > * {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.controls-bar .btn,
+.controls-bar .btn-icon,
+.controls-bar button {
+  display: inline-flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Bring back the tab bar even on mobile */
+.dashboard-button-bar {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: static !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  clip-path: none !important;
+  transform: none !important;
+  flex-wrap: nowrap !important;
+  width: 100% !important;
+}
+
+.dashboard-section-btn {
+  display: inline-flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  flex-shrink: 0 !important;
+}
+
+/* Neutralize any prior "hide on mobile" rules */
+@media (max-width: 768px) {
+  .controls-bar,
+  .dashboard-header,
+  #dashboardHeader,
+  .dashboard-button-bar {
+    display: flex !important;
+  }
+  .dashboard-header,
+  #dashboardHeader {
+    display: block !important;
+  }
+}
