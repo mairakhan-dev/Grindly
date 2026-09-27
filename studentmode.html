@@ -3447,6 +3447,187 @@ body.focus-mode .main-content {
   }, 1500);
 })();
 </script>
+<!-- ============================================================
+     MOBILE FOCUS MODE · full-screen, Exit Focus always visible
+     ============================================================ -->
+<style>
+@media (max-width: 900px) {
+
+  /* Hide top nav & bottom nav entirely during focus mode so the
+     focus header owns the top of the screen. */
+  body.focus-mode .top-nav,
+  body.focus-mode #topNav {
+    display: none !important;
+  }
+  body.focus-mode .student-bottom-nav {
+    display: none !important;
+  }
+
+  /* Restore the mobile menu button visibility rule (undo the earlier
+     "hide the hamburger" — it was only relevant when the top nav was shown) */
+  body.focus-mode .mobile-menu-toggle {
+    display: none !important;
+  }
+
+  /* main content starts at the very top of the viewport now */
+  body.focus-mode .main-content {
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    margin-top: 0 !important;
+    padding: 12px 12px 40px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  /* Panel needs a bit of padding below the sticky header */
+  body.focus-mode .focus-mode-panel {
+    padding-bottom: 20px !important;
+    max-width: 100% !important;
+  }
+
+  /* Sticky Focus Portal header — anchored to the very top */
+  body.focus-mode .focus-header {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 30 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 10px !important;
+    margin: 0 0 12px !important;
+    padding: 10px 12px !important;
+    background: color-mix(in srgb, var(--card) 92%, transparent) !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 6px 20px rgba(60, 42, 15, 0.10) !important;
+  }
+  body.focus-mode .focus-header h2 {
+    font-size: 1rem !important;
+    font-weight: 700 !important;
+    margin: 0 !important;
+    flex: 1 1 auto !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+  body.focus-mode .focus-header .quick-notes-actions {
+    flex-shrink: 0 !important;
+    display: flex !important;
+    gap: 6px !important;
+  }
+  body.focus-mode .focus-header .btn {
+    padding: 8px 12px !important;
+    font-size: 0.75rem !important;
+    min-height: 34px !important;
+    border-radius: 8px !important;
+  }
+
+  /* Bottom safe-area padding so the last card is reachable */
+  body.focus-mode .focus-grid {
+    padding-bottom: 30px !important;
+  }
+
+  /* Kill the mobile overlay so a stale one can't intercept taps */
+  body.focus-mode .mobile-overlay,
+  body.focus-mode #mobileOverlay {
+    display: none !important;
+    pointer-events: none !important;
+  }
+
+  /* Also make sure the sidebar really is gone (not just translated off) */
+  body.focus-mode .sidebar,
+  body.focus-mode #sidebar {
+    transform: translateX(-105%) !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+}
+
+/* Tiny phones */
+@media (max-width: 400px) {
+  body.focus-mode .main-content {
+    padding: 8px 8px 30px !important;
+  }
+  body.focus-mode .focus-header {
+    padding: 8px 10px !important;
+    gap: 6px !important;
+  }
+  body.focus-mode .focus-header h2 {
+    font-size: 0.9rem !important;
+  }
+  body.focus-mode .focus-header .btn {
+    padding: 6px 10px !important;
+    font-size: 0.7rem !important;
+    min-height: 32px !important;
+  }
+}
+</style>
+
+<script>
+/* ============================================================
+   Mobile focus mode · make sure the Exit Focus button is
+   always tappable, and hide the mobile nav bars on entry.
+   ============================================================ */
+(function () {
+  'use strict';
+
+  function isMobile() { return window.innerWidth <= 900; }
+
+  function enterFocusMobile() {
+    if (!isMobile()) return;
+
+    // Hide bottom nav + top nav (CSS does this too, belt-and-suspenders)
+    var topNav = document.getElementById('topNav') || document.querySelector('.top-nav');
+    if (topNav) topNav.style.setProperty('display', 'none', 'important');
+
+    var bottomNav = document.querySelector('.student-bottom-nav');
+    if (bottomNav) bottomNav.style.setProperty('display', 'none', 'important');
+
+    // Make sure the sticky header's parent scrolls, not body
+    var mc = document.querySelector('main.main-content, .main-content');
+    if (mc) {
+      mc.scrollTop = 0;
+    }
+  }
+
+  function exitFocusMobile() {
+    // Restore the top nav display so the rest of the page is normal again
+    var topNav = document.getElementById('topNav') || document.querySelector('.top-nav');
+    if (topNav) topNav.style.removeProperty('display');
+
+    var bottomNav = document.querySelector('.student-bottom-nav');
+    if (bottomNav) bottomNav.style.removeProperty('display');
+  }
+
+  // Watch focus-mode class changes
+  var lastWasFocus = null;
+  new MutationObserver(function () {
+    var isFocus = document.body.classList.contains('focus-mode');
+    if (isFocus === lastWasFocus) return;
+    lastWasFocus = isFocus;
+    if (isFocus) setTimeout(enterFocusMobile, 60);
+    else exitFocusMobile();
+  }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+
+  // Initial state
+  if (document.body.classList.contains('focus-mode')) {
+    lastWasFocus = true;
+    setTimeout(enterFocusMobile, 100);
+  } else {
+    lastWasFocus = false;
+  }
+
+  // Re-run on resize / orientation
+  window.addEventListener('resize', function () {
+    if (document.body.classList.contains('focus-mode')) {
+      setTimeout(enterFocusMobile, 120);
+    }
+  });
+})();
+</script>
 </body>
 </html>
 
