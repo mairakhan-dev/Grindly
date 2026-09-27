@@ -2121,6 +2121,49 @@
   }
 })();
 </script>
+<script>
+(function () {
+  function escapeStacking() {
+    if (window.innerWidth >= 1021) return;
+    var sidebar  = document.querySelector('.sidebar');
+    var backdrop = document.getElementById('sidebarBackdrop');
+    if (sidebar  && sidebar.parentElement  !== document.body) document.body.appendChild(sidebar);
+    if (backdrop && backdrop.parentElement !== document.body) document.body.appendChild(backdrop);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', escapeStacking);
+  } else {
+    escapeStacking();
+  }
+})();
+</script>
+<script>
+(function removeContentMgmt() {
+  var targets = ['Content Management', 'content management'];
+  function sweep() {
+    document.querySelectorAll('h1,h2,h3,h4,div,span,p').forEach(function (el) {
+      if (el.children.length > 0) return;
+      var txt = (el.textContent || '').trim();
+      if (targets.some(function (t) { return txt.indexOf(t) !== -1; })) {
+        // Remove the smallest reasonable wrapper (the header/section around it)
+        var wrapper = el.closest('.section-header, .content-header, .dashboard-section, [class*="header"]');
+        if (wrapper) wrapper.remove();
+        else el.remove();
+      }
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () {
+      sweep();
+      // Re-run once after your other scripts have injected their headers
+      setTimeout(sweep, 300);
+    });
+  } else {
+    sweep();
+    setTimeout(sweep, 300);
+  }
+})();
+</script>
 </body>
 </html>
 

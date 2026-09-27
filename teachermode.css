@@ -4194,229 +4194,6 @@ body.presentation-mode #presentation { display: block !important; }
     }
   }
 }
-/* ============================================================
-   FIX · SIDEBAR BACKDROP / STACKING CONTEXT TRAP
-   Drop this at the VERY END of teachermode.css.
-   Problem: .sidebar lives inside .app-layout, and .app-layout
-   had position:relative + z-index:1 — a stacking context. So the
-   sidebar's high z-index was trapped inside it, and the body-level
-   backdrop painted on top, blurring the sidebar and stealing clicks.
-   ============================================================ */
-
-/* 1 · Remove the stacking trap on .app-layout. */
-.app-layout {
-  position: static !important;
-  z-index: auto !important;
-  transform: none !important;
-  filter: none !important;
-  perspective: none !important;
-  isolation: auto !important;
-  contain: none !important;
-  will-change: auto !important;
-  opacity: 1 !important;
-}
-
-/* 2 · Push the notebook paper to the very back so we don't need
-       .app-layout to be a stacking context just to keep it visible. */
-body::before,
-body::after {
-  z-index: -1 !important;
-}
-body.dark::before, body.ocean::before, body.forest::before,
-body.sunset::before, body.purple::before, body.aurora::before,
-body.obsidian::before, body.celestial::before, body.rainbow::before,
-body.premium::before,
-body.dark::after, body.ocean::after, body.forest::after,
-body.sunset::after, body.purple::after, body.aurora::after,
-body.obsidian::after, body.celestial::after {
-  z-index: -1 !important;
-}
-
-/* 3 · Backdrop: BELOW the sidebar, ABOVE the main content.
-       pointer-events only switch on when it's actually visible. */
-.sidebar-backdrop {
-  position: fixed !important;
-  inset: 0 !important;
-  z-index: 900 !important;
-  background: rgba(60, 42, 15, 0.45) !important;
-  backdrop-filter: blur(3px) !important;
-  -webkit-backdrop-filter: blur(3px) !important;
-  opacity: 0 !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
-  transition: opacity 0.24s ease, visibility 0.24s ease !important;
-}
-.sidebar-backdrop.show,
-.sidebar-backdrop.active,
-.sidebar-backdrop[style*="display: block"],
-.sidebar-backdrop[style*="display:block"] {
-  opacity: 1 !important;
-  visibility: visible !important;
-  pointer-events: auto !important;
-}
-
-/* 4 · Sidebar paints ABOVE the backdrop — crisp, clickable, no blur. */
-.sidebar {
-  z-index: 1200 !important;
-  pointer-events: auto !important;
-}
-.sidebar *,
-.sidebar a,
-.sidebar button,
-.sidebar select,
-.sidebar input,
-.sidebar label,
-.sidebar .nav-item,
-.sidebar .sidebar-nav,
-.sidebar .class-switcher,
-.sidebar .theme-selector,
-.sidebar .logout-btn,
-.sidebar .sidebar-stats,
-.sidebar .challenges-section {
-  pointer-events: auto !important;
-}
-
-/* 5 · Header + toggle stay above the backdrop, so hamburger
-       still works while the drawer is open. */
-.mobile-header { z-index: 1000 !important; }
-.sidebar-toggle { z-index: 1300 !important; }
-
-/* 6 · Neutralise the old student-mode overlay if it's still in the DOM. */
-.mobile-overlay,
-#mobileOverlay {
-  display: none !important;
-  pointer-events: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  opacity: 0 !important;
-}
-
-/* 7 · Prevent background scroll while the drawer is open. */
-body.drawer-open,
-body.sidebar-open,
-body.sidebar-active {
-  overflow: hidden !important;
-}
-
-/* 8 · Desktop: sidebar is always-on, backdrop is irrelevant. */
-@media (min-width: 1021px) {
-  .sidebar-backdrop { display: none !important; }
-  .sidebar { z-index: 100 !important; }
-  .mobile-header { z-index: 90 !important; }
-}
-
-
-
-/* ============================================================
-   FIX · SIDEBAR BACKDROP / STACKING CONTEXT TRAP
-   Drop this at the VERY END of teachermode.css.
-   Problem: .sidebar lives inside .app-layout, and .app-layout
-   had position:relative + z-index:1 — a stacking context. So the
-   sidebar's high z-index was trapped inside it, and the body-level
-   backdrop painted on top, blurring the sidebar and stealing clicks.
-   ============================================================ */
-
-/* 1 · Remove the stacking trap on .app-layout. */
-.app-layout {
-  position: static !important;
-  z-index: auto !important;
-  transform: none !important;
-  filter: none !important;
-  perspective: none !important;
-  isolation: auto !important;
-  contain: none !important;
-  will-change: auto !important;
-  opacity: 1 !important;
-}
-
-/* 2 · Push the notebook paper to the very back so we don't need
-       .app-layout to be a stacking context just to keep it visible. */
-body::before,
-body::after {
-  z-index: -1 !important;
-}
-body.dark::before, body.ocean::before, body.forest::before,
-body.sunset::before, body.purple::before, body.aurora::before,
-body.obsidian::before, body.celestial::before, body.rainbow::before,
-body.premium::before,
-body.dark::after, body.ocean::after, body.forest::after,
-body.sunset::after, body.purple::after, body.aurora::after,
-body.obsidian::after, body.celestial::after {
-  z-index: -1 !important;
-}
-
-/* 3 · Backdrop: BELOW the sidebar, ABOVE the main content.
-       pointer-events only switch on when it's actually visible. */
-.sidebar-backdrop {
-  position: fixed !important;
-  inset: 0 !important;
-  z-index: 900 !important;
-  background: rgba(60, 42, 15, 0.45) !important;
-  backdrop-filter: blur(3px) !important;
-  -webkit-backdrop-filter: blur(3px) !important;
-  opacity: 0 !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
-  transition: opacity 0.24s ease, visibility 0.24s ease !important;
-}
-.sidebar-backdrop.show,
-.sidebar-backdrop.active,
-.sidebar-backdrop[style*="display: block"],
-.sidebar-backdrop[style*="display:block"] {
-  opacity: 1 !important;
-  visibility: visible !important;
-  pointer-events: auto !important;
-}
-
-/* 4 · Sidebar paints ABOVE the backdrop — crisp, clickable, no blur. */
-.sidebar {
-  z-index: 1200 !important;
-  pointer-events: auto !important;
-}
-.sidebar *,
-.sidebar a,
-.sidebar button,
-.sidebar select,
-.sidebar input,
-.sidebar label,
-.sidebar .nav-item,
-.sidebar .sidebar-nav,
-.sidebar .class-switcher,
-.sidebar .theme-selector,
-.sidebar .logout-btn,
-.sidebar .sidebar-stats,
-.sidebar .challenges-section {
-  pointer-events: auto !important;
-}
-
-/* 5 · Header + toggle stay above the backdrop, so hamburger
-       still works while the drawer is open. */
-.mobile-header { z-index: 1000 !important; }
-.sidebar-toggle { z-index: 1300 !important; }
-
-/* 6 · Neutralise the old student-mode overlay if it's still in the DOM. */
-.mobile-overlay,
-#mobileOverlay {
-  display: none !important;
-  pointer-events: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  opacity: 0 !important;
-}
-
-/* 7 · Prevent background scroll while the drawer is open. */
-body.drawer-open,
-body.sidebar-open,
-body.sidebar-active {
-  overflow: hidden !important;
-}
-
-/* 8 · Desktop: sidebar is always-on, backdrop is irrelevant. */
-@media (min-width: 1021px) {
-  .sidebar-backdrop { display: none !important; }
-  .sidebar { z-index: 100 !important; }
-  .mobile-header { z-index: 90 !important; }
-}
 
 /* ============================================================
    TIGHTEN · Desktop spacing between sidebar and content
@@ -5003,5 +4780,213 @@ html body .mobile-header { z-index: 1000 !important; }
   }
   .content-card:has(button[onclick="renderTeacherToolkit()"]) .content-body .form-card h3 {
     font-size: 0.6875rem !important;
+  }
+}
+
+/* ============================================================
+   SIDEBAR STACKING — NUCLEAR
+   ============================================================ */
+html body > .app-layout,
+html body .app-layout,
+html body .app-layout[class] {
+  position: static !important;
+  z-index: auto !important;
+  transform: none !important;
+  filter: none !important;
+  perspective: none !important;
+  isolation: auto !important;
+  contain: none !important;
+  will-change: auto !important;
+  opacity: 1 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  clip-path: none !important;
+  mask: none !important;
+}
+
+html body .sidebar,
+html body .sidebar.active {
+  position: fixed !important;
+  z-index: 2147483000 !important;
+  pointer-events: auto !important;
+}
+
+html body .sidebar *,
+html body .sidebar button,
+html body .sidebar a,
+html body .sidebar select,
+html body .sidebar input,
+html body .sidebar .nav-item {
+  pointer-events: auto !important;
+}
+
+html body .sidebar-backdrop {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 1 !important;
+  background: rgba(60, 42, 15, 0.45) !important;
+  backdrop-filter: blur(2px) !important;
+  -webkit-backdrop-filter: blur(2px) !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transition: opacity 0.24s ease, visibility 0.24s ease !important;
+}
+html body .sidebar-backdrop.show,
+html body .sidebar-backdrop.active,
+html body .sidebar-backdrop[style*="display: block"],
+html body .sidebar-backdrop[style*="display:block"] {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+html body .mobile-header { z-index: 1000 !important; }
+
+@media (min-width: 1021px) {
+  html body .sidebar { z-index: 100 !important; }
+  html body .sidebar-backdrop { display: none !important; }
+}
+/* ============================================================
+   DASHBOARD CLEANUP
+   ============================================================ */
+
+/* ── 1 · Kill all pro-tips in the forms column
+        (🔑 Class Code Management, 📢 Announcement Tips,
+         📚 Assignment Best Practices) ── */
+.forms-section > .pro-tip {
+  display: none !important;
+}
+
+/* ── 2 · Content column → 2-col grid ── */
+.content-section {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  align-items: start !important;
+}
+
+/* Hide the Recent Announcements + Recent Assignments cards
+   (children 3 and 4 in .content-section) */
+.content-section > :nth-child(3),
+.content-section > :nth-child(4) {
+  display: none !important;
+}
+
+/* Students card → left column */
+.content-section > #studentsCard {
+  grid-column: span 1 !important;
+  order: 1;
+  margin: 0 !important;
+}
+
+/* Live Activity card → right column (last child) */
+.content-section > .content-card:last-child {
+  grid-column: span 1 !important;
+  order: 2;
+  margin: 0 !important;
+}
+
+/* Student Monitoring tip → full-width, small, at the bottom */
+.content-section > .pro-tip {
+  grid-column: 1 / -1 !important;
+  order: 10;
+  padding: 8px 10px !important;
+  font-size: 0.6875rem !important;
+  line-height: 1.4 !important;
+  margin: 0 !important;
+  transform: none !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 6px rgba(60, 42, 15, 0.06) !important;
+}
+.content-section > .pro-tip::before,
+.content-section > .pro-tip::after { display: none !important; }
+.content-section > .pro-tip strong {
+  font-size: 0.625rem !important;
+  margin-bottom: 2px !important;
+  letter-spacing: 0.06em !important;
+}
+
+/* ── 3 · Compact the two visible content cards ── */
+.content-section > #studentsCard .content-header,
+.content-section > .content-card:last-child .content-header {
+  padding: 10px 12px !important;
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+}
+.content-section > #studentsCard .content-header h2,
+.content-section > .content-card:last-child .content-header h2 {
+  font-size: 0.9375rem !important;
+  white-space: normal !important;
+  gap: 6px !important;
+}
+.content-section > #studentsCard .content-header h2::before,
+.content-section > .content-card:last-child .content-header h2::before {
+  width: 5px !important;
+  height: 5px !important;
+}
+.content-section > #studentsCard .content-body,
+.content-section > .content-card:last-child .content-body {
+  padding: 10px 12px !important;
+  max-height: 320px !important;
+}
+
+/* Students inside the narrow card → single column, compact */
+.content-section > #studentsCard #studentsList {
+  grid-template-columns: 1fr !important;
+  gap: 8px !important;
+}
+.content-section > #studentsCard .student-item {
+  padding: 10px !important;
+  border-radius: 12px !important;
+}
+.content-section > #studentsCard .student-info h4 {
+  font-size: 0.875rem !important;
+  margin-bottom: 2px !important;
+}
+.content-section > #studentsCard .student-id {
+  font-size: 0.625rem !important;
+  padding: 2px 6px !important;
+}
+.content-section > #studentsCard .streak-badge {
+  padding: 3px 8px !important;
+  font-size: 0.6875rem !important;
+}
+.content-section > #studentsCard .student-stats {
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 5px !important;
+}
+.content-section > #studentsCard .stat-pill {
+  padding: 6px 3px !important;
+}
+.content-section > #studentsCard .stat-pill-value {
+  font-size: 0.75rem !important;
+}
+.content-section > #studentsCard .stat-pill-label {
+  font-size: 0.5rem !important;
+  margin-top: 2px !important;
+}
+
+/* ── 4 · Remove 📈 Analytics from the sidebar nav ── */
+.nav-item[onclick*="'analytics'"],
+.nav-item[onclick*='"analytics"'] {
+  display: none !important;
+}
+
+/* ── 5 · Kill the theme preview overlay ── */
+#themePreviewOverlay,
+.theme-preview-overlay {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* ── 6 · Ultra-narrow phones ── */
+@media (max-width: 480px) {
+  .content-section { gap: 8px !important; }
+  .content-section > #studentsCard .content-header h2,
+  .content-section > .content-card:last-child .content-header h2 {
+    font-size: 0.8125rem !important;
   }
 }
