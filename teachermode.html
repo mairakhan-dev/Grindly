@@ -2330,6 +2330,37 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
+<script>
+/* Force toast container to always be ready to receive toasts */
+document.addEventListener('DOMContentLoaded', function () {
+  var tc = document.getElementById('toastContainer');
+  if (tc) {
+    tc.style.setProperty('display', 'flex', 'important');
+    tc.style.setProperty('visibility', 'visible', 'important');
+    tc.style.setProperty('opacity', '1', 'important');
+    tc.style.setProperty('position', 'fixed', 'important');
+    tc.style.setProperty('top', '24px', 'important');
+    tc.style.setProperty('right', '24px', 'important');
+    tc.style.setProperty('z-index', '10000', 'important');
+    tc.style.setProperty('pointer-events', 'none', 'important');
+  }
+
+  /* Also make sure individual toasts are visible when added */
+  var observer = new MutationObserver(function (muts) {
+    muts.forEach(function (m) {
+      m.addedNodes.forEach(function (n) {
+        if (n.nodeType === 1 && n.classList && n.classList.contains('toast')) {
+          n.style.setProperty('display', 'flex', 'important');
+          n.style.setProperty('opacity', '1', 'important');
+          n.style.setProperty('visibility', 'visible', 'important');
+          n.style.setProperty('pointer-events', 'auto', 'important');
+        }
+      });
+    });
+  });
+  if (tc) observer.observe(tc, { childList: true });
+});
+</script>
 </body>
 </html>
 
