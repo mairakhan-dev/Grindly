@@ -4447,3 +4447,189 @@ body.sidebar-active {
   }
   */
 }
+
+/* ============================================================
+   SIDEBAR STACKING — NUCLEAR OPTION
+   Beats any other stylesheet by using html body + [class].
+   ============================================================ */
+
+/* Destroy every stacking-context trigger on .app-layout */
+html body > .app-layout,
+html body .app-layout,
+html body .app-layout[class] {
+  position: static !important;
+  z-index: auto !important;
+  transform: none !important;
+  filter: none !important;
+  perspective: none !important;
+  isolation: auto !important;
+  contain: none !important;
+  will-change: auto !important;
+  opacity: 1 !important;
+  mix-blend-mode: normal !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  clip-path: none !important;
+  mask: none !important;
+}
+
+/* Sidebar goes to the absolute top of the stacking order */
+html body .sidebar,
+html body .sidebar[class],
+html body .sidebar.active {
+  position: fixed !important;
+  z-index: 2147483000 !important;
+  pointer-events: auto !important;
+}
+
+/* Backdrop sits just above main content, far below sidebar.
+   pointer-events only turn on when it's actually meant to show. */
+html body .sidebar-backdrop,
+html body .sidebar-backdrop[class] {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 1 !important;
+  background: rgba(60, 42, 15, 0.45) !important;
+  backdrop-filter: blur(2px) !important;
+  -webkit-backdrop-filter: blur(2px) !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transition: opacity 0.24s ease, visibility 0.24s ease !important;
+}
+html body .sidebar-backdrop.show,
+html body .sidebar-backdrop.active,
+html body .sidebar-backdrop[style*="display: block"],
+html body .sidebar-backdrop[style*="display:block"] {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+/* Header stays above the backdrop so the hamburger is always tappable */
+html body .mobile-header { z-index: 1000 !important; }
+
+/* Desktop: leave the sidebar at normal z-index (no drawer behaviour) */
+@media (min-width: 1021px) {
+  html body .sidebar { z-index: 100 !important; }
+  html body .sidebar-backdrop { display: none !important; }
+}
+
+/* ============================================================
+   COMPACT DASHBOARD · 2-col cards · tight spacing · equal margins
+   ============================================================ */
+
+/* Equal, tight gutter on both sides at every screen size */
+.main-content {
+  padding-left: 14px !important;
+  padding-right: 14px !important;
+}
+@media (min-width: 769px) {
+  .main-content {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+}
+@media (min-width: 1021px) {
+  .main-content {
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+  }
+}
+
+/* Kill the red notebook margin line on mobile — it made the
+   left look wider than the right */
+@media (max-width: 1020px) {
+  body::after { display: none !important; }
+}
+
+/* Force 2-column grid inside the Teacher Toolkit and any other
+   auto-fit grid that was collapsing to 1 column on mobile */
+.content-body > div[style*="grid-template-columns"],
+.content-body > div[style*="repeat(auto-fit"],
+.dashboard-content div[style*="minmax(240px"] {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+}
+
+/* Compact the toolkit mini-cards */
+.content-body > div[style*="grid-template-columns"] .form-card {
+  padding: 12px !important;
+  border-radius: 14px !important;
+  margin: 0 !important;
+}
+.content-body > div[style*="grid-template-columns"] .form-card h3 {
+  font-size: 0.8125rem !important;
+  margin-bottom: 6px !important;
+  line-height: 1.2 !important;
+}
+.content-body > div[style*="grid-template-columns"] .form-card p,
+.content-body > div[style*="grid-template-columns"] .form-card div {
+  font-size: 0.75rem !important;
+}
+.content-body > div[style*="grid-template-columns"] .form-card .btn {
+  padding: 8px 12px !important;
+  font-size: 0.75rem !important;
+  min-height: 36px !important;
+  width: 100%;
+}
+.content-body > div[style*="grid-template-columns"] .form-card input,
+.content-body > div[style*="grid-template-columns"] .form-card textarea {
+  padding: 8px 10px !important;
+  font-size: 14px !important;
+  min-height: 38px !important;
+}
+.content-body > div[style*="grid-template-columns"] .form-card textarea {
+  min-height: 70px !important;
+}
+
+/* At very small phones still keep 2-col — cards get narrower */
+@media (max-width: 380px) {
+  .content-body > div[style*="grid-template-columns"] {
+    gap: 8px !important;
+  }
+  .content-body > div[style*="grid-template-columns"] .form-card {
+    padding: 10px !important;
+  }
+  .content-body > div[style*="grid-template-columns"] .form-card h3 {
+    font-size: 0.75rem !important;
+  }
+}
+
+/* Tighten the space around every big section on mobile */
+@media (max-width: 768px) {
+  :root {
+    --card-pad: 14px;
+    --section-gap: 18px;
+    --element-gap: 12px;
+  }
+  .dashboard-content > * + *,
+  #dashboard > * + * {
+    margin-top: 18px !important;
+  }
+  .form-card { padding: 14px !important; }
+  .form-card > * + * { margin-top: 12px !important; }
+  .content-header { padding: 12px 14px !important; }
+  .content-body { padding: 14px !important; }
+  .form-group { margin-bottom: 12px !important; }
+}
+
+/* Quick stats — a touch tighter on mobile */
+@media (max-width: 768px) {
+  .quick-stats {
+    gap: 10px !important;
+    margin-bottom: 16px !important;
+  }
+  .stat-card {
+    padding: 10px !important;
+    gap: 8px !important;
+    min-height: 76px !important;
+  }
+  .stat-icon {
+    width: 34px !important;
+    height: 34px !important;
+    font-size: 1rem !important;
+  }
+  .stat-number { font-size: 1.15rem !important; }
+  .stat-label { font-size: 0.5625rem !important; }
+}
