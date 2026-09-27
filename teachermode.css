@@ -5895,3 +5895,444 @@ button, a, .nav-item, .student-item, .item, .challenge-card,
   .content-card, .form-card, .student-item, .item, .assignment-card,
   .pulse-widget { border: 1px solid #ddd; box-shadow: none; break-inside: avoid; }
 }
+
+/* ==========================================================================
+   PRESENTATION MODE — clean, projector-ready
+   ========================================================================== */
+
+body.presentation-mode .sidebar,
+body.presentation-mode .mobile-header,
+body.presentation-mode .sidebar-toggle,
+body.presentation-mode .sidebar-backdrop,
+body.presentation-mode .dashboard-header,
+body.presentation-mode .dashboard-button-bar,
+body.presentation-mode .feedback-btn { display: none !important; }
+
+body.presentation-mode .main-content {
+  margin-left: 0;
+  padding: 16px;
+  max-width: 100%;
+}
+
+body.presentation-mode #presentation {
+  display: block !important;
+}
+
+/* ─── Toolbar ──────────────────────────────── */
+.presentation-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 20px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  margin-bottom: 20px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  flex-wrap: wrap;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+.pres-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.pres-live-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #16a34a;
+  box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.5);
+  animation: presLivePulse 2s infinite;
+  flex-shrink: 0;
+}
+@keyframes presLivePulse {
+  0%   { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.6); }
+  70%  { box-shadow: 0 0 0 10px rgba(22, 163, 74, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
+}
+
+.pres-toolbar-info { min-width: 0; flex: 1; }
+
+.presentation-title {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.presentation-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+  font-size: 0.75rem;
+}
+
+.pres-meta-pill {
+  font-family: var(--font-mono);
+  background: var(--ink-2);
+  color: var(--text);
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  font-weight: 600;
+}
+.pres-meta-updated { color: var(--muted); }
+
+.presentation-controls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pres-btn {
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.875rem;
+  padding: 10px 18px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  cursor: pointer;
+  min-height: 42px;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.pres-btn:hover { border-color: var(--ember); color: var(--ember); }
+.pres-btn:active { transform: scale(0.97); }
+
+.pres-btn-primary {
+  background: var(--gradient-flame, linear-gradient(135deg, #ffaa33, #ff4714, #d61f00));
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 4px 12px var(--ember-glow);
+}
+.pres-btn-primary:hover { color: #fff; filter: brightness(1.05); }
+
+.pres-btn-danger {
+  background: transparent;
+  color: #dc2626;
+  border-color: #dc2626;
+}
+.pres-btn-danger:hover { background: #dc2626; color: #fff; }
+
+.pres-btn-sm { padding: 8px 14px; font-size: 0.8125rem; min-height: 38px; }
+.pres-btn-full { width: 100%; }
+
+/* ─── Grid ─────────────────────────────────── */
+.presentation-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.presentation-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  min-height: 160px;
+  overflow: hidden;
+}
+
+.presentation-card h3 {
+  font-family: inherit;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 14px;
+  flex-shrink: 0;
+}
+
+.pres-span-4  { grid-column: span 4; }
+.pres-span-6  { grid-column: span 6; }
+.pres-span-8  { grid-column: span 8; }
+.pres-span-12 { grid-column: span 12; }
+
+/* ─── Snapshot card ───────────────────────── */
+.pres-card-snapshot { justify-content: space-between; }
+
+.pres-snapshot-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.pres-snapshot-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pres-snapshot-value {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.pres-snapshot-label {
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.presentation-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--ember-soft, rgba(255, 71, 20, 0.12));
+  color: var(--ember, #ff4714);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  align-self: flex-start;
+}
+
+/* ─── Activity feed (hero right) ───────────── */
+.pres-card-activity {
+  min-height: 260px;
+  max-height: 380px;
+}
+
+.presentation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  -webkit-overflow-scrolling: touch;
+}
+
+.presentation-item {
+  background: var(--ink-2, #faf5e8);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  flex-shrink: 0;
+}
+
+.presentation-item strong {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 2px;
+  color: var(--text);
+}
+
+/* ─── Spotlight card ───────────────────────── */
+.pres-card-spotlight { justify-content: space-between; }
+
+.pres-card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+/* ─── Check-ins ────────────────────────────── */
+.pres-checkins {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.pres-checkin-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 6px;
+  background: var(--ink-2, #faf5e8);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.pres-checkin-emoji { font-size: 1.5rem; line-height: 1; }
+
+.pres-checkin-value {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.pres-checkins-updated {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+/* ─── Agenda + Timer ───────────────────────── */
+.pres-card-agenda { min-height: 200px; }
+
+.pres-timer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.presentation-timer {
+  font-family: var(--font-mono);
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.pres-timer-controls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pres-agenda-input {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.pres-agenda-input input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--ink-2, #faf5e8);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.9375rem;
+  min-height: 42px;
+}
+.pres-agenda-input input:focus {
+  outline: none;
+  border-color: var(--ember);
+  background: var(--card);
+}
+
+/* ─── Goals ────────────────────────────────── */
+.pres-card-goals { justify-content: space-between; }
+
+.pres-goal { margin-bottom: 14px; }
+.pres-goal label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.pres-goal input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--ink-2, #faf5e8);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.9375rem;
+  margin-bottom: 8px;
+  min-height: 42px;
+}
+.pres-goal input:focus {
+  outline: none;
+  border-color: var(--ember);
+  background: var(--card);
+}
+
+.presentation-progress {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--ink-2, #faf5e8);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.presentation-progress > span {
+  display: block;
+  height: 100%;
+  background: var(--gradient-flame, linear-gradient(90deg, #ffaa33, #ff4714));
+  width: 0%;
+  transition: width 0.4s ease;
+  border-radius: 3px;
+}
+
+/* ─── Responsive ───────────────────────────── */
+@media (max-width: 1100px) {
+  .pres-span-4  { grid-column: span 6; }
+  .pres-span-8  { grid-column: span 12; }
+}
+
+@media (max-width: 768px) {
+  body.presentation-mode .main-content { padding: 12px; }
+
+  .presentation-toolbar {
+    padding: 12px 14px;
+    border-radius: 14px;
+    position: static;
+  }
+  .presentation-title { font-size: 1.3rem; }
+  .presentation-controls { width: 100%; justify-content: flex-end; }
+  .pres-btn { padding: 8px 14px; font-size: 0.8125rem; min-height: 38px; }
+
+  .presentation-grid { gap: 12px; }
+  .pres-span-4,
+  .pres-span-6,
+  .pres-span-8,
+  .pres-span-12 { grid-column: span 12; }
+
+  .presentation-card { padding: 14px; min-height: 130px; border-radius: 14px; }
+  .pres-snapshot-value { font-size: 2rem; }
+  .pres-checkin-value { font-size: 1.35rem; }
+  .pres-checkin-emoji { font-size: 1.25rem; }
+  .presentation-timer { font-size: 2rem; }
+
+  .pres-agenda-input { flex-direction: column; }
+  .pres-agenda-input input { width: 100%; }
+  .pres-agenda-input .pres-btn { width: 100%; }
+
+  .pres-card-activity { max-height: 300px; }
+}
+
+/* ─── Very small phones ────────────────────── */
+@media (max-width: 400px) {
+  .pres-snapshot-grid { gap: 8px; }
+  .pres-snapshot-value { font-size: 1.75rem; }
+  .pres-checkins { gap: 6px; }
+  .pres-checkin-stat { padding: 10px 4px; }
+  .pres-checkin-value { font-size: 1.15rem; }
+}

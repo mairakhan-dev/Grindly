@@ -1096,114 +1096,160 @@
 
 
 
-      <!-- Presentation Mode Section -->
-      <div id="presentation" class="dashboard-content presentation-view" style="grid-column: span 12; display: none;">
-        <div class="presentation-toolbar">
-          <div>
-            <div class="presentation-title">Class Presentation Mode</div>
-            <div class="presentation-meta">
-              <span id="presentationClassName">Class: --</span>
-              <span id="presentationClassCode">Code: ------</span>
-              <span id="presentationLastUpdated">Updated: --</span>
-            </div>
-          </div>
-          <div class="presentation-controls">
-            <button class="btn btn-secondary" id="presentationAutoBtn" onclick="togglePresentationAutoRefresh()">Live Auto Refresh: ON</button>
-            <button class="btn btn-secondary" onclick="togglePresentationFullScreen()">Full Screen</button>
-            <button class="btn btn-danger" onclick="exitPresentationMode()">Exit</button>
-          </div>
-        </div>
+     <div id="presentation" class="dashboard-content presentation-view" style="grid-column: span 12; display: none;">
 
-        <div class="presentation-grid">
-          <div class="presentation-card span-3">
-            <h3>Class Snapshot</h3>
-            <div class="presentation-stat"><span>Total Students</span><strong id="presentationStudentsCount">0</strong></div>
-            <div class="presentation-stat"><span>Active This Week</span><strong id="presentationActiveCount">0</strong></div>
-            <div class="presentation-stat"><span>Average Streak</span><strong id="presentationAvgStreak">0</strong></div>
-            <div class="presentation-stat"><span>Class Health</span><strong id="presentationHealthScore">0</strong></div>
-            <div class="presentation-pill" id="presentationHealthLabel">Steady</div>
-          </div>
-
-          <div class="presentation-card span-3">
-            <h3>Student Spotlight</h3>
-            <div id="presentationSpotlight">No students yet.</div>
-            <button class="btn btn-secondary" style="margin-top: var(--spacing-sm);" onclick="pickNewSpotlight()">New Spotlight</button>
-            <button class="btn btn-primary" style="margin-top: var(--spacing-sm);" onclick="createSpotlightShoutout()">Send Shoutout</button>
-          </div>
-
-          <div class="presentation-card span-3">
-            <h3>At-Risk Alerts</h3>
-            <div id="presentationAtRisk" class="presentation-list"></div>
-          </div>
-
-          <div class="presentation-card span-3">
-            <h3>Goals Tracker</h3>
-            <div style="display: grid; gap: var(--spacing-sm);">
-              <label style="font-size: 0.85rem;">Active Students Target</label>
-              <input type="number" id="goalActiveTarget" min="1" placeholder="e.g. 20">
-              <div class="presentation-progress"><span id="goalActiveProgress"></span></div>
-              <label style="font-size: 0.85rem;">Average Streak Target</label>
-              <input type="number" id="goalStreakTarget" min="1" placeholder="e.g. 7">
-              <div class="presentation-progress"><span id="goalStreakProgress"></span></div>
-              <button class="btn btn-secondary" onclick="savePresentationGoals()">Save Goals</button>
-            </div>
-          </div>
-
-          <div class="presentation-card span-6">
-            <h3>Live Students</h3>
-            <div id="presentationStudents" class="presentation-list"></div>
-          </div>
-
-          <div class="presentation-card span-6">
-            <h3>Recent Announcements</h3>
-            <div id="presentationAnnouncements" class="presentation-list"></div>
-          </div>
-
-          <div class="presentation-card span-4">
-            <h3>Assignments</h3>
-            <div id="presentationAssignments" class="presentation-list"></div>
-          </div>
-
-          <div class="presentation-card span-4">
-            <h3>Resources</h3>
-            <div id="presentationResources" class="presentation-list"></div>
-          </div>
-
-          <div class="presentation-card span-4">
-            <h3>Challenges</h3>
-            <div id="presentationChallenges" class="presentation-list"></div>
-          </div>
-
-          <div class="presentation-card span-6">
-            <h3>Agenda and Timer</h3>
-            <div class="presentation-timer" id="presentationTimer">00:00</div>
-            <div style="display: flex; gap: var(--spacing-sm); margin: var(--spacing-sm) 0;">
-              <button class="btn btn-primary" onclick="startPresentationTimer()">Start</button>
-              <button class="btn btn-secondary" onclick="pausePresentationTimer()">Pause</button>
-              <button class="btn btn-danger" onclick="resetPresentationTimer()">Reset</button>
-            </div>
-            <div style="display: flex; gap: var(--spacing-sm);">
-              <input type="text" id="agendaItemInput" placeholder="Add agenda item...">
-              <button class="btn btn-secondary" onclick="addAgendaItem()">Add</button>
-            </div>
-            <div id="presentationAgenda" class="presentation-list" style="margin-top: var(--spacing-sm);"></div>
-          </div>
-
-          <div class="presentation-card span-6">
-            <h3>Check-ins Snapshot</h3>
-            <div class="presentation-stat"><span>Confident</span><strong id="presentationCheckinConfident">0</strong></div>
-            <div class="presentation-stat"><span>Okay</span><strong id="presentationCheckinOkay">0</strong></div>
-            <div class="presentation-stat"><span>Struggling</span><strong id="presentationCheckinStruggling">0</strong></div>
-            <div class="presentation-stat"><span>Last Update</span><strong id="presentationCheckinUpdated">--</strong></div>
-            <button class="btn btn-secondary" onclick="showSection('checkins')">Open Check-ins</button>
-          </div>
-
-          <div class="presentation-card span-12">
-            <h3>Live Activity</h3>
-            <div id="presentationActivity" class="presentation-list"></div>
-          </div>
+  <!-- ─── Toolbar ─── -->
+  <div class="presentation-toolbar">
+    <div class="pres-toolbar-left">
+      <span class="pres-live-dot" aria-hidden="true"></span>
+      <div class="pres-toolbar-info">
+        <div class="presentation-title" id="presentationClassName">Class Presentation</div>
+        <div class="presentation-meta">
+          <span class="pres-meta-pill" id="presentationClassCode">------</span>
+          <span class="pres-meta-pill pres-meta-updated" id="presentationLastUpdated">just now</span>
         </div>
       </div>
+    </div>
+    <div class="presentation-controls">
+      <button class="pres-btn" id="presentationAutoBtn" onclick="togglePresentationAutoRefresh()">Live</button>
+      <button class="pres-btn" onclick="togglePresentationFullScreen()">Full</button>
+      <button class="pres-btn pres-btn-danger" onclick="exitPresentationMode()">Exit</button>
+    </div>
+  </div>
+
+  <!-- ─── Grid ─── -->
+  <div class="presentation-grid">
+
+    <!-- HERO ROW ───────────────────────────── -->
+    <div class="presentation-card pres-span-4 pres-card-snapshot">
+      <h3>Class Snapshot</h3>
+      <div class="pres-snapshot-grid">
+        <div class="pres-snapshot-stat">
+          <span class="pres-snapshot-value" id="presentationStudentsCount">0</span>
+          <span class="pres-snapshot-label">Students</span>
+        </div>
+        <div class="pres-snapshot-stat">
+          <span class="pres-snapshot-value" id="presentationActiveCount">0</span>
+          <span class="pres-snapshot-label">Active</span>
+        </div>
+        <div class="pres-snapshot-stat">
+          <span class="pres-snapshot-value" id="presentationAvgStreak">0</span>
+          <span class="pres-snapshot-label">Avg Streak</span>
+        </div>
+        <div class="pres-snapshot-stat">
+          <span class="pres-snapshot-value" id="presentationHealthScore">0</span>
+          <span class="pres-snapshot-label">Health</span>
+        </div>
+      </div>
+      <div class="presentation-pill" id="presentationHealthLabel">Steady</div>
+    </div>
+
+    <div class="presentation-card pres-span-8 pres-card-activity">
+      <h3>Live Activity</h3>
+      <div id="presentationActivity" class="presentation-list"></div>
+    </div>
+
+    <!-- MAIN ROW ───────────────────────────── -->
+    <div class="presentation-card pres-span-6">
+      <h3>Live Students</h3>
+      <div id="presentationStudents" class="presentation-list"></div>
+    </div>
+
+    <div class="presentation-card pres-span-6">
+      <h3>Recent Announcements</h3>
+      <div id="presentationAnnouncements" class="presentation-list"></div>
+    </div>
+
+    <!-- SECONDARY ROW (3 columns) ──────────── -->
+    <div class="presentation-card pres-span-4">
+      <h3>Assignments</h3>
+      <div id="presentationAssignments" class="presentation-list"></div>
+    </div>
+
+    <div class="presentation-card pres-span-4">
+      <h3>Class Challenges</h3>
+      <div id="presentationChallenges" class="presentation-list"></div>
+    </div>
+
+    <div class="presentation-card pres-span-4">
+      <h3>Resources</h3>
+      <div id="presentationResources" class="presentation-list"></div>
+    </div>
+
+    <!-- PEOPLE ROW (3 columns) ─────────────── -->
+    <div class="presentation-card pres-span-4 pres-card-spotlight">
+      <h3>Student Spotlight</h3>
+      <div id="presentationSpotlight">No students yet.</div>
+      <div class="pres-card-actions">
+        <button class="pres-btn pres-btn-sm" onclick="pickNewSpotlight()">New</button>
+        <button class="pres-btn pres-btn-sm pres-btn-primary" onclick="createSpotlightShoutout()">Shoutout</button>
+      </div>
+    </div>
+
+    <div class="presentation-card pres-span-4">
+      <h3>At-Risk Alerts</h3>
+      <div id="presentationAtRisk" class="presentation-list"></div>
+    </div>
+
+    <div class="presentation-card pres-span-4">
+      <h3>Check-ins Snapshot</h3>
+      <div class="pres-checkins">
+        <div class="pres-checkin-stat">
+          <span class="pres-checkin-emoji">😊</span>
+          <span class="pres-checkin-value" id="presentationCheckinConfident">0</span>
+        </div>
+        <div class="pres-checkin-stat">
+          <span class="pres-checkin-emoji">😐</span>
+          <span class="pres-checkin-value" id="presentationCheckinOkay">0</span>
+        </div>
+        <div class="pres-checkin-stat">
+          <span class="pres-checkin-emoji">😕</span>
+          <span class="pres-checkin-value" id="presentationCheckinStruggling">0</span>
+        </div>
+      </div>
+      <div class="pres-checkins-updated">
+        Updated: <strong id="presentationCheckinUpdated">--</strong>
+      </div>
+      <div class="pres-card-actions">
+        <button class="pres-btn pres-btn-sm" onclick="showSection('checkins')">Open</button>
+      </div>
+    </div>
+
+    <!-- UTILITY ROW ─────────────────────────── -->
+    <div class="presentation-card pres-span-8 pres-card-agenda">
+      <h3>Agenda & Timer</h3>
+      <div class="pres-timer-row">
+        <div class="presentation-timer" id="presentationTimer">00:00</div>
+        <div class="pres-timer-controls">
+          <button class="pres-btn pres-btn-sm pres-btn-primary" onclick="startPresentationTimer()">Start</button>
+          <button class="pres-btn pres-btn-sm" onclick="pausePresentationTimer()">Pause</button>
+          <button class="pres-btn pres-btn-sm" onclick="resetPresentationTimer()">Reset</button>
+        </div>
+      </div>
+      <div class="pres-agenda-input">
+        <input type="text" id="agendaItemInput" placeholder="Add agenda item...">
+        <button class="pres-btn pres-btn-primary" onclick="addAgendaItem()">Add</button>
+      </div>
+      <div id="presentationAgenda" class="presentation-list"></div>
+    </div>
+
+    <div class="presentation-card pres-span-4 pres-card-goals">
+      <h3>Goals Tracker</h3>
+      <div class="pres-goal">
+        <label for="goalActiveTarget">Active Students</label>
+        <input type="number" id="goalActiveTarget" min="1" placeholder="e.g. 20">
+        <div class="presentation-progress"><span id="goalActiveProgress"></span></div>
+      </div>
+      <div class="pres-goal">
+        <label for="goalStreakTarget">Avg Streak</label>
+        <input type="number" id="goalStreakTarget" min="1" placeholder="e.g. 7">
+        <div class="presentation-progress"><span id="goalStreakProgress"></span></div>
+      </div>
+      <button class="pres-btn pres-btn-primary pres-btn-full" onclick="savePresentationGoals()">Save Goals</button>
+    </div>
+
+  </div>
+</div>
 
       <!-- Quick Check-ins Section - Keep this one only! -->
 <div id="checkins" class="dashboard-content" style="grid-column: span 12; display: none;">
