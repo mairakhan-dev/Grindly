@@ -1,84 +1,111 @@
-// ========== GRINDLY LEARN ULTIMATE TOUR (FULL SIDEBAR + ALL FEATURES) ==========
-(function() {
+// ========== GRINDLY LEARN ULTIMATE TOUR ==========
+// Self-contained feature module. Requires features/tour.css to be loaded.
+// Public API: window.grindlyTour.{start,next,prev,goTo,skip,reset}
+// Backward compat: window.{nextTourStep,goToStep,skipTour,startTour}
+(function () {
     'use strict';
-    
-    const TOUR_COMPLETED_KEY = 'grindly_tour_completed_v5';
-    
-    if (localStorage.getItem(TOUR_COMPLETED_KEY) === 'true') {
-        console.log('🎓 Tour already completed');
-        return;
-    }
-    
-    console.log('🎓 Starting ULTIMATE tour with ALL features and sidebar scrolling...');
-    
-    // ========== SOUND EFFECTS SYSTEM ==========
-    const tourSounds = {
-        click: () => playSound(523.25, 0.2),
-        complete: () => playSound(659.25, 0.3, [523.25, 659.25, 783.99, 1046.5]),
-        feature: () => playSound(440, 0.25),
-        highlight: () => playSound(880, 0.15),
-        success: () => playSound(523.25, 0.2, [523.25, 659.25]),
-        magic: () => playSound(783.99, 0.3, [523.25, 659.25, 783.99]),
-        group: () => playSound(523.25, 0.25, [523.25, 659.25])
+
+    // ---------- Config ----------
+    const CONFIG = {
+        storageKey: 'grindly_tour_completed_v5',
+        startDelay: 700,           // ms after readiness before step 1 shows
+        maxWaitForReadyMs: 8000,   // hard cap on readiness poll
+        readyPollMs: 250,
+        readyNavThreshold: 6,      // nav items needed to consider sidebar ready
+        tooltipGap: 14,
+        arrowLifetimeMs: 2500,
+        celebrationAutoCloseMs: 6000,
     };
-    
-    function playSound(freq, duration = 0.2, harmonics = null) {
+
+    // ---------- Bail if already completed ----------
+    try {
+        if (localStorage.getItem(CONFIG.storageKey) === 'true') {
+            console.log('🎓 Tour already completed — skipping.');
+            return;
+        }
+    } catch (_) { /* storage blocked; proceed anyway */ }
+
+    console.log('🎓 Starting ULTIMATE tour…');
+
+    const prefersReducedMotion =
+        window.matchMedia &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // ==========================================================
+    //  SOUND ENGINE  — lazy AudioContext, reusable, no leaks
+    // ==========================================================
+    let audioCtx = null;
+    function getAudioCtx() {
+        if (audioCtx) return audioCtx;
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        if (!Ctx) return null;
+        try { audioCtx = new Ctx(); } catch (_) { audioCtx = null; }
+        return audioCtx;
+    }
+
+    const SOUNDS = {
+        click:     { freq: 523.25, dur: 0.11 },
+        feature:   { freq: 440.00, dur: 0.14 },
+        highlight: { freq: 880.00, dur: 0.10 },
+        group:     { freq: 523.25, dur: 0.14, harmonics: [523.25, 659.25] },
+        magic:     { freq: 783.99, dur: 0.18, harmonics: [523.25, 659.25, 783.99] },
+        success:   { freq: 523.25, dur: 0.14, harmonics: [523.25, 659.25] },
+        complete:  { freq: 659.25, dur: 0.26, harmonics: [523.25, 659.25, 783.99, 1046.5] },
+    };
+
+    function playSound(name) {
+        if (prefersReducedMotion) return;
+        const spec = SOUNDS[name] || SOUNDS.click;
+        const ctx = getAudioCtx();
+        if (!ctx) return;
         try {
-            const AudioCtx = window.AudioContext || window.webkitAudioContext;
-            if (!AudioCtx) return;
-            
-            const ctx = new AudioCtx();
             const now = ctx.currentTime;
             const master = ctx.createGain();
-            master.gain.setValueAtTime(0.15, now);
-            master.gain.exponentialRampToValueAtTime(0.0001, now + duration + 0.1);
+            master.gain.setValueAtTime(0.14, now);
+            master.gain.exponentialRampToValueAtTime(0.0001, now + spec.dur + 0.08);
             master.connect(ctx.destination);
-            
-            if (harmonics) {
-                harmonics.forEach((f, i) => {
-                    const osc = ctx.createOscillator();
-                    const gain = ctx.createGain();
-                    osc.type = 'sine';
-                    osc.frequency.value = f;
-                    gain.gain.setValueAtTime(0.2 / (i + 1), now);
-                    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-                    osc.connect(gain);
-                    gain.connect(master);
-                    osc.start(now);
-                    osc.stop(now + duration);
-                });
-            } else {
+
+            const freqs = spec.harmonics || [spec.freq];
+            freqs.forEach(function (f, i) {
                 const osc = ctx.createOscillator();
-                osc.type = 'sine';
-                osc.frequency.value = freq;
                 const gain = ctx.createGain();
-                gain.gain.setValueAtTime(0.2, now);
-                gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+                osc.type = 'sine';
+                osc.frequency.value = f;
+                gain.gain.setValueAtTime(0.22 / (i + 1), now);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + spec.dur);
                 osc.connect(gain);
                 gain.connect(master);
                 osc.start(now);
-                osc.stop(now + duration);
-            }
-            
-            setTimeout(() => ctx.close(), duration * 1000 + 100);
-        } catch(e) { console.log('Sound error:', e); }
+                osc.stop(now + spec.dur);
+            });
+        } catch (_) { /* silent fail */ }
     }
-    
-    function createSparkle(x, y) {
-        for (let i = 0; i < 8; i++) {
-            const sparkle = document.createElement('div');
-            sparkle.className = 'tour-sparkle';
-            sparkle.style.left = (x + (Math.random() - 0.5) * 30) + 'px';
-            sparkle.style.top = (y + (Math.random() - 0.5) * 30) + 'px';
-            sparkle.style.animationDelay = Math.random() * 0.5 + 's';
-            document.body.appendChild(sparkle);
-            setTimeout(() => sparkle.remove(), 1000);
+
+    // ==========================================================
+    //  SPARKLE FX
+    // ==========================================================
+    function spawnSparkles(x, y, count) {
+        if (prefersReducedMotion) return;
+        count = count || 8;
+        for (let i = 0; i < count; i++) {
+            const s = document.createElement('div');
+            s.className = 'tour-sparkle';
+            s.style.left = (x + (Math.random() - 0.5) * 40) + 'px';
+            s.style.top  = (y + (Math.random() - 0.5) * 40) + 'px';
+            s.style.animationDelay = (Math.random() * 0.4) + 's';
+            document.body.appendChild(s);
+            setTimeout(function () { s.remove(); }, 1000);
         }
     }
-    
-    // ========== ALL FEATURES (FULL LIST) ==========
-    const tourSteps = [
-        // 1. LIVE WHITEBOARD
+
+    function clearAllSparkles() {
+        document.querySelectorAll('.tour-sparkle').forEach(function (el) { el.remove(); });
+    }
+
+    // ==========================================================
+    //  STEP DEFINITIONS  (content preserved from v5)
+    // ==========================================================
+    const TOUR_STEPS = [
         {
             title: "🎨 LIVE WHITEBOARD",
             description: "Join your teacher's live whiteboard session with a 6-digit code. Draw together in REAL-TIME! Everyone sees what you draw instantly.",
@@ -90,13 +117,10 @@
                 { icon: "🔑", text: "6-Digit Code" }
             ],
             navText: "Join Whiteboard",
-            tooltip: "👆 Click here to join live sessions! Enter your teacher's 6-digit code and start drawing with your whole class.",
-            type: "nav",
             highlightElement: "Join Whiteboard",
+            tooltip: "👆 Click here to join live sessions! Enter your teacher's 6-digit code and start drawing with your whole class.",
             sound: "feature"
         },
-        
-        // 2. STUDY GROUPS
         {
             title: "👥 STUDY GROUPS",
             description: "Form study groups with classmates! Collaborate, share resources, and learn together. Group study boosts retention by 50%!",
@@ -108,13 +132,10 @@
                 { icon: "💬", text: "Group Chat" }
             ],
             navText: "Study Group",
-            tooltip: "👆 Click here to join or create study groups! Learning with friends is more effective and fun!",
-            type: "nav",
             highlightElement: "Study Group",
+            tooltip: "👆 Click here to join or create study groups! Learning with friends is more effective and fun!",
             sound: "group"
         },
-        
-        // 3. STUDY STREAK
         {
             title: "🔥 STUDY STREAK",
             description: "Your daily consistency builds unstoppable momentum. Study every day to grow your streak. Don't break the chain!",
@@ -127,11 +148,8 @@
             ],
             highlightSelector: ".streak-card, .streak-number",
             tooltip: "👆 Click the button below EVERY DAY to mark your study session! Your streak grows with consistency!",
-            type: "highlight",
             sound: "highlight"
         },
-        
-        // 4. MEMORY WALL
         {
             title: "📝 MEMORY WALL",
             description: "A digital bulletin board for your class! Share achievements, encouraging words, and memories. Like what others share!",
@@ -143,13 +161,10 @@
                 { icon: "👥", text: "Class Community" }
             ],
             navText: "Memory Wall",
-            tooltip: "👆 Click here to see what your classmates are sharing! Add your own memories, achievements, or encouraging words.",
-            type: "nav",
             highlightElement: "Memory Wall",
+            tooltip: "👆 Click here to see what your classmates are sharing! Add your own memories, achievements, or encouraging words.",
             sound: "feature"
         },
-        
-        // 5. STUDY HOURS & POINTS
         {
             title: "⏰ STUDY HOURS & POINTS",
             description: "Every study session adds to your total hours. More hours = more points = higher rank on the leaderboard!",
@@ -162,11 +177,8 @@
             ],
             highlightSelector: ".quick-stats .stat-card:first-child, .stat-number",
             tooltip: "👆 Your total study hours update in real-time. Every minute you study counts toward your progress!",
-            type: "highlight",
             sound: "highlight"
         },
-        
-        // 6. TASKS
         {
             title: "✅ TASKS",
             description: "Manage your daily tasks. Add, complete, and organize by priority. Never forget what needs to be done!",
@@ -178,13 +190,10 @@
                 { icon: "🔴", text: "Priority Levels" }
             ],
             navText: "Tasks",
-            tooltip: "👆 Click here to manage your tasks. Add urgent items first, then work through your list!",
-            type: "nav",
             highlightElement: "Tasks",
+            tooltip: "👆 Click here to manage your tasks. Add urgent items first, then work through your list!",
             sound: "feature"
         },
-        
-        // 7. ASSIGNMENTS
         {
             title: "📚 ASSIGNMENTS",
             description: "Track all your assignments in one place. See due dates and never miss a deadline again!",
@@ -196,13 +205,10 @@
                 { icon: "⚠️", text: "Overdue Alerts" }
             ],
             navText: "Assignments",
-            tooltip: "👆 Click here to see all your assignments. Mark them complete as you finish each one!",
-            type: "nav",
             highlightElement: "Assignments",
+            tooltip: "👆 Click here to see all your assignments. Mark them complete as you finish each one!",
             sound: "feature"
         },
-        
-        // 8. CLASSROOM (Announcements, Resources, Polls)
         {
             title: "🏫 CLASSROOM",
             description: "See everything your teacher posts: announcements, resources, and polls. Stay connected with your class!",
@@ -214,13 +220,10 @@
                 { icon: "🗳️", text: "Polls" }
             ],
             navText: "Classroom",
-            tooltip: "👆 Click here to see teacher announcements, learning resources, and class polls!",
-            type: "nav",
             highlightElement: "Classroom",
+            tooltip: "👆 Click here to see teacher announcements, learning resources, and class polls!",
             sound: "feature"
         },
-        
-        // 9. MY CLASSES
         {
             title: "🎓 MY CLASSES",
             description: "Join and manage all your classes. Each class has its own announcements, assignments, and leaderboard!",
@@ -232,13 +235,10 @@
                 { icon: "🚪", text: "Leave Class" }
             ],
             navText: "My Classes",
-            tooltip: "👆 Click here to see all your classes. Use the class code from your teacher to join new ones!",
-            type: "nav",
             highlightElement: "My Classes",
+            tooltip: "👆 Click here to see all your classes. Use the class code from your teacher to join new ones!",
             sound: "feature"
         },
-        
-        // 10. FOCUS PERSONA
         {
             title: "🎴 FOCUS PERSONA",
             description: "AI analyzes your study patterns and reveals your unique learning identity! Night Owl? Deep Diver? Sprinter? Find out!",
@@ -250,13 +250,10 @@
                 { icon: "⚡", text: "Sprinter" }
             ],
             navText: "FOCUS PERSONA",
-            tooltip: "👆 Click here to discover your study persona! Share your card with friends and see who you are as a learner.",
-            type: "nav",
             highlightElement: "FOCUS PERSONA",
+            tooltip: "👆 Click here to discover your study persona! Share your card with friends and see who you are as a learner.",
             sound: "magic"
         },
-        
-        // 11. STUDY TOOLS
         {
             title: "🛠️ STUDY TOOLS",
             description: "Access powerful tools: Pomodoro timer, flashcards, habit tracker, countdown timer, and more!",
@@ -268,13 +265,10 @@
                 { icon: "📊", text: "Habit Tracker" }
             ],
             navText: "Study Tools",
-            tooltip: "👆 Click here to access all study tools! Boost your productivity.",
-            type: "nav",
             highlightElement: "Study Tools",
+            tooltip: "👆 Click here to access all study tools! Boost your productivity.",
             sound: "feature"
         },
-        
-        // 12. AI HELP
         {
             title: "🤖 AI HELP",
             description: "Get help from AI learning resources. ChatGPT, Gemini, Perplexity, and more at your fingertips!",
@@ -286,13 +280,10 @@
                 { icon: "🔍", text: "Perplexity" }
             ],
             navText: "AI Help",
-            tooltip: "👆 Click here to access AI learning resources! Get help with any subject.",
-            type: "nav",
             highlightElement: "AI Help",
+            tooltip: "👆 Click here to access AI learning resources! Get help with any subject.",
             sound: "magic"
         },
-        
-        // 13. STATISTICS
         {
             title: "📊 STATISTICS",
             description: "See your progress with beautiful charts. Track hours, focus scores, weekly patterns, and streak history!",
@@ -304,13 +295,10 @@
                 { icon: "📅", text: "Weekly Pattern" }
             ],
             navText: "Statistics",
-            tooltip: "👆 Click here to see your detailed stats and charts! Watch your progress over time.",
-            type: "nav",
             highlightElement: "Statistics",
+            tooltip: "👆 Click here to see your detailed stats and charts! Watch your progress over time.",
             sound: "feature"
         },
-        
-        // 14. QUICK NOTES
         {
             title: "📝 QUICK NOTES",
             description: "Jot down ideas, reminders, or anything important. Your notes save automatically and sync across devices!",
@@ -323,11 +311,8 @@
             ],
             highlightSelector: ".quick-notes-card, #quickNotesInput",
             tooltip: "👆 Type your thoughts here. Notes auto-save so you never lose your ideas!",
-            type: "highlight",
             sound: "highlight"
         },
-        
-        // 15. DAILY INSPIRATION
         {
             title: "💫 DAILY INSPIRATION",
             description: "Start each day with a motivational quote from history's greatest minds. Get inspired to achieve your goals!",
@@ -340,11 +325,8 @@
             ],
             highlightSelector: ".motivation-card, .quote-text",
             tooltip: "👆 Read today's inspiration. Click 'New Inspiration' for another quote!",
-            type: "highlight",
             sound: "magic"
         },
-        
-        // 16. PROFILE
         {
             title: "👤 PROFILE",
             description: "Customize your profile, set preferences, and manage your account. Make Grindly yours!",
@@ -356,287 +338,509 @@
                 { icon: "⚙️", text: "Settings" }
             ],
             navText: "Profile",
-            tooltip: "👆 Click here to customize your profile, change themes, and manage settings!",
-            type: "nav",
             highlightElement: "Profile",
+            tooltip: "👆 Click here to customize your profile, change themes, and manage settings!",
             sound: "feature"
         }
     ];
-    
-    let currentStep = 0;
-    let currentOverlay = null;
-    let currentTooltip = null;
-    let currentMiniCard = null;
-    let currentArrow = null;
-    
+
+    // ==========================================================
+    //  STATE
+    // ==========================================================
+    const state = {
+        stepIndex: 0,
+        started: false,
+        finished: false,
+        listenersAttached: false,
+        elements: {
+            overlay: null,
+            tooltip: null,
+            arrow: null,
+            miniCard: null,
+            highlight: null
+        }
+    };
+
+    // ==========================================================
+    //  UTILITIES
+    // ==========================================================
+    function escapeHTML(str) {
+        if (str == null) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
     function findNavItem(text) {
-        const navItems = document.querySelectorAll('.nav-item');
-        for (let item of navItems) {
-            if (item.textContent.includes(text)) {
-                return item;
-            }
+        if (!text) return null;
+        const items = document.querySelectorAll('.nav-item');
+        for (let i = 0; i < items.length; i++) {
+            const el = items[i];
+            if (el.textContent && el.textContent.includes(text)) return el;
         }
         return null;
     }
-    
+
     function findElement(step) {
         if (step.highlightSelector) {
-            const el = document.querySelector(step.highlightSelector);
-            if (el) return el;
+            try {
+                const el = document.querySelector(step.highlightSelector);
+                if (el) return el;
+            } catch (_) { /* invalid selector – fall through */ }
         }
         if (step.navText) {
-            const navItem = findNavItem(step.navText);
-            if (navItem) return navItem;
+            const el = findNavItem(step.navText);
+            if (el) return el;
         }
         if (step.highlightElement) {
-            const navItem = findNavItem(step.highlightElement);
-            if (navItem) return navItem;
+            const el = findNavItem(step.highlightElement);
+            if (el) return el;
         }
         return null;
     }
-    
-    function cleanupTour() {
-        if (currentOverlay && currentOverlay.remove) currentOverlay.remove();
-        if (currentTooltip && currentTooltip.remove) currentTooltip.remove();
-        if (currentMiniCard && currentMiniCard.remove) currentMiniCard.remove();
-        if (currentArrow && currentArrow.remove) currentArrow.remove();
-        document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
-        currentOverlay = null;
-        currentTooltip = null;
-        currentMiniCard = null;
-        currentArrow = null;
+
+    function removeEl(key) {
+        const el = state.elements[key];
+        if (el && el.parentNode) el.parentNode.removeChild(el);
+        state.elements[key] = null;
     }
-    
-    function scrollSidebarToElement(element) {
-        if (!element) return;
-        const sidebar = document.querySelector('.sidebar');
-        if (!sidebar) return;
-        
-        const elementRect = element.getBoundingClientRect();
-        const sidebarRect = sidebar.getBoundingClientRect();
-        const scrollTop = sidebar.scrollTop + (elementRect.top - sidebarRect.top) - 100;
-        
-        sidebar.classList.add('tour-sidebar-scroll');
-        sidebar.scrollTo({ top: Math.max(0, scrollTop), behavior: 'smooth' });
-        setTimeout(() => sidebar.classList.remove('tour-sidebar-scroll'), 500);
+
+    function clearHighlight() {
+        const el = state.elements.highlight;
+        if (el) el.classList.remove('tour-highlight');
+        state.elements.highlight = null;
     }
-    
-    function showTooltip(element, text) {
-        if (currentTooltip) currentTooltip.remove();
-        if (currentArrow) currentArrow.remove();
-        
-        const rect = element.getBoundingClientRect();
-        currentTooltip = document.createElement('div');
-        currentTooltip.className = 'tour-tooltip bottom';
-        currentTooltip.innerHTML = `
-            <div class="tour-tooltip-title">✨ ${text.split('.')[0]}</div>
-            <div class="tour-tooltip-text">${text}</div>
-        `;
-        document.body.appendChild(currentTooltip);
-        
-        const tooltipRect = currentTooltip.getBoundingClientRect();
-        let left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
-        let top = rect.bottom + 15;
-        
-        if (left < 10) left = 10;
-        if (left + tooltipRect.width > window.innerWidth - 10) {
-            left = window.innerWidth - tooltipRect.width - 10;
-        }
-        if (top + tooltipRect.height > window.innerHeight - 20) {
-            top = rect.top - tooltipRect.height - 15;
-            currentTooltip.classList.remove('bottom');
-            currentTooltip.classList.add('top');
-        }
-        
-        currentTooltip.style.left = `${left}px`;
-        currentTooltip.style.top = `${top}px`;
-        
-        currentArrow = document.createElement('div');
-        currentArrow.className = 'tour-arrow';
-        currentArrow.style.left = `${rect.left + rect.width/2 - 15}px`;
-        currentArrow.style.top = `${rect.bottom - 5}px`;
-        document.body.appendChild(currentArrow);
-        
-        createSparkle(rect.left + rect.width/2, rect.top + rect.height/2);
-        
-        setTimeout(() => {
-            if (currentArrow) currentArrow.remove();
-        }, 2500);
+
+    function cleanupStep() {
+        removeEl('tooltip');
+        removeEl('arrow');
+        removeEl('miniCard');
+        removeEl('overlay');
+        clearHighlight();
     }
-    
-    function scrollToElement(element) {
-        if (!element) return;
-        const rect = element.getBoundingClientRect();
-        const scrollTop = window.pageYOffset + rect.top - 100;
-        window.scrollTo({ top: Math.max(0, scrollTop), behavior: 'smooth' });
+
+    function cleanupAll() {
+        cleanupStep();
+        clearAllSparkles();
     }
-    
-    function showStep(stepIndex) {
-        cleanupTour();
-        
-        const step = tourSteps[stepIndex];
-        const element = findElement(step);
-        
-        if (step.sound && tourSounds[step.sound]) {
-            tourSounds[step.sound]();
+
+    // ==========================================================
+    //  SCROLLING
+    // ==========================================================
+    function scrollElementIntoView(el) {
+        if (!el) return;
+        const behavior = prefersReducedMotion ? 'auto' : 'smooth';
+
+        if (el.closest('.sidebar')) {
+            const sidebar = document.querySelector('.sidebar');
+            if (!sidebar) return;
+            const elRect = el.getBoundingClientRect();
+            const sRect = sidebar.getBoundingClientRect();
+            const target = sidebar.scrollTop + (elRect.top - sRect.top) - 100;
+            sidebar.scrollTo({ top: Math.max(0, target), behavior: behavior });
         } else {
-            tourSounds.click();
+            const rect = el.getBoundingClientRect();
+            const target = window.pageYOffset + rect.top - 100;
+            window.scrollTo({ top: Math.max(0, target), behavior: behavior });
         }
-        
-        if (element) {
-            element.classList.add('tour-highlight');
-            
-            // Scroll sidebar if element is in sidebar
-            if (element.closest('.sidebar')) {
-                scrollSidebarToElement(element);
-            } else {
-                scrollToElement(element);
+    }
+
+    // ==========================================================
+    //  TOOLTIP POSITIONING
+    // ==========================================================
+    function positionTooltip(tooltip, anchorEl) {
+        if (!tooltip || !anchorEl || !anchorEl.isConnected) return;
+
+        const anchor = anchorEl.getBoundingClientRect();
+        const tip = tooltip.getBoundingClientRect();
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        const gap = CONFIG.tooltipGap;
+
+        let placement = 'bottom';
+        let top = anchor.bottom + gap;
+        if (top + tip.height > vh - 20) {
+            placement = 'top';
+            top = anchor.top - tip.height - gap;
+        }
+
+        let left = anchor.left + anchor.width / 2 - tip.width / 2;
+        if (left < 12) left = 12;
+        if (left + tip.width > vw - 12) left = vw - tip.width - 12;
+
+        tooltip.className = 'tour-tooltip ' + placement;
+        tooltip.style.left = left + 'px';
+        tooltip.style.top  = top + 'px';
+
+        // Arrow
+        removeEl('arrow');
+        const arrow = document.createElement('div');
+        arrow.className = 'tour-arrow';
+        arrow.style.left = (anchor.left + anchor.width / 2 - 15) + 'px';
+        if (placement === 'bottom') {
+            arrow.style.top = (anchor.bottom - 5) + 'px';
+        } else {
+            arrow.style.top = (anchor.top - 15) + 'px';
+            arrow.style.transform = 'rotate(180deg)';
+        }
+        document.body.appendChild(arrow);
+        state.elements.arrow = arrow;
+
+        setTimeout(function () {
+            if (state.elements.arrow === arrow) {
+                removeEl('arrow');
             }
-            
-            setTimeout(() => {
-                showTooltip(element, step.tooltip);
-            }, 500);
-            
-            currentMiniCard = document.createElement('div');
-            currentMiniCard.className = 'tour-card';
-            currentMiniCard.style.position = 'fixed';
-            currentMiniCard.style.bottom = '20px';
-            currentMiniCard.style.right = '20px';
-            currentMiniCard.style.maxWidth = '320px';
-            currentMiniCard.style.padding = '20px';
-            currentMiniCard.style.margin = '0';
-            currentMiniCard.style.zIndex = '10001';
-            currentMiniCard.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-                    <div style="font-size: 40px; animation: tourIconBounce 0.3s ease;">${step.icon}</div>
-                    <div>
-                        <div style="font-weight: 800; font-size: 18px;">${step.title}</div>
-                        <div class="tour-impact">${step.impact}</div>
-                    </div>
-                </div>
-                <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5;">${step.description}</div>
-                <div class="tour-features" style="padding: 12px; margin-bottom: 16px;">
-                    ${step.features.map(f => `
-                        <div class="tour-feature" onmouseenter="this.querySelector('.tour-feature-icon').style.animation='tourFeatureBounce 0.3s ease'">
-                            <div class="tour-feature-icon">${f.icon}</div>
-                            <div class="tour-feature-text">${f.text}</div>
-                        </div>
-                    `).join('')}
-                </div>
-                <div class="tour-progress" style="margin-bottom: 12px;">
-                    ${tourSteps.map((_, idx) => `<div class="tour-dot ${idx === currentStep ? 'active' : ''}" onclick="window.goToStep(${idx})"></div>`).join('')}
-                </div>
-                <div class="tour-buttons">
-                    <button class="tour-btn tour-btn-secondary" onclick="window.skipTour()" style="padding: 8px 16px;">Skip</button>
-                    <button class="tour-btn tour-btn-primary" onclick="window.nextTourStep()" style="padding: 8px 16px;">Next →</button>
-                </div>
-            `;
-            document.body.appendChild(currentMiniCard);
+        }, CONFIG.arrowLifetimeMs);
+    }
+
+    // ==========================================================
+    //  CARD BUILDERS
+    // ==========================================================
+    function buildProgressDots() {
+        return TOUR_STEPS.map(function (_, i) {
+            const active = i === state.stepIndex ? ' active' : '';
+            return '<div class="tour-dot' + active + '" data-tour-dot="' + i + '" ' +
+                   'title="Step ' + (i + 1) + '"></div>';
+        }).join('');
+    }
+
+    function buildFeaturesHTML(step) {
+        return step.features.map(function (f) {
+            return '<div class="tour-feature">' +
+                   '<div class="tour-feature-icon">' + f.icon + '</div>' +
+                   '<div class="tour-feature-text">' + escapeHTML(f.text) + '</div>' +
+                   '</div>';
+        }).join('');
+    }
+
+    function buildButtonsHTML(isLast) {
+        const backBtn = state.stepIndex > 0
+            ? '<button class="tour-btn tour-btn-secondary" data-tour-action="prev" style="padding:8px 14px;">← Back</button>'
+            : '<button class="tour-btn tour-btn-secondary" data-tour-action="skip" style="padding:8px 14px;">Skip</button>';
+        const nextLabel = isLast ? 'Finish ✓' : 'Next →';
+        const nextBtn = '<button class="tour-btn tour-btn-primary" data-tour-action="next" style="padding:8px 16px;">' +
+                        nextLabel + '</button>';
+        return backBtn + nextBtn;
+    }
+
+    function buildMiniCard(step) {
+        const isLast = state.stepIndex === TOUR_STEPS.length - 1;
+        const card = document.createElement('div');
+        card.className = 'tour-card';
+        card.style.cssText = 'position: fixed; bottom: 20px; right: 20px; ' +
+            'max-width: 340px; padding: 20px; margin: 0; z-index: 10001;';
+        card.innerHTML =
+            '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">' +
+                '<div style="font-size:40px;line-height:1;">' + step.icon + '</div>' +
+                '<div style="flex:1;min-width:0;">' +
+                    '<div style="font-weight:800;font-size:17px;line-height:1.2;">' + escapeHTML(step.title) + '</div>' +
+                    '<div class="tour-impact" style="font-size:11px;margin-top:2px;">' + escapeHTML(step.impact) + '</div>' +
+                '</div>' +
+                '<div style="font-size:11px;color:var(--text-muted);font-weight:600;white-space:nowrap;">' +
+                    (state.stepIndex + 1) + '/' + TOUR_STEPS.length +
+                '</div>' +
+            '</div>' +
+            '<div style="font-size:13px;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">' +
+                escapeHTML(step.description) +
+            '</div>' +
+            '<div class="tour-features" style="padding:10px;margin-bottom:14px;">' +
+                buildFeaturesHTML(step) +
+            '</div>' +
+            '<div class="tour-progress" style="margin-bottom:12px;">' + buildProgressDots() + '</div>' +
+            '<div class="tour-buttons">' + buildButtonsHTML(isLast) + '</div>';
+        return card;
+    }
+
+    function buildOverlayCard(step) {
+        const isLast = state.stepIndex === TOUR_STEPS.length - 1;
+        const overlay = document.createElement('div');
+        overlay.className = 'tour-overlay';
+        overlay.innerHTML =
+            '<div class="tour-card">' +
+                '<div class="tour-icon">' + step.icon + '</div>' +
+                '<div class="tour-title">' + escapeHTML(step.title) + '</div>' +
+                '<div class="tour-impact">' + escapeHTML(step.impact) + '</div>' +
+                '<div class="tour-description">' + escapeHTML(step.description) + '</div>' +
+                '<div class="tour-features">' + buildFeaturesHTML(step) + '</div>' +
+                '<div class="tour-progress">' + buildProgressDots() + '</div>' +
+                '<div class="tour-buttons">' + buildButtonsHTML(isLast) + '</div>' +
+            '</div>';
+        return overlay;
+    }
+
+    // ==========================================================
+    //  STEP DISPLAY
+    // ==========================================================
+    function showStep(index) {
+        if (state.finished) return;
+        if (index < 0 || index >= TOUR_STEPS.length) return;
+
+        state.stepIndex = index;
+        cleanupStep();
+
+        const step = TOUR_STEPS[index];
+        playSound(step.sound || 'click');
+
+        const anchorEl = findElement(step);
+
+        if (anchorEl) {
+            anchorEl.classList.add('tour-highlight');
+            state.elements.highlight = anchorEl;
+
+            scrollElementIntoView(anchorEl);
+
+            // Tooltip
+            const tooltip = document.createElement('div');
+            tooltip.className = 'tour-tooltip bottom';
+            const title = (step.tooltip || '').split('.')[0];
+            tooltip.innerHTML =
+                '<div class="tour-tooltip-title">✨ ' + escapeHTML(title) + '</div>' +
+                '<div class="tour-tooltip-text">' + escapeHTML(step.tooltip || '') + '</div>';
+            document.body.appendChild(tooltip);
+            state.elements.tooltip = tooltip;
+
+            // Position after layout (two rAFs for safety on Safari)
+            requestAnimationFrame(function () {
+                requestAnimationFrame(function () {
+                    if (state.elements.tooltip === tooltip && anchorEl.isConnected) {
+                        positionTooltip(tooltip, anchorEl);
+                    }
+                });
+            });
+
+            // Sparkles
+            setTimeout(function () {
+                if (anchorEl.isConnected) {
+                    const r = anchorEl.getBoundingClientRect();
+                    spawnSparkles(r.left + r.width / 2, r.top + r.height / 2, 8);
+                }
+            }, 400);
+
+            // Mini card
+            const mini = buildMiniCard(step);
+            document.body.appendChild(mini);
+            state.elements.miniCard = mini;
+
         } else {
-            currentOverlay = document.createElement('div');
-            currentOverlay.className = 'tour-overlay';
-            currentOverlay.innerHTML = `
-                <div class="tour-card">
-                    <div class="tour-icon">${step.icon}</div>
-                    <div class="tour-title">${step.title}</div>
-                    <div class="tour-impact">${step.impact}</div>
-                    <div class="tour-description">${step.description}</div>
-                    <div class="tour-features">
-                        ${step.features.map(f => `
-                            <div class="tour-feature">
-                                <div class="tour-feature-icon">${f.icon}</div>
-                                <div class="tour-feature-text">${f.text}</div>
-                            </div>
-                        `).join('')}
-                    </div>
-                    <div class="tour-progress">
-                        ${tourSteps.map((_, idx) => `<div class="tour-dot ${idx === currentStep ? 'active' : ''}" onclick="window.goToStep(${idx})"></div>`).join('')}
-                    </div>
-                    <div class="tour-buttons">
-                        <button class="tour-btn tour-btn-secondary" onclick="window.skipTour()">Skip</button>
-                        <button class="tour-btn tour-btn-primary" onclick="window.nextTourStep()">Next →</button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(currentOverlay);
+            // Fallback — full-screen overlay
+            const overlay = buildOverlayCard(step);
+            document.body.appendChild(overlay);
+            state.elements.overlay = overlay;
         }
     }
-    
-    window.nextTourStep = function() {
-        if (currentStep < tourSteps.length - 1) {
-            currentStep++;
-            showStep(currentStep);
+
+    // ==========================================================
+    //  NAVIGATION
+    // ==========================================================
+    function next() {
+        if (state.finished) return;
+        if (state.stepIndex < TOUR_STEPS.length - 1) {
+            showStep(state.stepIndex + 1);
         } else {
-            completeTour();
+            complete();
         }
-    };
-    
-    window.goToStep = function(step) {
-        currentStep = step;
-        showStep(currentStep);
-    };
-    
-    window.skipTour = function() {
-        if (confirm("Skip the tour? You can always come back to explore later!")) {
-            completeTour();
+    }
+
+    function prev() {
+        if (state.finished) return;
+        if (state.stepIndex > 0) {
+            showStep(state.stepIndex - 1);
         }
-    };
-    
-    function completeTour() {
-        cleanupTour();
-        localStorage.setItem(TOUR_COMPLETED_KEY, 'true');
-        tourSounds.complete();
-        
+    }
+
+    function goTo(i) {
+        if (state.finished) return;
+        const idx = parseInt(i, 10);
+        if (!isNaN(idx) && idx >= 0 && idx < TOUR_STEPS.length) {
+            showStep(idx);
+        }
+    }
+
+    function skip() {
+        if (state.finished) return;
+        const ok = window.confirm('Skip the tour? You can always explore the features on your own.');
+        if (ok) complete();
+    }
+
+    // ==========================================================
+    //  COMPLETION
+    // ==========================================================
+    function complete() {
+        state.finished = true;
+        cleanupAll();
+        detachGlobalListeners();
+
+        try { localStorage.setItem(CONFIG.storageKey, 'true'); } catch (_) {}
+
+        playSound('complete');
+
         const celebration = document.createElement('div');
         celebration.className = 'tour-overlay';
         celebration.style.background = 'rgba(0,0,0,0.95)';
-        celebration.innerHTML = `
-            <div class="tour-card">
-                <div class="tour-icon" style="font-size: 80px; animation: tourIconBounce 0.5s ease;">🏆</div>
-                <div class="tour-title" style="font-size: 32px;">You're Ready to Grind!</div>
-                <div class="tour-description" style="font-size: 18px; margin-bottom: 20px;">You've mastered all ${tourSteps.length} features. Now go start your journey!</div>
-                <div style="margin: 20px 0;">
-                    <div class="tour-features" style="background: var(--accent-light);">
-                        <div class="tour-feature">
-                            <div class="tour-feature-icon">🔥</div>
-                            <div class="tour-feature-text">Start Your Streak</div>
-                        </div>
-                        <div class="tour-feature">
-                            <div class="tour-feature-icon">🎨</div>
-                            <div class="tour-feature-text">Join Whiteboard</div>
-                        </div>
-                        <div class="tour-feature">
-                            <div class="tour-feature-icon">👥</div>
-                            <div class="tour-feature-text">Study Groups</div>
-                        </div>
-                    </div>
-                </div>
-                <button class="tour-btn tour-btn-primary" onclick="this.closest('.tour-overlay').remove()" style="padding: 14px 32px; font-size: 18px;">🚀 Let's Go!</button>
-            </div>
-        `;
+        celebration.innerHTML =
+            '<div class="tour-card">' +
+                '<div class="tour-icon" style="font-size:80px;">🏆</div>' +
+                '<div class="tour-title" style="font-size:32px;">You\'re Ready to Grind!</div>' +
+                '<div class="tour-description" style="font-size:16px;margin-bottom:20px;">' +
+                    'You\'ve mastered all ' + TOUR_STEPS.length + ' features. Now go start your journey!' +
+                '</div>' +
+                '<div style="margin:20px 0;">' +
+                    '<div class="tour-features" style="background:var(--accent-light);">' +
+                        '<div class="tour-feature"><div class="tour-feature-icon">🔥</div><div class="tour-feature-text">Start Your Streak</div></div>' +
+                        '<div class="tour-feature"><div class="tour-feature-icon">🎨</div><div class="tour-feature-text">Join Whiteboard</div></div>' +
+                        '<div class="tour-feature"><div class="tour-feature-icon">👥</div><div class="tour-feature-text">Study Groups</div></div>' +
+                    '</div>' +
+                '</div>' +
+                '<button class="tour-btn tour-btn-primary" data-tour-close ' +
+                        'style="padding:14px 32px;font-size:18px;">🚀 Let\'s Go!</button>' +
+            '</div>';
         document.body.appendChild(celebration);
-        
-        for (let i = 0; i < 50; i++) {
-            setTimeout(() => {
-                createSparkle(Math.random() * window.innerWidth, Math.random() * window.innerHeight);
-            }, i * 50);
+
+        const closeBtn = celebration.querySelector('[data-tour-close]');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function () { celebration.remove(); });
         }
-        
-        setTimeout(() => {
-            if (document.body.contains(celebration)) {
-                const btn = celebration.querySelector('button');
-                if (btn) btn.click();
+
+        // Sparkle cascade
+        for (let i = 0; i < 40; i++) {
+            (function (i) {
+                setTimeout(function () {
+                    spawnSparkles(
+                        Math.random() * window.innerWidth,
+                        Math.random() * window.innerHeight,
+                        1
+                    );
+                }, i * 40);
+            })(i);
+        }
+
+        // Auto-dismiss celebration
+        setTimeout(function () {
+            if (document.body.contains(celebration)) celebration.remove();
+        }, CONFIG.celebrationAutoCloseMs);
+    }
+
+    // ==========================================================
+    //  GLOBAL LISTENERS (delegated — no inline handlers)
+    // ==========================================================
+    function onDocumentClick(e) {
+        const actionEl = e.target.closest('[data-tour-action]');
+        if (actionEl) {
+            e.preventDefault();
+            const action = actionEl.getAttribute('data-tour-action');
+            if (action === 'next') { next(); return; }
+            if (action === 'prev') { prev(); return; }
+            if (action === 'skip') { skip(); return; }
+        }
+        const dotEl = e.target.closest('[data-tour-dot]');
+        if (dotEl) {
+            e.preventDefault();
+            goTo(dotEl.getAttribute('data-tour-dot'));
+        }
+    }
+
+    function onKeyDown(e) {
+        if (state.finished) return;
+        if (e.key === 'Escape')      { skip(); }
+        else if (e.key === 'ArrowRight') { next(); }
+        else if (e.key === 'ArrowLeft')  { prev(); }
+    }
+
+    let resizeRaf = null;
+    function onResize() {
+        if (resizeRaf) return;
+        resizeRaf = requestAnimationFrame(function () {
+            resizeRaf = null;
+            const anchor = state.elements.highlight;
+            const tip = state.elements.tooltip;
+            if (anchor && tip && anchor.isConnected && tip.isConnected) {
+                positionTooltip(tip, anchor);
             }
-        }, 5000);
-    }
-    
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => showStep(0), 1500);
         });
-    } else {
-        setTimeout(() => showStep(0), 1500);
     }
-    
-    console.log(`🎓 ULTIMATE tour ready! ${tourSteps.length} features with sidebar scrolling!`);
+
+    function attachGlobalListeners() {
+        if (state.listenersAttached) return;
+        state.listenersAttached = true;
+        document.addEventListener('click', onDocumentClick, true);
+        document.addEventListener('keydown', onKeyDown);
+        window.addEventListener('resize', onResize);
+    }
+
+    function detachGlobalListeners() {
+        if (!state.listenersAttached) return;
+        state.listenersAttached = false;
+        document.removeEventListener('click', onDocumentClick, true);
+        document.removeEventListener('keydown', onKeyDown);
+        window.removeEventListener('resize', onResize);
+    }
+
+    // ==========================================================
+    //  BOOT  — wait for the sidebar to be ready, then start
+    // ==========================================================
+    function isReady() {
+        if (document.querySelector('.sidebar-section')) return true;
+        if (document.querySelectorAll('.nav-item').length >= CONFIG.readyNavThreshold) return true;
+        return false;
+    }
+
+    function boot() {
+        if (state.started || state.finished) return;
+        state.started = true;
+        attachGlobalListeners();
+
+        const startedAt = Date.now();
+        (function poll() {
+            if (state.finished) return;
+            const elapsed = Date.now() - startedAt;
+
+            if (isReady() || elapsed >= CONFIG.maxWaitForReadyMs) {
+                setTimeout(function () {
+                    if (!state.finished) showStep(0);
+                }, CONFIG.startDelay);
+                return;
+            }
+            setTimeout(poll, CONFIG.readyPollMs);
+        })();
+    }
+
+    // ==========================================================
+    //  PUBLIC API
+    // ==========================================================
+    window.grindlyTour = {
+        start: function () {
+            state.finished = false;
+            try { localStorage.removeItem(CONFIG.storageKey); } catch (_) {}
+            if (!state.started) boot();
+            else { attachGlobalListeners(); showStep(0); }
+        },
+        next: next,
+        prev: prev,
+        goTo: goTo,
+        skip: skip,
+        reset: function () {
+            try { localStorage.removeItem(CONFIG.storageKey); } catch (_) {}
+            console.log('🎓 Tour reset. Reload to auto-start, or call grindlyTour.start().');
+        }
+    };
+
+    // Backward-compat aliases so existing HTML onclick handlers still work
+    window.nextTourStep = next;
+    window.goToStep     = goTo;
+    window.skipTour     = skip;
+    window.startTour    = window.grindlyTour.start;
+
+    // ==========================================================
+    //  KICK OFF
+    // ==========================================================
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', boot);
+    } else {
+        boot();
+    }
+
+    console.log('🎓 ULTIMATE tour ready! ' + TOUR_STEPS.length + ' features.');
 })();
