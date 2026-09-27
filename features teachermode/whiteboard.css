@@ -72,3 +72,17 @@
     .wb-session-code { font-size: 1.2rem; letter-spacing: 3px; }
     .wb-tool { padding: 5px 10px; font-size: 0.75rem; }
 }
+
+.wb-session {
+    display: none;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    margin: var(--space-6) 0;
+    overflow: hidden;
+}
+
+.wb-session.open,
+.wb-session[style*="block"] {
+    display: block;
+}
