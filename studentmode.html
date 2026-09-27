@@ -3308,6 +3308,145 @@ body.focus-mode .chatbot-fab {
   });
 })();
 </script>
+<!-- ============================================================
+     FOCUS MODE · SCROLL FIX
+     .main-content must be the fixed-height scroll container,
+     since body is position:fixed + overflow:hidden during focus mode.
+     ============================================================ -->
+<style>
+body.focus-mode .main-content {
+  height: 100vh !important;
+  max-height: 100vh !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
+  overscroll-behavior: contain !important;
+  padding: 40px 40px 140px !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  box-sizing: border-box !important;
+  display: block !important;
+  position: relative !important;
+  z-index: 5 !important;
+}
+
+/* Hide the body scrollbar that could show from a leftover overflow */
+body.focus-mode::-webkit-scrollbar { display: none !important; }
+body.focus-mode { scrollbar-width: none !important; }
+
+/* Keep the focus panel itself natural height — it grows inside main-content */
+body.focus-mode .focus-mode-panel {
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+  padding: 0 0 40px !important;
+  margin: 0 auto !important;
+  display: block !important;
+  max-width: 1160px !important;
+  position: relative !important;
+  z-index: 6 !important;
+}
+
+/* Bottom room so the last card clears any floating chrome */
+body.focus-mode .focus-grid {
+  padding-bottom: 60px !important;
+}
+
+/* Mobile / tablet overrides */
+@media (max-width: 900px) {
+  body.focus-mode .main-content {
+    height: 100dvh !important;      /* dynamic viewport height, safer on mobile */
+    max-height: 100dvh !important;
+    padding: 12px 12px 180px !important;
+  }
+  body.focus-mode .focus-mode-panel {
+    padding-bottom: 60px !important;
+  }
+}
+@media (max-width: 400px) {
+  body.focus-mode .main-content {
+    padding: 10px 10px 200px !important;
+  }
+}
+
+/* Fallback for browsers without dvh */
+@supports not (height: 100dvh) {
+  @media (max-width: 900px) {
+    body.focus-mode .main-content {
+      height: 100vh !important;
+      max-height: 100vh !important;
+    }
+  }
+}
+
+/* ============================================================
+   SAFETY: if another rule set height:auto on .main-content
+   inside focus mode, override it once and for all
+   ============================================================ */
+body.focus-mode > .app-layout > .main-content,
+body.focus-mode .app-layout .main-content,
+body.focus-mode main.main-content,
+body.focus-mode #mainContent,
+body.focus-mode .main-content {
+  height: 100vh !important;
+  max-height: 100vh !important;
+  overflow-y: auto !important;
+}
+</style>
+
+<script>
+/* Belt-and-suspenders: force the main-content into a scrollable state
+   whenever focus mode is on, and reset scrollTop when entering. */
+(function () {
+  'use strict';
+
+  function activateScroll() {
+    var mc = document.querySelector('main.main-content, .main-content');
+    if (!mc) return;
+    mc.style.height = '100vh';
+    mc.style.maxHeight = '100vh';
+    mc.style.overflowY = 'auto';
+    mc.style.overflowX = 'hidden';
+    mc.style.webkitOverflowScrolling = 'touch';
+    // Force the browser to recalculate the scroll height after any layout change
+    void mc.offsetHeight;
+  }
+
+  // When focus-mode activates, make sure the scroll container is fresh
+  new MutationObserver(function () {
+    if (document.body.classList.contains('focus-mode')) {
+      requestAnimationFrame(function () {
+        activateScroll();
+        // Reset to top so the header pill is visible
+        var mc = document.querySelector('main.main-content, .main-content');
+        if (mc) mc.scrollTop = 0;
+      });
+    }
+  }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+
+  // Already in focus mode on load
+  if (document.body.classList.contains('focus-mode')) {
+    setTimeout(activateScroll, 100);
+  }
+
+  // Also watch for resize / orientation change
+  window.addEventListener('resize', function () {
+    if (document.body.classList.contains('focus-mode')) activateScroll();
+  });
+
+  // If some other script sets display:none on the panel and back, re-assert
+  setInterval(function () {
+    if (!document.body.classList.contains('focus-mode')) return;
+    var mc = document.querySelector('main.main-content, .main-content');
+    if (!mc) return;
+    var cs = getComputedStyle(mc);
+    if (cs.overflowY !== 'auto' || cs.height === 'auto') {
+      activateScroll();
+    }
+  }, 1500);
+})();
+</script>
 </body>
 </html>
 
