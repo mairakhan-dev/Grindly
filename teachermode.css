@@ -5606,3 +5606,19 @@ body.presentation-mode .presentation-grid {
   body.presentation-mode .pres-span-8,
   body.presentation-mode .pres-span-12 { grid-column: span 1 !important; }
 }
+
+/* Presentation mode · final */
+body.presentation-mode .sidebar,
+body.presentation-mode .mobile-header,
+body.presentation-mode .sidebar-toggle,
+body.presentation-mode .sidebar-backdrop,
+body.presentation-mode #tmHeaderFinal,
+body.presentation-mode .footer,
+body.presentation-mode .feedback-btn { display: none !important; }
+
+body.presentation-mode #presentation {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  grid-column: span 12 !important;
+}

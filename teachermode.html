@@ -2308,108 +2308,113 @@
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-  var tabs = document.querySelectorAll('.tm-tab');
-  var ACTIVE = "display:inline-flex !important; visibility:visible !important; opacity:1 !important; align-items:center !important; gap:6px !important; padding:9px 16px !important; border:none !important; border-radius:999px !important; background:linear-gradient(135deg,#ffaa33 0%,#ff4714 50%,#d61f00 100%) !important; color:#ffffff !important; -webkit-text-fill-color:#ffffff !important; font-family:'Inter',sans-serif !important; font-size:13px !important; font-weight:700 !important; cursor:pointer !important; white-space:nowrap !important; flex-shrink:0 !important; min-height:38px !important;";
-  var IDLE   = "display:inline-flex !important; visibility:visible !important; opacity:1 !important; align-items:center !important; gap:6px !important; padding:9px 16px !important; border:none !important; border-radius:999px !important; background:transparent !important; color:#5a5a7a !important; -webkit-text-fill-color:#5a5a7a !important; font-family:'Inter',sans-serif !important; font-size:13px !important; font-weight:600 !important; cursor:pointer !important; white-space:nowrap !important; flex-shrink:0 !important; min-height:38px !important;";
+/* Presentation Mode + Tabs · capture-phase · cannot be blocked · no observers */
+(function () {
+  var SECTIONS = ['dashboard','memoryWall','addMemoryPage','announcements','assignments',
+                  'resources','polls','students','analytics','checkins','exitTickets',
+                  'challenges','create-challenge','settings'];
 
-  tabs.forEach(function (tab) {
-    tab.addEventListener('click', function () {
-      tabs.forEach(function (t) {
-        t.classList.remove('active');
-        t.setAttribute('style', IDLE);
-      });
-      tab.classList.add('active');
-      tab.setAttribute('style', ACTIVE);
-
-      var section = tab.getAttribute('data-section');
-      if (section && typeof showSection === 'function') showSection(section);
-
-      document.querySelectorAll('.sidebar .nav-item').forEach(function (n) {
-        n.classList.remove('active');
-        if (n.textContent.toLowerCase().indexOf(section) !== -1) n.classList.add('active');
-      });
-    });
-  });
-});
-</script>
-
-<script>
-/* Force toast container to always be ready to receive toasts */
-document.addEventListener('DOMContentLoaded', function () {
-  var tc = document.getElementById('toastContainer');
-  if (tc) {
-    tc.style.setProperty('display', 'flex', 'important');
-    tc.style.setProperty('visibility', 'visible', 'important');
-    tc.style.setProperty('opacity', '1', 'important');
-    tc.style.setProperty('position', 'fixed', 'important');
-    tc.style.setProperty('top', '24px', 'important');
-    tc.style.setProperty('right', '24px', 'important');
-    tc.style.setProperty('z-index', '10000', 'important');
-    tc.style.setProperty('pointer-events', 'none', 'important');
-  }
-
-  /* Also make sure individual toasts are visible when added */
-  var observer = new MutationObserver(function (muts) {
-    muts.forEach(function (m) {
-      m.addedNodes.forEach(function (n) {
-        if (n.nodeType === 1 && n.classList && n.classList.contains('toast')) {
-          n.style.setProperty('display', 'flex', 'important');
-          n.style.setProperty('opacity', '1', 'important');
-          n.style.setProperty('visibility', 'visible', 'important');
-          n.style.setProperty('pointer-events', 'auto', 'important');
-        }
-      });
-    });
-  });
-  if (tc) observer.observe(tc, { childList: true });
-});
-</script>
-<script>
-/* Presentation mode · fast, no observers, runs only on click */
-document.addEventListener('DOMContentLoaded', function () {
-  var PRESENT_SECTIONS = [
-    'dashboard','memoryWall','addMemoryPage','announcements','assignments',
-    'resources','polls','students','analytics','checkins','exitTickets',
-    'challenges','create-challenge','settings'
-  ];
-
-  function enter() {
+  function showPresentation() {
     document.body.classList.add('presentation-mode');
-    PRESENT_SECTIONS.forEach(function (id) {
+    SECTIONS.forEach(function (id) {
       var el = document.getElementById(id);
-      if (el) el.style.display = 'none';
+      if (el) el.style.setProperty('display', 'none', 'important');
     });
     var p = document.getElementById('presentation');
-    if (p) p.style.display = 'block';
+    if (p) {
+      p.style.setProperty('display', 'block', 'important');
+      p.style.setProperty('visibility', 'visible', 'important');
+      p.style.setProperty('opacity', '1', 'important');
+      p.style.setProperty('height', 'auto', 'important');
+    }
+    var grid = document.querySelector('.dashboard-grid');
+    if (grid) grid.style.setProperty('display', 'grid', 'important');
+    var main = document.querySelector('.main-content');
+    if (main) {
+      main.style.setProperty('display', 'block', 'important');
+      main.style.setProperty('margin-left', '0', 'important');
+      main.style.setProperty('padding', '16px', 'important');
+      main.style.setProperty('max-width', '100%', 'important');
+      main.style.setProperty('width', '100%', 'important');
+    }
   }
 
-  function exit() {
+  function hidePresentation() {
     document.body.classList.remove('presentation-mode');
-    PRESENT_SECTIONS.forEach(function (id) {
+    SECTIONS.forEach(function (id) {
       var el = document.getElementById(id);
       if (el) el.style.removeProperty('display');
     });
     var p = document.getElementById('presentation');
     if (p) p.style.removeProperty('display');
     var d = document.getElementById('dashboard');
-    if (d) d.style.display = 'block';
+    if (d) d.style.setProperty('display', 'block', 'important');
+    var main = document.querySelector('.main-content');
+    if (main) {
+      main.style.removeProperty('margin-left');
+      main.style.removeProperty('padding');
+      main.style.removeProperty('max-width');
+      main.style.removeProperty('width');
+    }
   }
 
-  window.enterPresentation = enter;
-  window.exitPresentation = exit;
+  window.enterPresentation = showPresentation;
+  window.exitPresentation  = hidePresentation;
 
-  /* Just patch the two buttons — one event listener each, done */
-  var btnEnter = document.querySelector('[onclick*="togglePresentationMode"]');
-  if (btnEnter) {
-    btnEnter.setAttribute('onclick', 'enterPresentation()');
-  }
-  var btnExit = document.querySelector('[onclick*="exitPresentationMode"]');
-  if (btnExit) {
-    btnExit.setAttribute('onclick', 'exitPresentation()');
-  }
-});
+  /* CAPTURE PHASE — runs BEFORE any onclick="" attribute.
+     Intercepts the click, prevents the original handler, does our thing. */
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest('button, .nav-item, a');
+    if (!btn) return;
+
+    var oc  = btn.getAttribute('onclick') || '';
+    var txt = (btn.textContent || '').toLowerCase().trim();
+
+    /* Enter presentation */
+    if (oc.indexOf('togglePresentationMode') !== -1 ||
+        (txt.indexOf('presentation mode') !== -1 && !document.body.classList.contains('presentation-mode'))) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      e.stopPropagation();
+      showPresentation();
+      return false;
+    }
+
+    /* Exit presentation */
+    if (oc.indexOf('exitPresentationMode') !== -1 ||
+        (btn.classList.contains('pres-btn-danger') && document.body.classList.contains('presentation-mode'))) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      e.stopPropagation();
+      hidePresentation();
+      return false;
+    }
+
+    /* Tab buttons */
+    if (btn.classList.contains('tm-tab')) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      e.stopPropagation();
+      document.querySelectorAll('.tm-tab').forEach(function (t) {
+        t.classList.remove('active');
+        t.style.background = 'transparent';
+        t.style.color = '#5a5a7a';
+        t.style.webkitTextFillColor = '#5a5a7a';
+      });
+      btn.classList.add('active');
+      btn.style.background = 'linear-gradient(135deg,#ffaa33 0%,#ff4714 50%,#d61f00 100%)';
+      btn.style.color = '#ffffff';
+      btn.style.webkitTextFillColor = '#ffffff';
+      var section = btn.getAttribute('data-section');
+      if (section && typeof showSection === 'function') showSection(section);
+      return false;
+    }
+  }, true); /* ← true = capture phase */
+})();
 </script>
+
+
+
 </body>
 </html>
 
