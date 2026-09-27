@@ -4761,3 +4761,247 @@ html body .mobile-header { z-index: 1000 !important; }
     letter-spacing: 0.1em !important;
   }
 }
+
+/* ============================================================
+   SIDEBAR STACKING — NUCLEAR OPTION
+   ============================================================ */
+
+html body > .app-layout,
+html body .app-layout,
+html body .app-layout[class] {
+  position: static !important;
+  z-index: auto !important;
+  transform: none !important;
+  filter: none !important;
+  perspective: none !important;
+  isolation: auto !important;
+  contain: none !important;
+  will-change: auto !important;
+  opacity: 1 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  clip-path: none !important;
+  mask: none !important;
+}
+
+html body .sidebar,
+html body .sidebar[class],
+html body .sidebar.active {
+  position: fixed !important;
+  z-index: 2147483000 !important;
+  pointer-events: auto !important;
+}
+
+html body .sidebar *,
+html body .sidebar button,
+html body .sidebar a,
+html body .sidebar select,
+html body .sidebar input,
+html body .sidebar .nav-item {
+  pointer-events: auto !important;
+}
+
+html body .sidebar-backdrop,
+html body .sidebar-backdrop[class] {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 1 !important;
+  background: rgba(60, 42, 15, 0.45) !important;
+  backdrop-filter: blur(2px) !important;
+  -webkit-backdrop-filter: blur(2px) !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transition: opacity 0.24s ease, visibility 0.24s ease !important;
+}
+html body .sidebar-backdrop.show,
+html body .sidebar-backdrop.active,
+html body .sidebar-backdrop[style*="display: block"],
+html body .sidebar-backdrop[style*="display:block"] {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+html body .mobile-header { z-index: 1000 !important; }
+
+@media (min-width: 1021px) {
+  html body .sidebar { z-index: 100 !important; }
+  html body .sidebar-backdrop { display: none !important; }
+}
+
+/* ============================================================
+   DASHBOARD RESTRUCTURE
+   ============================================================ */
+
+/* ── 1 · Kill the "content management" cards
+        (Recent Announcements + Recent Assignments) ── */
+.content-section > *:nth-child(3),
+.content-section > *:nth-child(4) {
+  display: none !important;
+}
+
+/* ── 2 · Forms section: Class Code full width,
+        then Announcement + Assignment side-by-side ── */
+.forms-section {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  align-items: start !important;
+}
+
+/* Class Code stays alone, full row */
+.forms-section > .class-code-display {
+  grid-column: 1 / -1 !important;
+  order: 0;
+  margin: 0 !important;
+}
+
+/* Announcement + Assignment sit next to each other */
+.forms-section > .form-card:not(.class-code-display) {
+  grid-column: span 1 !important;
+  order: 1;
+  margin: 0 !important;
+}
+
+/* All pro-tips pushed to the bottom, full-width, small */
+.forms-section > .pro-tip,
+.content-section > .pro-tip {
+  grid-column: 1 / -1 !important;
+  order: 10;
+  padding: 8px 10px !important;
+  font-size: 0.6875rem !important;
+  line-height: 1.4 !important;
+  margin: 0 !important;
+  transform: none !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 6px rgba(60, 42, 15, 0.06) !important;
+}
+.forms-section > .pro-tip::before,
+.forms-section > .pro-tip::after,
+.content-section > .pro-tip::before,
+.content-section > .pro-tip::after {
+  display: none !important;
+}
+.forms-section > .pro-tip strong,
+.content-section > .pro-tip strong {
+  font-size: 0.625rem !important;
+  margin-bottom: 2px !important;
+  letter-spacing: 0.06em !important;
+}
+
+/* Compact form cards so both fit comfortably at half-width */
+.forms-section > .form-card:not(.class-code-display) {
+  padding: 14px !important;
+}
+.forms-section > .form-card:not(.class-code-display) h2 {
+  font-size: 1rem !important;
+  margin-bottom: 8px !important;
+  white-space: normal !important;
+}
+.forms-section > .form-card:not(.class-code-display) > * + * {
+  margin-top: 10px !important;
+}
+.forms-section > .form-card:not(.class-code-display) .form-group {
+  margin-bottom: 10px !important;
+}
+.forms-section > .form-card:not(.class-code-display) input,
+.forms-section > .form-card:not(.class-code-display) textarea,
+.forms-section > .form-card:not(.class-code-display) select {
+  padding: 9px 11px !important;
+  font-size: 14px !important;
+  min-height: 40px !important;
+}
+.forms-section > .form-card:not(.class-code-display) textarea {
+  min-height: 70px !important;
+}
+.forms-section > .form-card:not(.class-code-display) .btn-submit {
+  padding: 10px 14px !important;
+  font-size: 0.8125rem !important;
+  min-height: 40px !important;
+  margin-top: 8px !important;
+}
+
+/* ── 3 · Content section: single column (Students, Live Activity) ── */
+.content-section {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+}
+
+/* ── 4 · Hide the Analytics nav item ── */
+.nav-item[onclick*="'analytics'"] {
+  display: none !important;
+}
+
+/* ── 5 · Teacher Toolkit: hide heading, scrollable, compact ── */
+.content-card:has(button[onclick="renderTeacherToolkit()"]) .content-header h2 {
+  display: none !important;
+}
+.content-card:has(button[onclick="renderTeacherToolkit()"]) .content-header {
+  justify-content: flex-end !important;
+  padding: 10px 14px !important;
+}
+.content-card:has(button[onclick="renderTeacherToolkit()"]) .content-body {
+  max-height: 400px !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  padding: 12px !important;
+}
+.content-card:has(button[onclick="renderTeacherToolkit()"]) .content-body > div {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+}
+.content-card:has(button[onclick="renderTeacherToolkit()"]) .content-body .form-card {
+  padding: 12px !important;
+  border-radius: 12px !important;
+}
+.content-card:has(button[onclick="renderTeacherToolkit()"]) .content-body .form-card h3 {
+  font-size: 0.75rem !important;
+  margin-bottom: 6px !important;
+  line-height: 1.2 !important;
+}
+.content-card:has(button[onclick="renderTeacherToolkit()"]) .content-body .form-card .btn {
+  padding: 7px 10px !important;
+  font-size: 0.6875rem !important;
+  min-height: 34px !important;
+  width: 100%;
+}
+.content-card:has(button[onclick="renderTeacherToolkit()"]) .content-body .form-card input,
+.content-card:has(button[onclick="renderTeacherToolkit()"]) .content-body .form-card textarea {
+  padding: 7px 10px !important;
+  font-size: 13px !important;
+  min-height: 34px !important;
+}
+.content-card:has(button[onclick="renderTeacherToolkit()"]) .content-body .form-card textarea {
+  min-height: 60px !important;
+}
+
+/* ── 6 · Class Pulse widget — make sure it always shows ── */
+.pulse-widget {
+  display: grid !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* ── 7 · Ultra-narrow phones: keep 2-col but tighter ── */
+@media (max-width: 380px) {
+  .forms-section {
+    gap: 8px !important;
+  }
+  .forms-section > .form-card:not(.class-code-display) {
+    padding: 10px !important;
+  }
+  .forms-section > .form-card:not(.class-code-display) h2 {
+    font-size: 0.875rem !important;
+  }
+  .content-card:has(button[onclick="renderTeacherToolkit()"]) .content-body > div {
+    gap: 8px !important;
+  }
+  .content-card:has(button[onclick="renderTeacherToolkit()"]) .content-body .form-card {
+    padding: 10px !important;
+  }
+  .content-card:has(button[onclick="renderTeacherToolkit()"]) .content-body .form-card h3 {
+    font-size: 0.6875rem !important;
+  }
+}
