@@ -2040,6 +2040,534 @@
 <script src="features studentmode/focus-mode-fix.js" defer></script>
 <script src="features studentmode/focus-persona.js" defer></script>
 <script src="features studentmode/tour.js" defer></script>
+
+<!-- ============================================================
+     GRINDLY · COMPACT MODE · smaller cards, tighter spacing,
+     mobile-first density across the whole dashboard.
+     ============================================================ -->
+<style>
+/* ---------- GLOBAL · tighten spacing tokens ---------- */
+:root {
+  --card-pad: 14px;
+  --section-gap: 14px;
+  --element-gap: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+}
+
+/* ---------- MAIN CONTENT · tighter ---------- */
+.main-content {
+  padding: 20px 16px 88px !important;
+}
+.main-content > * { max-width: 100% !important; }
+
+/* ---------- DASHBOARD HEADER · compact ---------- */
+.dashboard-header {
+  margin-bottom: 16px !important;
+}
+.dashboard-header h1 {
+  font-size: 1.4rem !important;
+  line-height: 1.2 !important;
+  margin-bottom: 4px !important;
+}
+.time-greeting {
+  font-size: 0.8rem !important;
+  margin-bottom: 2px !important;
+}
+.dashboard-subtitle {
+  font-size: 0.8rem !important;
+  margin-bottom: 12px !important;
+  line-height: 1.4 !important;
+}
+
+/* ---------- QUICK STATS · compact 2×2 ---------- */
+.quick-stats {
+  gap: 8px !important;
+  margin-bottom: 14px !important;
+}
+.stat-card {
+  padding: 10px 12px !important;
+  gap: 8px !important;
+  min-height: 68px !important;
+  border-radius: 12px !important;
+}
+.stat-icon {
+  width: 34px !important;
+  height: 34px !important;
+  font-size: 1rem !important;
+  border-radius: 10px !important;
+}
+.stat-number {
+  font-size: 1.15rem !important;
+  margin-bottom: 0 !important;
+  line-height: 1.05 !important;
+}
+.stat-label {
+  font-size: 0.6rem !important;
+  letter-spacing: 0.05em !important;
+}
+
+/* ---------- CARDS · compact ---------- */
+.content-card,
+.form-card,
+.assignment-card,
+.class-card,
+.badge-item,
+.tool-item,
+.stats-overview-card,
+.chart-card,
+.metric-card,
+.stats-detailed-section,
+.bottom-feature-card,
+.focus-card,
+.leaderboard-item {
+  border-radius: 14px !important;
+  margin-bottom: 12px !important;
+}
+.content-card { padding: 0 !important; }
+.form-card { padding: 14px 14px !important; }
+
+.content-header {
+  padding: 12px 14px !important;
+  gap: 8px !important;
+}
+.content-header h2,
+.form-card h2 {
+  font-size: 0.95rem !important;
+  line-height: 1.25 !important;
+  gap: 6px !important;
+}
+.content-header h2::before,
+.form-card h2::before {
+  width: 4px !important;
+  height: 4px !important;
+}
+.content-body {
+  padding: 12px 14px !important;
+}
+
+/* ---------- PRO TIPS · much tighter ---------- */
+.pro-tip {
+  padding: 10px 12px !important;
+  margin: 8px 0 !important;
+  font-size: 0.75rem !important;
+  line-height: 1.45 !important;
+  border-radius: 10px !important;
+  transform: none !important;
+}
+.pro-tip::before,
+.pro-tip::after { display: none !important; }
+.pro-tip strong {
+  font-size: 0.65rem !important;
+  margin-bottom: 3px !important;
+  letter-spacing: 0.04em !important;
+}
+
+/* ---------- DASHBOARD GRID · tight stack ---------- */
+.dashboard-grid {
+  display: block !important;
+  gap: 12px !important;
+}
+.forms-section,
+.content-section {
+  display: block !important;
+  gap: 0 !important;
+}
+.forms-section > * + *,
+.content-section > * + * {
+  margin-top: 12px !important;
+}
+.dashboard-content > * + * {
+  margin-top: 12px !important;
+}
+
+/* ---------- FORMS · compact ---------- */
+.form-group {
+  margin-bottom: 12px !important;
+}
+.form-group label {
+  font-size: 0.75rem !important;
+  margin-bottom: 4px !important;
+}
+input, textarea, select {
+  padding: 10px 12px !important;
+  font-size: 0.85rem !important;
+  border-radius: 10px !important;
+}
+textarea { min-height: 90px !important; }
+
+/* ---------- BUTTONS · compact ---------- */
+.btn {
+  padding: 8px 14px !important;
+  font-size: 0.78rem !important;
+  min-height: 36px !important;
+  border-radius: 9px !important;
+  gap: 4px !important;
+}
+.btn-submit {
+  padding: 12px 16px !important;
+  font-size: 0.9rem !important;
+  min-height: 42px !important;
+}
+
+/* ---------- TASKS · compact ---------- */
+.task-item {
+  padding: 10px 12px !important;
+  gap: 8px !important;
+  border-radius: 11px !important;
+  margin-bottom: 8px !important;
+}
+.task-text { font-size: 0.85rem !important; line-height: 1.35 !important; }
+.task-actions .btn { padding: 6px 10px !important; font-size: 0.7rem !important; min-height: 30px !important; }
+
+/* ---------- ASSIGNMENTS · compact ---------- */
+.assignment-item {
+  padding: 12px !important;
+  border-radius: 12px !important;
+  margin-bottom: 8px !important;
+}
+.assignment-title { font-size: 0.9rem !important; }
+.assignment-date { font-size: 0.65rem !important; padding: 3px 9px !important; }
+.assignment-content { font-size: 0.8rem !important; line-height: 1.5 !important; }
+.assignment-actions .btn { padding: 7px 12px !important; font-size: 0.72rem !important; }
+
+/* ---------- CLASSROOM ---------- */
+.classroom-item {
+  padding: 12px !important;
+  border-radius: 12px !important;
+  margin-bottom: 10px !important;
+}
+.classroom-item-title { font-size: 0.9rem !important; }
+.classroom-item-date { font-size: 0.65rem !important; padding: 3px 9px !important; }
+.classroom-item-content { font-size: 0.8rem !important; line-height: 1.5 !important; }
+#inClassView > * + * { margin-top: 14px !important; }
+#teacherAnnouncements > * + *,
+#teacherResources > * + *,
+#teacherPolls > * + * { margin-top: 10px !important; }
+
+.class-code-display {
+  padding: 16px 14px !important;
+  margin: 12px 0 !important;
+  border-radius: 16px !important;
+}
+.class-code-display h2 { font-size: 1rem !important; margin-bottom: 6px !important; }
+.class-code-display .code {
+  font-size: 1.5rem !important;
+  letter-spacing: 0.12em !important;
+  margin: 12px 0 !important;
+}
+.class-code-display .btn {
+  padding: 8px 12px !important;
+  font-size: 0.72rem !important;
+  min-height: 34px !important;
+}
+
+/* ---------- STREAK CARD · compact ---------- */
+.streak-card { padding: 18px 14px !important; }
+.streak-number { font-size: 2.5rem !important; margin: 8px 0 !important; }
+.streak-label { font-size: 0.85rem !important; margin-bottom: 12px !important; }
+.streak-btn { padding: 12px 14px !important; font-size: 0.85rem !important; min-height: 42px !important; }
+.streak-milestones { gap: 5px !important; margin: 8px 0 !important; }
+.milestone { width: 7px !important; height: 7px !important; }
+
+/* ---------- GOAL CARD ---------- */
+.goal-text { font-size: 0.85rem !important; margin-bottom: 8px !important; }
+.goal-progress { height: 10px !important; margin-bottom: 6px !important; }
+.goal-stats { font-size: 0.75rem !important; margin-bottom: 6px !important; }
+.goal-message { font-size: 0.8rem !important; }
+.goal-input { margin-top: 10px !important; }
+.goal-input label { font-size: 0.75rem !important; }
+
+/* ---------- MOTIVATION ---------- */
+.motivation-card { padding: 16px 14px !important; }
+.quote-text { font-size: 1rem !important; line-height: 1.5 !important; margin-bottom: 8px !important; }
+.quote-author { font-size: 0.8rem !important; }
+
+/* ---------- BADGES · tighter grid ---------- */
+.badges-grid {
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important;
+  gap: 8px !important;
+}
+.badge-item {
+  grid-template-columns: 32px 1fr !important;
+  padding: 8px 10px !important;
+  gap: 8px !important;
+  border-radius: 10px !important;
+  margin-bottom: 0 !important;
+}
+.badge-icon {
+  width: 32px !important;
+  height: 32px !important;
+  font-size: 0.95rem !important;
+  border-radius: 8px !important;
+}
+.badge-title { font-size: 0.78rem !important; }
+.badge-desc { font-size: 0.65rem !important; line-height: 1.35 !important; }
+
+/* ---------- CLASSES ---------- */
+.classes-grid { grid-template-columns: 1fr !important; gap: 10px !important; }
+.class-card { padding: 12px !important; margin-bottom: 0 !important; }
+.class-card-header { margin-bottom: 8px !important; gap: 6px !important; }
+.class-card-title { font-size: 0.9rem !important; }
+.class-card-code { font-size: 0.65rem !important; padding: 3px 9px !important; }
+.class-card-stats { gap: 6px !important; margin-top: 8px !important; }
+.class-card-stat { padding: 8px 6px !important; }
+.class-card-stat .value { font-size: 1rem !important; margin-bottom: 2px !important; }
+.class-card-stat .label { font-size: 0.6rem !important; }
+.class-card-actions { gap: 6px !important; margin-top: 8px !important; }
+.class-card-actions .btn { padding: 7px 10px !important; font-size: 0.72rem !important; min-height: 32px !important; }
+
+/* ---------- LEADERBOARD ---------- */
+.leaderboard-stats { grid-template-columns: repeat(2, 1fr) !important; gap: 6px !important; margin-bottom: 10px !important; }
+.leaderboard-stat { padding: 8px 6px !important; border-radius: 10px !important; }
+.leaderboard-stat .value { font-size: 1rem !important; margin-bottom: 2px !important; }
+.leaderboard-stat .label { font-size: 0.55rem !important; letter-spacing: 0.05em !important; }
+.leaderboard-list { gap: 6px !important; }
+.leaderboard-item { padding: 10px !important; gap: 10px !important; border-radius: 11px !important; margin-bottom: 0 !important; }
+.leaderboard-rank { font-size: 0.95rem !important; width: 24px !important; }
+.leaderboard-avatar { width: 32px !important; height: 32px !important; font-size: 0.85rem !important; }
+.leaderboard-name { font-size: 0.85rem !important; }
+.leaderboard-subtitle { font-size: 0.65rem !important; }
+.leaderboard-score { font-size: 0.9rem !important; min-width: 50px !important; }
+.stats-badge { font-size: 0.6rem !important; padding: 2px 7px !important; }
+
+/* ---------- STATISTICS ---------- */
+.statistics-grid { gap: 10px !important; margin-top: 10px !important; }
+.statistics-header { padding: 14px !important; margin-bottom: 10px !important; border-radius: 14px !important; }
+.statistics-header h2 { font-size: 1.05rem !important; margin-bottom: 4px !important; }
+.statistics-subtitle { font-size: 0.75rem !important; margin-bottom: 10px !important; }
+.stats-controls { gap: 6px !important; margin-top: 10px !important; padding-top: 10px !important; }
+.stats-controls .btn { font-size: 0.72rem !important; padding: 7px 12px !important; min-height: 34px !important; }
+
+.stats-overview-cards {
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 8px !important;
+  margin-bottom: 12px !important;
+}
+.stats-overview-card { padding: 10px 8px !important; border-radius: 12px !important; margin-bottom: 0 !important; }
+.stats-overview-icon { font-size: 1.2rem !important; margin-bottom: 4px !important; }
+.stats-overview-number { font-size: 1.15rem !important; margin-bottom: 2px !important; }
+.stats-overview-label { font-size: 0.55rem !important; letter-spacing: 0.05em !important; margin-bottom: 4px !important; }
+.stats-overview-trend { font-size: 0.6rem !important; gap: 3px !important; }
+
+.charts-container { display: block !important; gap: 10px !important; margin-bottom: 12px !important; }
+.chart-card { padding: 14px !important; margin-bottom: 10px !important; border-radius: 14px !important; }
+.chart-header { margin-bottom: 10px !important; gap: 4px !important; }
+.chart-header h3 { font-size: 0.9rem !important; }
+.chart-description { font-size: 0.7rem !important; margin-top: 2px !important; }
+.chart-wrapper { height: 180px !important; min-height: 160px !important; }
+.chart-legend { padding-top: 8px !important; margin-top: 8px !important; gap: 8px !important; }
+.legend-item { font-size: 0.65rem !important; gap: 4px !important; }
+.legend-color { width: 10px !important; height: 10px !important; }
+
+.stats-detailed-container,
+.performance-metrics { padding: 14px !important; margin-top: 10px !important; border-radius: 14px !important; }
+.stats-detailed-container h3,
+.performance-metrics h3 { font-size: 1rem !important; margin-bottom: 10px !important; }
+.stats-detailed-grid { gap: 10px !important; }
+.stats-detailed-section { padding: 12px !important; border-radius: 11px !important; }
+.stats-detailed-section h4 { font-size: 0.65rem !important; margin-bottom: 8px !important; letter-spacing: 0.08em !important; }
+.stats-detailed-row { padding: 6px 0 !important; }
+.stats-detailed-label { font-size: 0.75rem !important; }
+.stats-detailed-value { font-size: 0.85rem !important; }
+.metrics-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
+.metric-card { padding: 10px !important; border-radius: 11px !important; margin-bottom: 0 !important; }
+.metric-icon { font-size: 1.1rem !important; margin-bottom: 4px !important; }
+.metric-value { font-size: 1.1rem !important; margin-bottom: 2px !important; }
+.metric-label { font-size: 0.65rem !important; margin-bottom: 2px !important; }
+.metric-details { font-size: 0.55rem !important; }
+
+/* ---------- TOOLS GRID · compact rows ---------- */
+.tools-grid { grid-template-columns: 1fr !important; gap: 8px !important; margin-top: 10px !important; }
+.tool-item {
+  padding: 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  text-align: left !important;
+  border-radius: 12px !important;
+  margin-bottom: 0 !important;
+}
+.tool-icon {
+  font-size: 1.5rem !important;
+  margin-bottom: 0 !important;
+  animation: none !important;
+  flex-shrink: 0 !important;
+}
+.tool-name {
+  font-size: 0.85rem !important;
+  margin-bottom: 1px !important;
+  text-align: left !important;
+}
+.tool-desc {
+  font-size: 0.7rem !important;
+  text-align: left !important;
+  line-height: 1.35 !important;
+  -webkit-line-clamp: 2 !important;
+}
+
+/* ---------- MEMORY WALL · smaller sticky notes ---------- */
+.memory-whiteboard,
+#studentMemoryWhiteboard {
+  height: 340px !important;
+  margin: 8px 0 !important;
+  border-radius: 14px !important;
+}
+.student-sticky-note,
+.sticky-note {
+  width: 130px !important;
+  min-width: 130px !important;
+  min-height: 130px !important;
+  max-height: 160px !important;
+  padding: 8px 10px !important;
+  border-radius: 3px !important;
+  font-size: 0.7rem !important;
+  box-shadow: 0 3px 8px rgba(60,42,15,0.18), 0 0 0 1px rgba(60,42,15,0.06) !important;
+}
+.student-note-content { gap: 4px !important; }
+.student-note-text {
+  font-size: 11px !important;
+  line-height: 1.35 !important;
+  margin-bottom: 6px !important;
+  max-height: 80px !important;
+  font-family: 'Comic Sans MS', 'Chalkboard SE', cursive, var(--font-ui) !important;
+}
+.student-note-meta {
+  font-size: 0.6rem !important;
+  padding-top: 4px !important;
+}
+.student-note-author { font-size: 0.6rem !important; }
+.student-note-date { font-size: 0.55rem !important; }
+.student-note-actions { margin-top: 4px !important; gap: 4px !important; }
+.student-note-likes { font-size: 0.6rem !important; gap: 2px !important; }
+.btn-student-note {
+  font-size: 0.85rem !important;
+  padding: 2px 4px !important;
+}
+.student-welcome-note {
+  width: 200px !important;
+  padding: 14px !important;
+  border-radius: 10px !important;
+}
+.student-welcome-note > div:first-child { font-size: 1.6rem !important; }
+.student-welcome-note > div:nth-child(2) { font-size: 0.85rem !important; }
+.student-welcome-note > div:last-child { font-size: 0.72rem !important; }
+
+/* Memory wall stats row */
+#studentTotalNotesCount,
+#studentTotalLikesCount,
+#studentNotesCount {
+  font-size: 1.1rem !important;
+}
+
+/* ---------- BOTTOM FEATURES · compact ---------- */
+.bottom-features { margin-top: 14px !important; padding-top: 12px !important; }
+.bottom-features-grid { grid-template-columns: 1fr !important; gap: 10px !important; }
+.bottom-feature-card { padding: 12px !important; border-radius: 12px !important; margin-bottom: 0 !important; }
+.bottom-feature-header {
+  margin-bottom: 8px !important;
+  padding-bottom: 8px !important;
+  gap: 6px !important;
+}
+.bottom-feature-header span { font-size: 0.72rem !important; }
+.quick-notes-bottom textarea { height: 70px !important; font-size: 0.75rem !important; padding: 8px !important; }
+.stat-compare-item { padding: 6px 10px !important; font-size: 0.7rem !important; }
+.teach-bottom input { padding: 6px 8px !important; font-size: 0.7rem !important; }
+.teach-bullet-check { width: 20px !important; height: 20px !important; font-size: 0.6rem !important; }
+.teach-bullet-input { padding: 5px 8px !important; font-size: 0.65rem !important; }
+.challenge-text { font-size: 0.78rem !important; padding: 9px !important; }
+.challenge-tip { font-size: 0.6rem !important; }
+
+/* ---------- FOCUS CARDS · compact ---------- */
+.focus-grid { gap: 10px !important; }
+.focus-card { padding: 12px !important; border-radius: 12px !important; margin-bottom: 0 !important; }
+.focus-card h3 { font-size: 0.9rem !important; margin-bottom: 6px !important; }
+.focus-timer-display { font-size: 1.6rem !important; margin: 6px 0 !important; }
+.focus-metrics { font-size: 0.7rem !important; gap: 6px !important; }
+.focus-tree { font-size: 2rem !important; }
+.sound-grid { gap: 6px !important; }
+.sound-chip { padding: 7px 9px !important; font-size: 0.72rem !important; }
+
+/* ---------- FOOTER ---------- */
+.footer { padding: 14px 12px !important; margin-top: 16px !important; font-size: 0.7rem !important; }
+
+/* ---------- PROFILE TABLES ---------- */
+.premium-badge,
+#rainbowBadge {
+  font-size: 0.6rem !important;
+  padding: 2px 8px !important;
+}
+
+/* ---------- PRIORITY OPTIONS ---------- */
+.priority-option { padding: 8px !important; font-size: 0.75rem !important; }
+.priority-selector { gap: 6px !important; margin-bottom: 10px !important; }
+
+/* ---------- DESKTOP · still tighter, but not phone-compact ---------- */
+@media (min-width: 901px) {
+  .main-content { padding: 32px 32px 80px !important; }
+  .dashboard-header h1 { font-size: 1.75rem !important; }
+  .quick-stats { grid-template-columns: repeat(4, 1fr) !important; gap: 12px !important; }
+  .stat-card { padding: 12px 14px !important; min-height: 76px !important; }
+  .stat-icon { width: 40px !important; height: 40px !important; font-size: 1.15rem !important; }
+  .stat-number { font-size: 1.35rem !important; }
+  .content-header h2,
+  .form-card h2 { font-size: 1.05rem !important; }
+  .content-body { padding: 14px 16px !important; }
+  .dashboard-grid { display: grid !important; grid-template-columns: repeat(12, 1fr) !important; gap: 16px !important; }
+  .forms-section,
+  .content-section { display: flex !important; flex-direction: column !important; grid-column: span 6 !important; gap: 14px !important; }
+  .bottom-features-grid { grid-template-columns: repeat(4, 1fr) !important; }
+  .tools-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .badges-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)) !important; }
+  .stats-overview-cards { grid-template-columns: repeat(4, 1fr) !important; }
+  .charts-container { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; gap: 14px !important; }
+  .classes-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .leaderboard-stats { grid-template-columns: repeat(4, 1fr) !important; }
+  .metrics-grid { grid-template-columns: repeat(4, 1fr) !important; }
+  .student-sticky-note,
+  .sticky-note {
+    width: 180px !important;
+    min-width: 180px !important;
+    min-height: 160px !important;
+    max-height: 200px !important;
+    padding: 12px !important;
+  }
+  .student-note-text { font-size: 13px !important; max-height: 110px !important; }
+  .memory-whiteboard,
+  #studentMemoryWhiteboard { height: 520px !important; }
+}
+
+/* Very small phones · even tighter */
+@media (max-width: 400px) {
+  .main-content { padding: 12px 10px 88px !important; }
+  .dashboard-header h1 { font-size: 1.25rem !important; }
+  .stat-card { padding: 8px 10px !important; min-height: 60px !important; }
+  .stat-icon { width: 30px !important; height: 30px !important; font-size: 0.9rem !important; }
+  .stat-number { font-size: 1rem !important; }
+  .stat-label { font-size: 0.55rem !important; }
+  .content-header { padding: 10px 12px !important; }
+  .content-header h2,
+  .form-card h2 { font-size: 0.9rem !important; }
+  .content-body { padding: 10px 12px !important; }
+  .student-sticky-note,
+  .sticky-note {
+    width: 110px !important;
+    min-width: 110px !important;
+    min-height: 110px !important;
+    padding: 6px 8px !important;
+  }
+  .student-note-text { font-size: 10px !important; max-height: 65px !important; }
+  .memory-whiteboard,
+  #studentMemoryWhiteboard { height: 280px !important; }
+  .btn { padding: 7px 12px !important; font-size: 0.72rem !important; min-height: 34px !important; }
+  .stats-overview-card { padding: 8px 6px !important; }
+  .stats-overview-number { font-size: 1rem !important; }
+}
+</style>
 </body>
 </html>
 
