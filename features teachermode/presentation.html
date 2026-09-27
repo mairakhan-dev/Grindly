@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Class Presentation · Grindly</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<style>
+:root{
+  --bg:#0b0d12; --card:#141822; --card-2:#1a1f2c; --border:rgba(255,255,255,0.08);
+  --text:#eef1f6; --muted:#8a93a6; --ember:#ff4714; --ember-hot:#d61f00; --ember-warm:#ffaa33;
+  --gradient-flame:linear-gradient(135deg,#ffaa33 0%,#ff4714 50%,#d61f00 100%);
+  --success:#10b981; --warning:#f59e0b; --danger:#ef4444; --info:#3b82f6;
+  --font-display:'Poppins',sans-serif; --font-ui:'Inter',sans-serif; --font-mono:'JetBrains Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:var(--font-ui);font-size:15px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+  background-image:
+    radial-gradient(1200px 700px at 0% -10%, rgba(255,71,20,0.10), transparent 60%),
+    radial-gradient(900px 600px at 100% 0%, rgba(255,170,51,0.06), transparent 55%);
+  background-attachment:fixed;}
+h1,h2,h3{font-family:var(--font-display);font-weight:700;letter-spacing:-0.02em;line-height:1.15}
+.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-weight:700}
+
+/* ─── Toolbar ─── */
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 20px;
+  background:rgba(20,24,34,0.85);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);flex-wrap:wrap}
+.toolbar-left{display:flex;align-items:center;gap:14px;min-width:0;flex:1}
+.live-dot{width:10px;height:10px;border-radius:50%;background:#16a34a;flex-shrink:0;
+  box-shadow:0 0 0 0 rgba(22,163,74,0.6);animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(22,163,74,0.6)}70%{box-shadow:0 0 0 12px rgba(22,163,74,0)}100%{box-shadow:0 0 0 0 rgba(22,163,74,0)}}
+.toolbar-info{min-width:0;flex:1}
+.toolbar-title{font-family:var(--font-display);font-size:1.5rem;font-weight:700;line-height:1;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.toolbar-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;font-size:0.75rem}
+.meta-pill{font-family:var(--font-mono);background:var(--card-2);padding:3px 10px;border-radius:999px;
+  border:1px solid var(--border);font-weight:600;color:var(--muted)}
+.toolbar-controls{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font-family:var(--font-ui);font-weight:700;font-size:0.8125rem;padding:10px 16px;border-radius:10px;
+  border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;min-height:40px;
+  transition:all 0.15s ease;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{border-color:var(--ember);color:var(--ember)}
+.btn:active{transform:scale(0.97)}
+.btn-primary{background:var(--gradient-flame);color:#fff;border-color:transparent;
+  box-shadow:0 4px 14px rgba(255,71,20,0.35)}
+.btn-primary:hover{color:#fff;filter:brightness(1.05)}
+.btn-danger{background:transparent;color:#ef4444;border-color:#ef4444}
+.btn-danger:hover{background:#ef4444;color:#fff}
+.btn.on{background:var(--gradient-flame);color:#fff;border-color:transparent}
+
+/* ─── Grid ─── */
+.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px;padding:16px;max-width:1800px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;
+  display:flex;flex-direction:column;min-height:160px;overflow:hidden}
+.card h3{font-size:0.6875rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);
+  margin-bottom:14px;flex-shrink:0;font-family:var(--font-ui);font-weight:700}
+.span-4{grid-column:span 4}.span-6{grid-column:span 6}.span-8{grid-column:span 8}.span-12{grid-column:span 12}
+
+/* ─── Snapshot ─── */
+.snapshot{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:14px}
+.snap-stat{display:flex;flex-direction:column;gap:4px}
+.snap-value{font-family:var(--font-display);font-size:2.5rem;font-weight:700;line-height:1;color:var(--text);
+  font-variant-numeric:tabular-nums}
+.snap-label{font-size:0.6875rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:700}
+.health-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;
+  background:rgba(255,71,20,0.12);color:#ff8a63;font-family:var(--font-mono);font-size:0.75rem;font-weight:700;
+  align-self:flex-start}
+
+/* ─── List ─── */
+.list{display:flex;flex-direction:column;gap:8px;overflow-y:auto;flex:1;min-height:0}
+.list::-webkit-scrollbar{width:6px}
+.list::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.item{background:var(--card-2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;
+  font-size:0.875rem;line-height:1.4;flex-shrink:0}
+.item strong{display:block;font-weight:700;margin-bottom:2px;color:var(--text)}
+.item .meta{font-size:0.75rem;color:var(--muted);font-family:var(--font-mono)}
+.empty{color:var(--muted);font-size:0.875rem;text-align:center;padding:20px;font-style:italic}
+
+/* ─── Check-ins ─── */
+.checkins{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.checkin{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 6px;
+  background:var(--card-2);border:1px solid var(--border);border-radius:10px}
+.checkin-emoji{font-size:1.5rem;line-height:1}
+.checkin-value{font-family:var(--font-display);font-size:1.6rem;font-weight:700;line-height:1}
+.updated{font-size:0.75rem;color:var(--muted);margin-bottom:8px}
+
+/* ─── Agenda + Goals ─── */
+.timer-row{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:12px;flex-wrap:wrap}
+.timer{font-family:var(--font-mono);font-size:2.5rem;font-weight:700;line-height:1;color:var(--text);font-variant-numeric:tabular-nums}
+.timer-controls{display:flex;gap:6px;flex-wrap:wrap}
+.agenda-input{display:flex;gap:8px;margin-bottom:12px}
+.agenda-input input{flex:1;min-width:0;padding:10px 14px;border:1px solid var(--border);border-radius:10px;
+  background:var(--card-2);color:var(--text);font-family:inherit;font-size:0.9375rem;min-height:42px;outline:none}
+.agenda-input input:focus{border-color:var(--ember)}
+.btn-sm{padding:8px 14px;font-size:0.75rem;min-height:38px}
+.btn-full{width:100%}
+.goal{margin-bottom:14px}
+.goal label{display:block;font-size:0.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;
+  color:var(--muted);margin-bottom:6px}
+.goal input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;
+  background:var(--card-2);color:var(--text);font-family:inherit;font-size:0.9375rem;margin-bottom:8px;min-height:42px;outline:none}
+.goal input:focus{border-color:var(--ember)}
+.progress{height:6px;border-radius:3px;background:var(--card-2);overflow:hidden;border:1px solid var(--border)}
+.progress span{display:block;height:100%;background:var(--gradient-flame);width:0%;transition:width 0.4s ease;border-radius:3px}
+
+/* ─── Error banner ─── */
+.banner{position:fixed;left:16px;right:16px;bottom:16px;padding:14px 18px;background:#1a0f0a;
+  border:1px solid #7a2918;border-radius:12px;color:#ffb39a;font-size:0.875rem;z-index:100;display:none}
+.banner.show{display:block}
+
+/* ─── Responsive ─── */
+@media (max-width:1100px){
+  .span-4{grid-column:span 6}
+  .span-8{grid-column:span 12}
+}
+@media (max-width:768px){
+  .grid{padding:12px;gap:10px}
+  .card{padding:14px;border-radius:14px;min-height:130px}
+  .span-4,.span-6,.span-8,.span-12{grid-column:span 12}
+  .toolbar-title{font-size:1.2rem}
+  .snap-value{font-size:2rem}
+  .timer{font-size:2rem}
+  .agenda-input{flex-direction:column}
+  .agenda-input .btn{width:100%}
+}
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="toolbar-left">
+    <span class="live-dot" aria-hidden="true"></span>
+    <div class="toolbar-info">
+      <div class="toolbar-title" id="classTitle">Class Presentation</div>
+      <div class="toolbar-meta">
+        <span class="meta-pill" id="classCodePill">------</span>
+        <span class="meta-pill" id="lastUpdated">connecting…</span>
+      </div>
+    </div>
+  </div>
+  <div class="toolbar-controls">
+    <button class="btn btn-primary" id="liveBtn">Live: ON</button>
+    <button class="btn" id="fullBtn">Fullscreen</button>
+    <button class="btn btn-danger" onclick="window.close()">Close</button>
+  </div>
+</div>
+
+<div class="grid">
+  <div class="card span-4">
+    <h3>Class Snapshot</h3>
+    <div class="snapshot">
+      <div class="snap-stat"><span class="snap-value" id="snapStudents">0</span><span class="snap-label">Students</span></div>
+      <div class="snap-stat"><span class="snap-value" id="snapActive">0</span><span class="snap-label">Active</span></div>
+      <div class="snap-stat"><span class="snap-value" id="snapStreak">0</span><span class="snap-label">Avg Streak</span></div>
+      <div class="snap-stat"><span class="snap-value" id="snapHealth">0</span><span class="snap-label">Health</span></div>
+    </div>
+    <div class="health-pill" id="healthPill">Reading…</div>
+  </div>
+
+  <div class="card span-8">
+    <h3>Live Activity</h3>
+    <div class="list" id="activityList"><div class="empty">Waiting for activity…</div></div>
+  </div>
+
+  <div class="card span-6">
+    <h3>Live Students</h3>
+    <div class="list" id="studentsList"><div class="empty">Loading students…</div></div>
+  </div>
+
+  <div class="card span-6">
+    <h3>Recent Announcements</h3>
+    <div class="list" id="announcementsList"><div class="empty">No announcements yet.</div></div>
+  </div>
+
+  <div class="card span-4">
+    <h3>Assignments</h3>
+    <div class="list" id="assignmentsList"><div class="empty">No assignments yet.</div></div>
+  </div>
+
+  <div class="card span-4">
+    <h3>Class Challenges</h3>
+    <div class="list" id="challengesList"><div class="empty">No challenges yet.</div></div>
+  </div>
+
+  <div class="card span-4">
+    <h3>Resources</h3>
+    <div class="list" id="resourcesList"><div class="empty">No resources yet.</div></div>
+  </div>
+
+  <div class="card span-4">
+    <h3>Student Spotlight</h3>
+    <div id="spotlight" style="margin-bottom:auto">No students yet.</div>
+    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+      <button class="btn btn-sm" onclick="pickSpotlight()">New</button>
+      <button class="btn btn-sm btn-primary" onclick="shoutout()">Shoutout</button>
+    </div>
+  </div>
+
+  <div class="card span-4">
+    <h3>At-Risk Alerts</h3>
+    <div class="list" id="atRiskList"><div class="empty">No alerts.</div></div>
+  </div>
+
+  <div class="card span-4">
+    <h3>Check-ins Snapshot</h3>
+    <div class="checkins">
+      <div class="checkin"><span class="checkin-emoji">😊</span><span class="checkin-value" id="checkinConfident">0</span></div>
+      <div class="checkin"><span class="checkin-emoji">😐</span><span class="checkin-value" id="checkinOkay">0</span></div>
+      <div class="checkin"><span class="checkin-emoji">😕</span><span class="checkin-value" id="checkinStruggling">0</span></div>
+    </div>
+    <div class="updated">Updated: <strong id="checkinUpdated">—</strong></div>
+  </div>
+
+  <div class="card span-8">
+    <h3>Agenda & Timer</h3>
+    <div class="timer-row">
+      <div class="timer" id="timer">00:00</div>
+      <div class="timer-controls">
+        <button class="btn btn-sm btn-primary" id="timerStart">Start</button>
+        <button class="btn btn-sm" id="timerPause">Pause</button>
+        <button class="btn btn-sm" id="timerReset">Reset</button>
+      </div>
+    </div>
+    <div class="agenda-input">
+      <input type="text" id="agendaInput" placeholder="Add agenda item…">
+      <button class="btn btn-primary" id="agendaAdd">Add</button>
+    </div>
+    <div class="list" id="agendaList"><div class="empty">No agenda items yet.</div></div>
+  </div>
+
+  <div class="card span-4">
+    <h3>Goals Tracker</h3>
+    <div class="goal">
+      <label for="goalActive">Active Students Target</label>
+      <input type="number" id="goalActive" min="1" placeholder="e.g. 20">
+      <div class="progress"><span id="goalActiveBar"></span></div>
+    </div>
+    <div class="goal">
+      <label for="goalStreak">Avg Streak Target</label>
+      <input type="number" id="goalStreak" min="1" placeholder="e.g. 7">
+      <div class="progress"><span id="goalStreakBar"></span></div>
+    </div>
+    <button class="btn btn-primary btn-full" id="saveGoals">Save Goals</button>
+  </div>
+</div>
+
+<div class="banner" id="banner"></div>
+
+<script>
+/* ============================================================
+   1 · CONFIG
+   ⚠️  REPLACE the values below with your real Firebase config.
+   You can find it in teachermode.js — it's the object passed to
+   firebase.initializeApp({...}). Copy it EXACTLY.
+   ============================================================ */
+var firebaseConfig = {
+  apiKey: "AIzaSyBAIPxgXPZmGdPvB98TLFRfTAClgXWEIM0",
+  authDomain: "student-teacher-app-4e7c9.firebaseapp.com",
+  databaseURL: "https://student-teacher-app-4e7c9-default-rtdb.firebaseio.com",
+  projectId: "student-teacher-app-4e7c9",
+  storageBucket: "student-teacher-app-4e7c9.firebasestorage.app",
+  messagingSenderId: "737621420458",
+  appId: "1:737621420458:web:74c873869a1a47c2ce23d3"
+};
+/* ============================================================
+   2 · Get class code
+   Priority: URL ?class=XXXX → localStorage → prompt
+   ============================================================ */
+function getClassCode() {
+  var params = new URLSearchParams(window.location.search);
+  var fromUrl = params.get('class');
+  if (fromUrl) {
+    localStorage.setItem('currentClassCode', fromUrl);
+    return fromUrl.toUpperCase();
+  }
+  var fromStorage = localStorage.getItem('currentClassCode');
+  if (fromStorage) return fromStorage.toUpperCase();
+  return null;
+}
+
+var CLASS_CODE = getClassCode();
+
+if (!CLASS_CODE) {
+  document.getElementById('classTitle').textContent = 'No class selected';
+  document.getElementById('classCodePill').textContent = '------';
+  showBanner('No class code found. Open this page with ?class=YOURCODE in the URL, or select a class in the Teacher Dashboard first.');
+} else {
+  document.getElementById('classCodePill').textContent = CLASS_CODE;
+  document.getElementById('classTitle').textContent = 'Class ' + CLASS_CODE;
+}
+
+/* ============================================================
+   3 · Firebase init + data
+   ============================================================ */
+var db = null;
+var liveOn = true;
+var refs = {};
+var DATA = {
+  students: {}, announcements: {}, assignments: {},
+  challenges: {}, resources: {}, activity: {}, checkins: {}
+};
+
+try {
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.database();
+} catch (e) {
+  console.error('Firebase init failed:', e);
+  showBanner('Firebase failed to initialize. Check the config at the top of presentation.html.');
+}
+
+function connect() {
+  if (!db || !CLASS_CODE) return;
+  var base = 'classes/' + CLASS_CODE;
+
+  /* Adjust these paths to match your DB structure if needed */
+  refs.students      = db.ref(base + '/students');
+  refs.announcements = db.ref(base + '/announcements');
+  refs.assignments   = db.ref(base + '/assignments');
+  refs.challenges    = db.ref(base + '/challenges');
+  refs.resources     = db.ref(base + '/resources');
+  refs.activity      = db.ref(base + '/activity');
+  refs.checkins      = db.ref(base + '/checkins');
+
+  Object.keys(refs).forEach(function (k) {
+    refs[k].on('value', function (snap) {
+      DATA[k] = snap.val() || {};
+      render();
+      markUpdated();
+    }, function (err) {
+      console.warn('Read denied for ' + k + ':', err.message);
+    });
+  });
+}
+
+function render() {
+  renderSnapshot();
+  renderStudents();
+  renderAnnouncements();
+  renderAssignments();
+  renderChallenges();
+  renderResources();
+  renderActivity();
+  renderAtRisk();
+  renderCheckins();
+}
+
+function markUpdated() {
+  var now = new Date();
+  document.getElementById('lastUpdated').textContent =
+    'updated ' + now.getHours().toString().padStart(2,'0') + ':' +
+    now.getMinutes().toString().padStart(2,'0') + ':' +
+    now.getSeconds().toString().padStart(2,'0');
+}
+
+/* ─── Snapshot ─── */
+function renderSnapshot() {
+  var arr = Object.values(DATA.students);
+  var total = arr.length;
+  var dayMs = 24 * 60 * 60 * 1000;
+  var now = Date.now();
+  var active = arr.filter(function (s) {
+    var last = s.lastActive || s.lastSeen || s.lastStudyDate;
+    if (!last) return false;
+    var t = typeof last === 'number' ? last : new Date(last).getTime();
+    return (now - t) < dayMs;
+  }).length;
+  var avgStreak = total ? Math.round(arr.reduce(function (a, s) { return a + (s.streak || 0); }, 0) / total) : 0;
+  var health = Math.min(100, Math.round((active / Math.max(total, 1)) * 60 + (avgStreak / 10) * 40));
+
+  document.getElementById('snapStudents').textContent = total;
+  document.getElementById('snapActive').textContent = active;
+  document.getElementById('snapStreak').textContent = avgStreak;
+  document.getElementById('snapHealth').textContent = health;
+
+  var label = health >= 75 ? 'Thriving' : health >= 50 ? 'Steady' : health >= 25 ? 'Needs attention' : 'Quiet';
+  document.getElementById('healthPill').textContent = label;
+}
+
+/* ─── Students ─── */
+function renderStudents() {
+  var el = document.getElementById('studentsList');
+  var arr = Object.entries(DATA.students).map(function (e) { return Object.assign({ id: e[0] }, e[1]); });
+  if (!arr.length) { el.innerHTML = '<div class="empty">No students yet.</div>'; return; }
+  arr.sort(function (a, b) { return (b.points || 0) - (a.points || 0); });
+  el.innerHTML = arr.slice(0, 30).map(function (s) {
+    var name = s.name || s.displayName || s.id || 'Student';
+    var streak = s.streak || 0;
+    var hours = (s.totalHours || s.hours || 0).toFixed ? (s.totalHours || s.hours || 0).toFixed(1) : (s.totalHours || s.hours || 0);
+    var pts = s.points || 0;
+    return '<div class="item"><strong>' + esc(name) + '</strong>' +
+      '<div class="meta">🔥 ' + streak + ' · ' + hours + 'h · ' + pts + ' pts</div></div>';
+  }).join('');
+}
+
+/* ─── Announcements ─── */
+function renderAnnouncements() {
+  var el = document.getElementById('announcementsList');
+  var arr = Object.entries(DATA.announcements).map(function (e) { return Object.assign({ id: e[0] }, e[1]); });
+  if (!arr.length) { el.innerHTML = '<div class="empty">No announcements yet.</div>'; return; }
+  arr.sort(function (a, b) { return (b.timestamp || 0) - (a.timestamp || 0); });
+  el.innerHTML = arr.slice(0, 8).map(function (a) {
+    return '<div class="item"><strong>' + esc(a.title || 'Untitled') + '</strong>' +
+      '<div class="meta">' + esc((a.content || '').slice(0, 80)) + '</div></div>';
+  }).join('');
+}
+
+/* ─── Assignments ─── */
+function renderAssignments() {
+  var el = document.getElementById('assignmentsList');
+  var arr = Object.entries(DATA.assignments).map(function (e) { return Object.assign({ id: e[0] }, e[1]); });
+  if (!arr.length) { el.innerHTML = '<div class="empty">No assignments yet.</div>'; return; }
+  el.innerHTML = arr.slice(0, 8).map(function (a) {
+    return '<div class="item"><strong>' + esc(a.title || 'Untitled') + '</strong>' +
+      '<div class="meta">Due ' + esc(a.dueDate || '—') + '</div></div>';
+  }).join('');
+}
+
+/* ─── Challenges ─── */
+function renderChallenges() {
+  var el = document.getElementById('challengesList');
+  var arr = Object.entries(DATA.challenges).map(function (e) { return Object.assign({ id: e[0] }, e[1]); });
+  if (!arr.length) { el.innerHTML = '<div class="empty">No challenges yet.</div>'; return; }
+  el.innerHTML = arr.slice(0, 8).map(function (c) {
+    return '<div class="item"><strong>' + esc(c.name || c.title || 'Challenge') + '</strong>' +
+      '<div class="meta">' + esc(c.status || 'active') + '</div></div>';
+  }).join('');
+}
+
+/* ─── Resources ─── */
+function renderResources() {
+  var el = document.getElementById('resourcesList');
+  var arr = Object.entries(DATA.resources).map(function (e) { return Object.assign({ id: e[0] }, e[1]); });
+  if (!arr.length) { el.innerHTML = '<div class="empty">No resources yet.</div>'; return; }
+  el.innerHTML = arr.slice(0, 8).map(function (r) {
+    return '<div class="item"><strong>' + esc(r.title || 'Resource') + '</strong>' +
+      '<div class="meta">' + esc((r.url || '').slice(0, 40)) + '</div></div>';
+  }).join('');
+}
+
+/* ─── Activity feed ─── */
+function renderActivity() {
+  var el = document.getElementById('activityList');
+  var arr = Object.entries(DATA.activity).map(function (e) { return Object.assign({ id: e[0] }, e[1]); });
+  if (!arr.length) { el.innerHTML = '<div class="empty">No live activity yet.</div>'; return; }
+  arr.sort(function (a, b) { return (b.timestamp || 0) - (a.timestamp || 0); });
+  el.innerHTML = arr.slice(0, 15).map(function (a) {
+    var t = a.timestamp ? new Date(a.timestamp).toLocaleTimeString() : '';
+    return '<div class="item"><strong>' + esc(a.message || a.text || 'Activity') + '</strong>' +
+      '<div class="meta">' + esc(a.studentName || a.student || '') + ' · ' + t + '</div></div>';
+  }).join('');
+}
+
+/* ─── At-risk (inactive 3+ days) ─── */
+function renderAtRisk() {
+  var el = document.getElementById('atRiskList');
+  var dayMs = 24 * 60 * 60 * 1000;
+  var cutoff = Date.now() - 3 * dayMs;
+  var arr = Object.entries(DATA.students).map(function (e) { return Object.assign({ id: e[0] }, e[1]); })
+    .filter(function (s) {
+      var last = s.lastActive || s.lastSeen;
+      if (!last) return true;
+      var t = typeof last === 'number' ? last : new Date(last).getTime();
+      return t < cutoff;
+    });
+  if (!arr.length) { el.innerHTML = '<div class="empty">All students active.</div>'; return; }
+  el.innerHTML = arr.slice(0, 10).map(function (s) {
+    return '<div class="item"><strong>' + esc(s.name || s.id || 'Student') + '</strong>' +
+      '<div class="meta">inactive</div></div>';
+  }).join('');
+}
+
+/* ─── Check-ins ─── */
+function renderCheckins() {
+  var arr = Object.values(DATA.checkins);
+  var confident = 0, okay = 0, struggling = 0, latest = 0;
+  arr.forEach(function (c) {
+    var mood = (c.mood || c.status || '').toLowerCase();
+    if (mood.indexOf('conf') !== -1) confident++;
+    else if (mood.indexOf('struggl') !== -1) struggling++;
+    else if (mood.indexOf('okay') !== -1 || mood.indexOf('ok') !== -1) okay++;
+    if (c.timestamp && c.timestamp > latest) latest = c.timestamp;
+  });
+  document.getElementById('checkinConfident').textContent = confident;
+  document.getElementById('checkinOkay').textContent = okay;
+  document.getElementById('checkinStruggling').textContent = struggling;
+  document.getElementById('checkinUpdated').textContent = latest ? new Date(latest).toLocaleTimeString() : '—';
+}
+
+/* ─── Spotlight ─── */
+var currentSpotlight = null;
+function pickSpotlight() {
+  var arr = Object.values(DATA.students);
+  if (!arr.length) { document.getElementById('spotlight').textContent = 'No students yet.'; return; }
+  currentSpotlight = arr[Math.floor(Math.random() * arr.length)];
+  var name = currentSpotlight.name || currentSpotlight.displayName || 'Student';
+  document.getElementById('spotlight').innerHTML =
+    '<div style="font-family:var(--font-display);font-size:1.5rem;font-weight:700;margin-bottom:4px">' +
+    esc(name) + '</div>' +
+    '<div class="meta" style="color:var(--muted);font-family:var(--font-mono);font-size:0.8125rem">🔥 ' +
+    (currentSpotlight.streak || 0) + ' · ' + (currentSpotlight.points || 0) + ' pts</div>';
+}
+function shoutout() {
+  if (!currentSpotlight) return;
+  var name = currentSpotlight.name || 'Student';
+  alert('Shoutout to ' + name + '! 🎉');
+}
+
+/* ─── Timer ─── */
+var timerSec = 0, timerInt = null;
+function fmt(s) {
+  var m = Math.floor(s / 60), sec = s % 60;
+  return String(m).padStart(2, '0') + ':' + String(sec).padStart(2, '0');
+}
+document.getElementById('timerStart').onclick = function () {
+  if (timerInt) return;
+  timerInt = setInterval(function () {
+    timerSec++;
+    document.getElementById('timer').textContent = fmt(timerSec);
+  }, 1000);
+};
+document.getElementById('timerPause').onclick = function () {
+  clearInterval(timerInt); timerInt = null;
+};
+document.getElementById('timerReset').onclick = function () {
+  clearInterval(timerInt); timerInt = null; timerSec = 0;
+  document.getElementById('timer').textContent = '00:00';
+};
+
+/* ─── Agenda ─── */
+var agenda = [];
+function renderAgenda() {
+  var el = document.getElementById('agendaList');
+  if (!agenda.length) { el.innerHTML = '<div class="empty">No agenda items yet.</div>'; return; }
+  el.innerHTML = agenda.map(function (a, i) {
+    return '<div class="item"><strong>' + (i + 1) + '. ' + esc(a) + '</strong></div>';
+  }).join('');
+}
+document.getElementById('agendaAdd').onclick = function () {
+  var v = document.getElementById('agendaInput').value.trim();
+  if (!v) return;
+  agenda.push(v);
+  document.getElementById('agendaInput').value = '';
+  renderAgenda();
+};
+document.getElementById('agendaInput').addEventListener('keypress', function (e) {
+  if (e.key === 'Enter') document.getElementById('agendaAdd').click();
+});
+
+/* ─── Goals ─── */
+document.getElementById('saveGoals').onclick = function () {
+  var a = parseInt(document.getElementById('goalActive').value) || 0;
+  var s = parseInt(document.getElementById('goalStreak').value) || 0;
+  localStorage.setItem('pres_goalActive', a);
+  localStorage.setItem('pres_goalStreak', s);
+  updateGoalBars();
+};
+function updateGoalBars() {
+  var ga = parseInt(localStorage.getItem('pres_goalActive')) || 0;
+  var gs = parseInt(localStorage.getItem('pres_goalStreak')) || 0;
+  if (ga) document.getElementById('goalActive').value = ga;
+  if (gs) document.getElementById('goalStreak').value = gs;
+  var active = parseInt(document.getElementById('snapActive').textContent) || 0;
+  var streak = parseInt(document.getElementById('snapStreak').textContent) || 0;
+  document.getElementById('goalActiveBar').style.width = ga ? Math.min(100, (active / ga) * 100) + '%' : '0%';
+  document.getElementById('goalStreakBar').style.width = gs ? Math.min(100, (streak / gs) * 100) + '%' : '0%';
+}
+setInterval(updateGoalBars, 2000);
+
+/* ─── Live toggle + Fullscreen ─── */
+document.getElementById('liveBtn').onclick = function () {
+  liveOn = !liveOn;
+  this.textContent = 'Live: ' + (liveOn ? 'ON' : 'OFF');
+  this.classList.toggle('on', liveOn);
+};
+document.getElementById('fullBtn').onclick = function () {
+  if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+  else document.exitFullscreen();
+};
+
+/* ─── Helpers ─── */
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+function showBanner(msg) {
+  var b = document.getElementById('banner');
+  b.textContent = msg;
+  b.classList.add('show');
+}
+
+/* ─── Kick it off ─── */
+connect();
+setInterval(render, 5000); /* refresh derived values every 5s */
+</script>
+</body>
+</html>
