@@ -8140,3 +8140,147 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 })();
+
+/* ============================================================
+   Bottom navigation bar · mobile only
+   ============================================================ */
+(function () {
+  'use strict';
+
+  var MOBILE_BP = 900;
+
+  function isMobile() {
+    return window.innerWidth <= MOBILE_BP;
+  }
+
+  function buildBottomNav() {
+    if (document.querySelector('.student-bottom-nav')) return;
+
+    var nav = document.createElement('nav');
+    nav.className = 'student-bottom-nav';
+    nav.setAttribute('aria-label', 'Bottom navigation');
+
+    var items = [
+      { target: 'dashboard',  icon: '🏠', label: 'Home' },
+      { target: 'tasks',      icon: '📝', label: 'Tasks' },
+      { target: 'classroom',  icon: '🏫', label: 'Class' },
+      { focus: true,          icon: '🌀', label: 'Focus' },
+      { menu: true,           icon: '☰', label: 'More' }
+    ];
+
+    items.forEach(function (it) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      if (it.target) b.setAttribute('data-target', it.target);
+      if (it.focus)  b.setAttribute('data-focus', '');
+      if (it.menu)   b.setAttribute('data-menu', '');
+      b.innerHTML = '<span class="bn-icon">' + it.icon + '</span>' + it.label;
+      nav.appendChild(b);
+    });
+
+    document.body.appendChild(nav);
+
+    nav.addEventListener('click', function (e) {
+      var btn = e.target.closest('button');
+      if (!btn) return;
+
+      // "More" → open sidebar drawer
+      if (btn.hasAttribute('data-menu')) {
+        var side = document.getElementById('sidebar');
+        var ov = document.getElementById('mobileOverlay');
+        if (side) side.classList.add('active');
+        if (ov) ov.classList.add('active');
+        return;
+      }
+
+      // "Focus" → toggle focus mode
+      if (btn.hasAttribute('data-focus')) {
+        if (typeof window.toggleFocusMode === 'function') {
+          try { window.toggleFocusMode(); } catch (err) { console.warn(err); }
+        }
+        return;
+      }
+
+      // Section switch
+      var target = btn.getAttribute('data-target');
+      if (target && typeof window.showSection === 'function') {
+        try { window.showSection(target); } catch (err) { console.warn(err); }
+      }
+      // Close the sidebar drawer if it was open
+      var side = document.getElementById('sidebar');
+      var ov = document.getElementById('mobileOverlay');
+      if (side) side.classList.remove('active');
+      if (ov) ov.classList.remove('active');
+
+      setActive(target);
+    });
+
+    // Default highlight
+    setActive('dashboard');
+  }
+
+  function removeBottomNav() {
+    var n = document.querySelector('.student-bottom-nav');
+    if (n) n.remove();
+  }
+
+  function setActive(section) {
+    var nav = document.querySelector('.student-bottom-nav');
+    if (!nav) return;
+    nav.querySelectorAll('button').forEach(function (b) {
+      b.classList.toggle('active', b.getAttribute('data-target') === section);
+    });
+  }
+
+  // React to viewport crossing the breakpoint
+  var lastMobile = null;
+  function sync() {
+    var m = isMobile();
+    if (m === lastMobile) return;
+    lastMobile = m;
+    if (m) buildBottomNav();
+    else removeBottomNav();
+  }
+
+  function boot() {
+    sync();
+    // Recheck a few times as late sidebar/persona scripts inject buttons
+    setTimeout(sync, 300);
+    setTimeout(sync, 1200);
+    setTimeout(sync, 2400);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+
+  window.addEventListener('resize', function () {
+    clearTimeout(window._grindlyResizeT);
+    window._grindlyResizeT = setTimeout(sync, 180);
+  });
+
+  // Keep active state in sync if showSection is called from elsewhere
+  var origShow = window.showSection;
+  if (typeof origShow === 'function') {
+    window.showSection = function (id) {
+      origShow.apply(this, arguments);
+      setActive(id);
+    };
+  }
+
+  // Also close the drawer when clicking a nav item inside the sidebar
+  document.addEventListener('click', function (e) {
+    if (!isMobile()) return;
+    var item = e.target.closest('.sidebar .nav-item, .sidebar .sidebar-btn');
+    if (!item) return;
+    // Give showSection a tick to run, then close
+    setTimeout(function () {
+      var side = document.getElementById('sidebar');
+      var ov = document.getElementById('mobileOverlay');
+      if (side) side.classList.remove('active');
+      if (ov) ov.classList.remove('active');
+    }, 60);
+  }, true);
+})();

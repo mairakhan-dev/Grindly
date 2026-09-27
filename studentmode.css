@@ -4353,3 +4353,948 @@ body.premium {
 
 
 
+/* ============================================================
+   MOBILE LAYOUT · ≤900px
+   ============================================================ */
+@media (max-width: 900px) {
+
+  /* ---------- TOP NAV · hamburger + title only ---------- */
+  .top-nav {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    height: 56px !important;
+    min-height: 56px !important;
+    padding: 0 12px !important;
+    background: var(--card) !important;
+    border-bottom: 1px solid var(--border) !important;
+    box-shadow: 0 2px 12px rgba(60, 42, 15, 0.06) !important;
+    z-index: 1000 !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+  }
+  .top-nav-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    height: 56px !important;
+    padding: 0 !important;
+    gap: 12px !important;
+  }
+  .top-nav-header h2 {
+    flex: 1 !important;
+    font-size: 1rem !important;
+    font-weight: 700 !important;
+    text-align: left !important;
+    max-width: none !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    padding-left: 8px !important;
+  }
+
+  /* Kill the cramped row of buttons that was here */
+  .mobile-nav-controls {
+    display: none !important;
+  }
+
+  .mobile-menu-toggle {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 42px !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    font-size: 1.15rem !important;
+    border-radius: 10px !important;
+    background: var(--gradient-flame) !important;
+    color: #fff !important;
+    box-shadow: 0 4px 12px var(--ember-glow) !important;
+    border: none !important;
+    flex-shrink: 0 !important;
+    cursor: pointer !important;
+  }
+
+  /* ---------- SIDEBAR · slide-out drawer ---------- */
+  .sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 84vw !important;
+    max-width: 320px !important;
+    height: 100vh !important;
+    transform: translateX(-105%) !important;
+    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    z-index: 1050 !important;
+    padding: 20px 16px 100px !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    border-right: 1px solid var(--border) !important;
+    box-shadow: 4px 0 30px rgba(60, 42, 15, 0.18) !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+  .sidebar.active {
+    transform: translateX(0) !important;
+  }
+
+  .mobile-overlay {
+    display: none;
+    position: fixed !important;
+    inset: 0 !important;
+    background: rgba(60, 42, 15, 0.5) !important;
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+    z-index: 1040 !important;
+  }
+  .mobile-overlay.active {
+    display: block !important;
+  }
+
+  /* Sidebar internals · tighter on phone */
+  .sidebar .sidebar-header {
+    margin-bottom: 16px !important;
+    padding-bottom: 16px !important;
+  }
+  .sidebar .student-emoji {
+    font-size: 2.2rem !important;
+    margin-bottom: 4px !important;
+  }
+  .sidebar h2 {
+    font-size: 1.15rem !important;
+  }
+  .sidebar .sidebar-subtitle {
+    font-size: 0.75rem !important;
+  }
+  .sidebar .class-switcher {
+    padding: 12px !important;
+    margin-bottom: 14px !important;
+  }
+  .sidebar .sidebar-nav {
+    gap: 6px !important;
+    max-height: none !important;
+  }
+  .sidebar .sidebar-nav .nav-item,
+  .sidebar .sidebar-nav .sidebar-btn {
+    padding: 12px 14px !important;
+    font-size: 0.9rem !important;
+    min-height: 44px !important;
+  }
+  .sidebar .sidebar-stats,
+  .sidebar .stories-section,
+  .sidebar .heatmap-section {
+    padding: 14px !important;
+  }
+  .sidebar .sidebar-stats h3,
+  .sidebar .stories-section h3,
+  .sidebar .heatmap-section h3 {
+    font-size: 0.65rem !important;
+    margin-bottom: 8px !important;
+  }
+
+  /* ---------- MAIN CONTENT ---------- */
+  .app-layout {
+    display: block !important;
+  }
+  .main-content {
+    margin-left: 0 !important;
+    margin-top: 56px !important;
+    padding: 16px 14px 96px !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    overflow-x: hidden !important;
+  }
+  .main-content > * {
+    max-width: 100% !important;
+  }
+
+  /* ---------- DASHBOARD HEADER ---------- */
+  .dashboard-header {
+    margin-bottom: 18px !important;
+    text-align: left !important;
+  }
+  .dashboard-header h1 {
+    font-size: 1.45rem !important;
+    line-height: 1.2 !important;
+    margin-bottom: 6px !important;
+    text-align: left !important;
+  }
+  .time-greeting {
+    font-size: 0.8rem !important;
+    margin-bottom: 4px !important;
+  }
+  .dashboard-subtitle {
+    font-size: 0.825rem !important;
+    margin-bottom: 12px !important;
+    text-align: left !important;
+  }
+  .controls-bar {
+    display: none !important;
+  }
+
+  /* ---------- QUICK STATS · 2 columns ---------- */
+  .quick-stats {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+    margin-bottom: 18px !important;
+  }
+  .stat-card {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    padding: 12px 12px !important;
+    gap: 10px !important;
+    min-height: auto !important;
+    height: auto !important;
+    text-align: left !important;
+    border-radius: 14px !important;
+    overflow: hidden !important;
+  }
+  .stat-card:hover {
+    transform: none !important;
+  }
+  .stat-icon {
+    width: 38px !important;
+    height: 38px !important;
+    font-size: 1.1rem !important;
+    flex-shrink: 0 !important;
+  }
+  .stat-content {
+    min-width: 0 !important;
+    flex: 1 !important;
+  }
+  .stat-number {
+    font-size: 1.25rem !important;
+    font-weight: 700 !important;
+    margin-bottom: 2px !important;
+    line-height: 1 !important;
+  }
+  .stat-label {
+    font-size: 0.625rem !important;
+    letter-spacing: 0.06em !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  /* ---------- CARDS ---------- */
+  .content-card,
+  .form-card,
+  .assignment-card,
+  .content-section > *,
+  .forms-section > * {
+    border-radius: 16px !important;
+    margin-bottom: 14px !important;
+    max-width: 100% !important;
+  }
+  .content-card {
+    padding: 0 !important;
+  }
+  .form-card {
+    padding: 16px 16px !important;
+  }
+  .content-header {
+    padding: 14px 16px !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+  }
+  .content-header h2,
+  .form-card h2 {
+    font-size: 1.05rem !important;
+    font-weight: 700 !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+    line-height: 1.25 !important;
+  }
+  .content-header h2::before,
+  .form-card h2::before {
+    width: 5px !important;
+    height: 5px !important;
+  }
+  .content-body {
+    padding: 14px 16px !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  /* ---------- PRO TIPS ---------- */
+  .pro-tip {
+    padding: 14px 16px 14px 16px !important;
+    margin: 12px 0 !important;
+    font-size: 0.825rem !important;
+    transform: none !important;
+    border-radius: 12px !important;
+    line-height: 1.5 !important;
+  }
+  .pro-tip::before {
+    display: none !important;
+  }
+  .pro-tip::after {
+    display: none !important;
+  }
+  .pro-tip strong {
+    font-size: 0.7rem !important;
+    margin-bottom: 5px !important;
+    letter-spacing: 0.06em !important;
+  }
+
+  /* ---------- DASHBOARD GRID · single column stack ---------- */
+  .dashboard-grid {
+    display: block !important;
+    gap: 14px !important;
+  }
+  .forms-section,
+  .content-section {
+    display: block !important;
+    gap: 0 !important;
+  }
+  .forms-section > * + *,
+  .content-section > * + * {
+    margin-top: 14px !important;
+  }
+
+  /* ---------- TASK / ASSIGNMENT / CLASSROOM ITEMS ---------- */
+  .task-item,
+  .assignment-item,
+  .classroom-item {
+    padding: 14px !important;
+    border-radius: 12px !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    max-width: 100% !important;
+  }
+  .task-text {
+    font-size: 0.9rem !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+    line-height: 1.4 !important;
+  }
+  .task-actions {
+    width: 100% !important;
+    justify-content: flex-end !important;
+  }
+  .task-actions .btn {
+    flex: 1 !important;
+    font-size: 0.75rem !important;
+    padding: 8px 10px !important;
+  }
+  .assignment-header,
+  .classroom-item-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+  .assignment-title,
+  .classroom-item-title {
+    font-size: 0.95rem !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+    line-height: 1.3 !important;
+  }
+  .assignment-date,
+  .classroom-item-date {
+    font-size: 0.65rem !important;
+    padding: 3px 10px !important;
+  }
+  .assignment-actions {
+    justify-content: flex-start !important;
+    flex-wrap: wrap !important;
+  }
+  .assignment-actions .btn {
+    font-size: 0.75rem !important;
+    padding: 8px 12px !important;
+  }
+
+  /* ---------- PRIORITY SELECTOR ---------- */
+  .priority-selector {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  .priority-option {
+    padding: 12px !important;
+    font-size: 0.85rem !important;
+  }
+
+  /* ---------- INPUTS ---------- */
+  input,
+  textarea,
+  select {
+    padding: 12px 14px !important;
+    font-size: 16px !important; /* prevents iOS auto-zoom */
+    border-radius: 12px !important;
+  }
+  .form-group {
+    margin-bottom: 14px !important;
+  }
+  .form-group label {
+    font-size: 0.8rem !important;
+    margin-bottom: 6px !important;
+    white-space: normal !important;
+  }
+
+  /* ---------- BUTTONS · touch-friendly ---------- */
+  .btn {
+    padding: 10px 16px !important;
+    font-size: 0.85rem !important;
+    min-height: 42px !important;
+    border-radius: 10px !important;
+  }
+  .btn-submit {
+    padding: 14px 18px !important;
+    font-size: 0.95rem !important;
+    min-height: 48px !important;
+  }
+
+  /* ---------- STREAK CARD ---------- */
+  .streak-card {
+    padding: 24px 18px !important;
+  }
+  .streak-number {
+    font-size: 3rem !important;
+    margin: 12px 0 !important;
+  }
+  .streak-label {
+    font-size: 0.95rem !important;
+    margin-bottom: 16px !important;
+  }
+  .streak-btn {
+    padding: 14px 18px !important;
+    font-size: 0.95rem !important;
+  }
+
+  /* ---------- GOAL CARD ---------- */
+  .goal-text {
+    font-size: 0.9rem !important;
+    margin-bottom: 10px !important;
+  }
+  .goal-stats {
+    font-size: 0.825rem !important;
+  }
+
+  /* ---------- MOTIVATION ---------- */
+  .quote-text {
+    font-size: 1.05rem !important;
+    line-height: 1.5 !important;
+  }
+  .quote-author {
+    font-size: 0.85rem !important;
+  }
+
+  /* ---------- CLASSES GRID ---------- */
+  .classes-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  .class-card {
+    padding: 16px !important;
+  }
+  .class-card-title {
+    font-size: 1rem !important;
+  }
+  .class-card-code {
+    font-size: 0.7rem !important;
+    padding: 4px 10px !important;
+  }
+
+  /* ---------- LEADERBOARD ---------- */
+  .leaderboard-stats {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+  .leaderboard-stat {
+    padding: 10px !important;
+  }
+  .leaderboard-stat .value {
+    font-size: 1.15rem !important;
+  }
+  .leaderboard-stat .label {
+    font-size: 0.6rem !important;
+  }
+  .leaderboard-item {
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+    padding: 12px !important;
+  }
+  .leaderboard-rank {
+    font-size: 1.1rem !important;
+    width: 32px !important;
+  }
+  .leaderboard-avatar {
+    width: 36px !important;
+    height: 36px !important;
+    font-size: 0.9rem !important;
+  }
+  .leaderboard-info {
+    flex: 1 1 60% !important;
+  }
+  .leaderboard-name {
+    font-size: 0.9rem !important;
+  }
+  .leaderboard-subtitle {
+    font-size: 0.7rem !important;
+  }
+  .leaderboard-score {
+    font-size: 1rem !important;
+    min-width: auto !important;
+    margin-left: auto !important;
+  }
+  .leaderboard-stats-row {
+    flex-wrap: wrap !important;
+    gap: 4px !important;
+  }
+  .stats-badge {
+    font-size: 0.625rem !important;
+    padding: 2px 8px !important;
+  }
+
+  /* ---------- BADGES ---------- */
+  .badges-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+  .badge-item {
+    grid-template-columns: 36px 1fr !important;
+    padding: 10px !important;
+    gap: 10px !important;
+  }
+  .badge-icon {
+    width: 36px !important;
+    height: 36px !important;
+    font-size: 1.1rem !important;
+  }
+  .badge-title {
+    font-size: 0.8rem !important;
+  }
+  .badge-desc {
+    font-size: 0.7rem !important;
+  }
+
+  /* ---------- STATISTICS ---------- */
+  .statistics-grid {
+    display: block !important;
+    gap: 14px !important;
+  }
+  .statistics-header {
+    padding: 16px !important;
+    margin-bottom: 14px !important;
+  }
+  .statistics-header h2 {
+    font-size: 1.15rem !important;
+  }
+  .statistics-subtitle {
+    font-size: 0.825rem !important;
+    margin-bottom: 12px !important;
+  }
+  .stats-controls {
+    flex-direction: column !important;
+    gap: 8px !important;
+    margin-top: 12px !important;
+    padding-top: 12px !important;
+  }
+  .stats-controls .btn {
+    width: 100% !important;
+  }
+  .stats-overview-cards {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+    margin-bottom: 16px !important;
+  }
+  .stats-overview-card {
+    padding: 14px 12px !important;
+  }
+  .stats-overview-icon {
+    font-size: 1.5rem !important;
+    margin-bottom: 6px !important;
+  }
+  .stats-overview-number {
+    font-size: 1.4rem !important;
+  }
+  .stats-overview-label {
+    font-size: 0.65rem !important;
+    margin-bottom: 6px !important;
+  }
+  .stats-overview-trend {
+    font-size: 0.65rem !important;
+  }
+  .charts-container {
+    display: block !important;
+    gap: 12px !important;
+  }
+  .chart-card {
+    padding: 16px !important;
+    margin-bottom: 12px !important;
+  }
+  .chart-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 6px !important;
+    margin-bottom: 12px !important;
+  }
+  .chart-header h3 {
+    font-size: 1rem !important;
+  }
+  .chart-description {
+    font-size: 0.75rem !important;
+  }
+  .chart-wrapper {
+    height: 200px !important;
+    min-height: 180px !important;
+  }
+  .stats-detailed-container,
+  .performance-metrics {
+    padding: 16px !important;
+    margin-top: 12px !important;
+  }
+  .stats-detailed-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+  .metric-card {
+    padding: 12px !important;
+  }
+  .metric-value {
+    font-size: 1.35rem !important;
+  }
+  .metric-label {
+    font-size: 0.75rem !important;
+  }
+  .metric-details {
+    font-size: 0.65rem !important;
+  }
+
+  /* ---------- TOOLS GRID ---------- */
+  .tools-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+  .tool-item {
+    padding: 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 14px !important;
+    text-align: left !important;
+  }
+  .tool-icon {
+    font-size: 1.8rem !important;
+    margin-bottom: 0 !important;
+    animation: none !important;
+  }
+  .tool-name {
+    font-size: 0.95rem !important;
+    margin-bottom: 2px !important;
+    text-align: left !important;
+  }
+  .tool-desc {
+    font-size: 0.75rem !important;
+    text-align: left !important;
+    -webkit-line-clamp: 2 !important;
+  }
+
+  /* ---------- FOCUS PORTAL ---------- */
+  .focus-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  .focus-card {
+    padding: 16px !important;
+  }
+  .focus-card h3 {
+    font-size: 1rem !important;
+  }
+  .focus-timer-display {
+    font-size: 2rem !important;
+  }
+  .focus-metrics {
+    grid-template-columns: repeat(2, 1fr) !important;
+    font-size: 0.75rem !important;
+  }
+  .sound-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* ---------- CLASSROOM ---------- */
+  #inClassView > * + * {
+    margin-top: 20px !important;
+  }
+  .class-code-display {
+    padding: 20px 16px !important;
+    border-radius: 18px !important;
+  }
+  .class-code-display h2 {
+    font-size: 1.15rem !important;
+  }
+  .class-code-display .code {
+    font-size: 1.6rem !important;
+    letter-spacing: 0.15em !important;
+  }
+  .aggregate-heatmap-cell {
+    min-height: 22px !important;
+  }
+
+  /* ---------- MEMORY WALL ---------- */
+  .memory-whiteboard,
+  #studentMemoryWhiteboard {
+    height: 420px !important;
+  }
+  .student-sticky-note,
+  .sticky-note {
+    width: 180px !important;
+    min-height: 160px !important;
+    padding: 12px !important;
+  }
+  .student-note-text {
+    font-size: 13px !important;
+  }
+
+  /* ---------- BOTTOM FEATURES (dashboard row) ---------- */
+  .bottom-features {
+    margin-top: 20px !important;
+    padding-top: 16px !important;
+  }
+  .bottom-features-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  .bottom-feature-card {
+    padding: 14px !important;
+  }
+
+  /* ---------- MODALS ---------- */
+  .student-popup,
+  .referral-modal-card,
+  .story-modal-content,
+  .rainbow-modal-card,
+  .forest-modal-card {
+    max-width: 100% !important;
+    margin: 0 8px !important;
+    border-radius: 20px !important;
+  }
+  .student-popup-body,
+  .story-modal-body,
+  .referral-modal-card,
+  .rainbow-modal-card,
+  .forest-modal-card {
+    padding: 16px !important;
+  }
+  .student-popup-header {
+    padding: 16px 18px !important;
+  }
+  .student-popup-header h3 {
+    font-size: 1.05rem !important;
+    padding-right: 34px !important;
+  }
+
+  /* ---------- TOASTS ---------- */
+  .toast-container,
+  #toastContainer {
+    top: 66px !important;
+    right: 10px !important;
+    left: 10px !important;
+    max-width: none !important;
+    align-items: stretch !important;
+  }
+  .toast {
+    min-width: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 12px 14px !important;
+    font-size: 0.825rem !important;
+  }
+  .toast > span:first-child {
+    font-size: 1rem !important;
+  }
+
+  /* ---------- SYNC STATUS ---------- */
+  .sync-status {
+    top: 66px !important;
+    left: 10px !important;
+    right: 10px !important;
+    max-width: none !important;
+    font-size: 0.75rem !important;
+  }
+
+  /* ---------- FLOATING BUTTONS ---------- */
+  .feedback-btn {
+    bottom: 78px !important;
+    right: 12px !important;
+    padding: 10px 14px !important;
+    font-size: 0.7rem !important;
+    z-index: 1005 !important;
+    min-height: 40px !important;
+  }
+  .chatbot-fab {
+    right: 12px !important;
+    bottom: 132px !important;
+    z-index: 1005 !important;
+  }
+  .chatbot-btn,
+  .chatbot-img {
+    width: 64px !important;
+    height: 64px !important;
+  }
+  .chatbot-bubble {
+    max-width: 200px !important;
+    font-size: 0.75rem !important;
+    padding: 8px 12px !important;
+  }
+
+  /* ---------- GLOBAL SPACE TOKENS · tighter ---------- */
+  :root {
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-10: 40px;
+    --space-12: 48px;
+    --space-16: 56px;
+    --card-pad: 16px;
+    --section-gap: 20px;
+  }
+
+  /* ---------- FORCE NO HORIZONTAL SCROLL ---------- */
+  html, body {
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+  }
+  .app-layout,
+  .dashboard-grid,
+  .content-section,
+  .forms-section {
+    overflow-x: hidden !important;
+  }
+
+  /* ---------- BOTTOM NAV BAR ---------- */
+  body { padding-bottom: 68px !important; }
+
+  .student-bottom-nav {
+    display: flex !important;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 64px !important;
+    background: var(--card) !important;
+    border-top: 1px solid var(--border) !important;
+    z-index: 1010 !important;
+    padding: 6px 8px !important;
+    padding-bottom: max(6px, env(safe-area-inset-bottom)) !important;
+    box-shadow: 0 -4px 20px rgba(60, 42, 15, 0.10) !important;
+    justify-content: space-around !important;
+    align-items: stretch !important;
+    gap: 2px !important;
+  }
+  .student-bottom-nav button {
+    flex: 1 !important;
+    min-width: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    color: var(--text-muted) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 2px !important;
+    font-family: var(--font-ui) !important;
+    font-size: 0.625rem !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    border-radius: 12px !important;
+    padding: 4px 2px !important;
+    transition: all 0.15s ease !important;
+    -webkit-tap-highlight-color: transparent !important;
+    letter-spacing: 0.02em;
+  }
+  .student-bottom-nav button .bn-icon {
+    font-size: 1.35rem !important;
+    line-height: 1 !important;
+    display: block !important;
+    margin-bottom: 1px !important;
+  }
+  .student-bottom-nav button.active {
+    background: var(--ember-soft) !important;
+    color: var(--ember) !important;
+  }
+  .student-bottom-nav button:active {
+    transform: scale(0.94) !important;
+  }
+
+  /* Hide tour tooltips at bottom on very small screens to avoid overlap */
+  @media (max-width: 500px) {
+    .tour-tooltip { max-width: 240px !important; font-size: 0.75rem !important; }
+  }
+}
+
+/* ============================================================
+   SMALL PHONES · ≤400px
+   ============================================================ */
+@media (max-width: 400px) {
+  .main-content {
+    padding: 12px 12px 92px !important;
+  }
+  .dashboard-header h1 {
+    font-size: 1.3rem !important;
+  }
+  .stat-card {
+    padding: 10px 10px !important;
+  }
+  .stat-icon {
+    width: 34px !important;
+    height: 34px !important;
+    font-size: 1rem !important;
+  }
+  .stat-number {
+    font-size: 1.1rem !important;
+  }
+  .student-bottom-nav button {
+    font-size: 0.55rem !important;
+  }
+  .student-bottom-nav button .bn-icon {
+    font-size: 1.2rem !important;
+  }
+  .class-code-display .code {
+    font-size: 1.35rem !important;
+    letter-spacing: 0.1em !important;
+  }
+  .bottom-features-grid { gap: 10px !important; }
+  .badges-grid { grid-template-columns: 1fr !important; }
+}
+
+/* ============================================================
+   TABLET · 901–1020px · keep sidebar hidden but larger
+   ============================================================ */
+@media (min-width: 901px) and (max-width: 1020px) {
+  .sidebar {
+    width: 260px !important;
+    transform: translateX(-100%) !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+  }
+  .sidebar.active {
+    transform: translateX(0) !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+  .main-content {
+    margin-left: 0 !important;
+    padding-top: 56px !important;
+  }
+  .top-nav { display: flex !important; align-items: center !important; }
+  .mobile-menu-toggle { display: flex !important; }
+  .mobile-nav-controls { display: none !important; }
+}
+
