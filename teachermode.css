@@ -5407,3 +5407,84 @@ html body .mobile-header { z-index: 1000 !important; }
   color: var(--text-faint) !important;
   opacity: 1 !important;
 }
+
+/* ============================================================
+   CENTER CONTENT IN MAIN COLUMN
+   ============================================================ */
+
+/* Desktop: main content sits to the right of the sidebar.
+   Center its children instead of pinning them left. */
+@media (min-width: 1021px) {
+  .main-content {
+    margin-left: var(--sidebar-width) !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    padding-top: 32px !important;
+    padding-bottom: 64px !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .main-content > * {
+    width: 100% !important;
+    max-width: 1280px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding-left: 32px !important;
+    padding-right: 32px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Inner grids and cards should fill the centered column */
+  .main-content > .dashboard-grid,
+  .main-content > #dashboard,
+  .main-content > #memoryWall,
+  .main-content > #addMemoryPage,
+  .main-content > #announcements,
+  .main-content > #assignments,
+  .main-content > #resources,
+  .main-content > #polls,
+  .main-content > #students,
+  .main-content > #analytics,
+  .main-content > #presentation,
+  .main-content > #checkins,
+  .main-content > #exitTickets,
+  .main-content > #challenges,
+  .main-content > #create-challenge,
+  .main-content > #settings {
+    max-width: 1280px !important;
+    padding-left: 32px !important;
+    padding-right: 32px !important;
+  }
+}
+
+/* Tablet: same idea, smaller gutters */
+@media (min-width: 769px) and (max-width: 1020px) {
+  .main-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+  .main-content > * {
+    width: 100% !important;
+    max-width: 900px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+    box-sizing: border-box !important;
+  }
+}
+
+/* Mobile: full-width, no centering needed */
+@media (max-width: 768px) {
+  .main-content > * {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+}
