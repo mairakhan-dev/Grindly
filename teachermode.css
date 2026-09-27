@@ -4417,3 +4417,33 @@ body.sidebar-active {
   .sidebar { z-index: 100 !important; }
   .mobile-header { z-index: 90 !important; }
 }
+
+/* ============================================================
+   TIGHTEN · Desktop spacing between sidebar and content
+   ============================================================ */
+
+@media (min-width: 1021px) {
+
+  /* 1 · Less left padding right after the sidebar */
+  .main-content {
+    padding-left: var(--space-5) !important;   /* was --space-8 (44px) → now 24px */
+    padding-right: var(--space-5) !important;
+    padding-top: var(--space-8) !important;    /* was --space-10 (60px) */
+  }
+
+  /* 2 · Make the content column wider so the auto-margins shrink.
+         Bump this number up if you want it even closer to the sidebar. */
+  .main-content > * {
+    max-width: 1320px !important;              /* was 1160px */
+  }
+
+  /* 3 · Optional: if you want the content pinned LEFT instead of
+         centered (removes ALL auto-margin gap on the left), swap
+         rule 2 for this instead: */
+  /*
+  .main-content > * {
+    margin-left: 0 !important;
+    margin-right: auto !important;
+  }
+  */
+}
