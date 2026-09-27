@@ -5488,3 +5488,85 @@ html body .mobile-header { z-index: 1000 !important; }
     margin-right: 0 !important;
   }
 }
+
+/* ============================================================
+   WIDER SIDEBAR · CONTENT FILLS REMAINING SPACE EVENLY
+   ============================================================ */
+
+/* 1 · Widen the sidebar everywhere it's referenced */
+:root {
+  --sidebar-width: 340px !important;
+}
+
+/* 2 · Desktop layout */
+@media (min-width: 1021px) {
+
+  .sidebar {
+    width: 340px !important;
+    max-width: 340px !important;
+  }
+
+  .main-content {
+    margin-left: 340px !important;
+    padding: 32px 40px 64px 40px !important;
+    display: block !important;
+    width: auto !important;
+    max-width: none !important;
+  }
+
+  /* Every top-level section fills the space, no max-width cap,
+     so the left and right padding are the ONLY gap on each side. */
+  .main-content > * {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Kill the leftover max-width caps on section wrappers */
+  .main-content > .dashboard-grid,
+  .main-content > #dashboard,
+  .main-content > #memoryWall,
+  .main-content > #addMemoryPage,
+  .main-content > #announcements,
+  .main-content > #assignments,
+  .main-content > #resources,
+  .main-content > #polls,
+  .main-content > #students,
+  .main-content > #analytics,
+  .main-content > #presentation,
+  .main-content > #checkins,
+  .main-content > #exitTickets,
+  .main-content > #challenges,
+  .main-content > #create-challenge,
+  .main-content > #settings {
+    max-width: 100% !important;
+  }
+}
+
+/* 3 · Tablet — 280px sidebar, content fills the rest */
+@media (min-width: 769px) and (max-width: 1020px) {
+  .main-content {
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+  }
+  .main-content > * {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+}
+
+/* 4 · Mobile — sidebar is a drawer, content full-width */
+@media (max-width: 768px) {
+  .sidebar { width: 88% !important; max-width: 340px !important; }
+  .main-content {
+    margin-left: 0 !important;
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+}
