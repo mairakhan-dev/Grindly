@@ -2248,6 +2248,155 @@
   setTimeout(fix, 3000);
 })();
 </script>
+
+<style id="force-visible-final">
+  /* This block is the last CSS in the document. Nothing can beat it. */
+  #dashboardHeader,
+  .dashboard-header,
+  .controls-bar,
+  .dashboard-button-bar {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    filter: none !important;
+    mix-blend-mode: normal !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    transform: none !important;
+    clip-path: none !important;
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  .controls-bar,
+  .dashboard-button-bar {
+    display: flex !important;
+    flex-wrap: wrap !important;
+  }
+
+  #dashboardHeader h1,
+  .dashboard-header h1 {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    color: #ff4714 !important;
+    -webkit-text-fill-color: #ff4714 !important;
+    background: none !important;
+    -webkit-background-clip: initial !important;
+    background-clip: initial !important;
+    text-shadow: none !important;
+  }
+
+  .dashboard-subtitle,
+  .time-greeting {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    color: #5a5a7a !important;
+    -webkit-text-fill-color: #5a5a7a !important;
+    background: none !important;
+    -webkit-background-clip: initial !important;
+    background-clip: initial !important;
+  }
+
+  .controls-bar .btn,
+  .controls-bar .btn-icon,
+  .controls-bar button,
+  .dashboard-section-btn {
+    display: inline-flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    color: #1a1a2e !important;
+    -webkit-text-fill-color: #1a1a2e !important;
+    background: #ffffff !important;
+    background-image: none !important;
+    border: 1px solid rgba(60,42,15,0.10) !important;
+    filter: none !important;
+  }
+
+  .controls-bar .btn-primary {
+    background: linear-gradient(135deg, #ffaa33 0%, #ff4714 50%, #d61f00 100%) !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    border-color: transparent !important;
+  }
+
+  .dashboard-section-btn.active {
+    background: linear-gradient(135deg, #ffaa33 0%, #ff4714 50%, #d61f00 100%) !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    border-color: transparent !important;
+  }
+
+  .controls-bar input,
+  .controls-bar .search-bar input {
+    color: #1a1a2e !important;
+    -webkit-text-fill-color: #1a1a2e !important;
+    background: #faf5e8 !important;
+    opacity: 1 !important;
+  }
+</style>
+
+<script id="force-visible-js">
+/* Belt-and-suspenders: also set inline styles with !important */
+(function () {
+  var SEL = [
+    '#dashboardHeader', '.dashboard-header',
+    '.controls-bar', '.dashboard-button-bar',
+    '#dashboardHeader h1', '.dashboard-header h1',
+    '.dashboard-subtitle', '.time-greeting',
+    '.controls-bar .btn', '.controls-bar .btn-icon',
+    '.dashboard-section-btn'
+  ].join(',');
+
+  function fix() {
+    document.querySelectorAll(SEL).forEach(function (el) {
+      // 1) Strip every inline style that could be hiding the element
+      ['display','opacity','visibility','filter','mix-blend-mode',
+       'transform','clip-path','text-shadow','background','background-image',
+       'background-color','background-clip','-webkit-background-clip',
+       '-webkit-text-fill-color','-webkit-text-stroke','color',
+       'height','max-height','overflow','position'].forEach(function (p) {
+        el.style.removeProperty(p);
+      });
+
+      // 2) Force the properties that make it visible
+      var tag = el.tagName.toLowerCase();
+      var isBlock = el.id === 'dashboardHeader'
+                 || el.classList.contains('dashboard-header')
+                 || tag === 'h1'
+                 || tag === 'p';
+      el.style.setProperty('display', isBlock ? 'block' : (el.classList.contains('controls-bar') || el.classList.contains('dashboard-button-bar') ? 'flex' : 'inline-flex'), 'important');
+      el.style.setProperty('opacity', '1', 'important');
+      el.style.setProperty('visibility', 'visible', 'important');
+      el.style.setProperty('filter', 'none', 'important');
+      el.style.setProperty('-webkit-text-fill-color', 'currentColor', 'important');
+      el.style.setProperty('background-clip', 'initial', 'important');
+      el.style.setProperty('-webkit-background-clip', 'initial', 'important');
+      el.style.setProperty('text-shadow', 'none', 'important');
+      el.style.setProperty('transform', 'none', 'important');
+      el.style.setProperty('clip-path', 'none', 'important');
+    });
+  }
+
+  // Run at every plausible moment anything could hide them
+  ['DOMContentLoaded', 'load'].forEach(function (ev) {
+    document.addEventListener(ev, function () { fix(); setTimeout(fix, 50); });
+  });
+  [0, 100, 300, 600, 1000, 2000, 3000].forEach(function (ms) {
+    setTimeout(fix, ms);
+  });
+
+  // Watch for later DOM changes (dashboard-buttons.js injects tabs)
+  if (window.MutationObserver) {
+    new MutationObserver(function () { fix(); }).observe(document.body, {
+      childList: true, subtree: true, attributes: true,
+      attributeFilter: ['style','class']
+    });
+  }
+})();
+</script>
 </body>
 </html>
 
