@@ -2164,6 +2164,42 @@
   }
 })();
 </script>
+
+<script>
+(function () {
+  function unHide() {
+    var targets = [
+      document.getElementById('dashboardHeader'),
+      document.querySelector('.dashboard-header'),
+      document.querySelector('.controls-bar'),
+      document.querySelector('.dashboard-button-bar')
+    ];
+    targets.forEach(function (el) {
+      if (!el) return;
+      // Remove inline display:none / visibility:hidden
+      if (el.style.display === 'none') el.style.display = '';
+      if (el.style.visibility === 'hidden') el.style.visibility = '';
+      if (el.style.opacity === '0') el.style.opacity = '';
+      if (el.hasAttribute('hidden')) el.removeAttribute('hidden');
+      // Force-show
+      el.style.setProperty('display', el.classList.contains('dashboard-header') || el.id === 'dashboardHeader' ? 'block' : 'flex', 'important');
+      el.style.setProperty('visibility', 'visible', 'important');
+      el.style.setProperty('opacity', '1', 'important');
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () {
+      unHide();
+      setTimeout(unHide, 300);
+      setTimeout(unHide, 1000);
+    });
+  } else {
+    unHide();
+    setTimeout(unHide, 300);
+    setTimeout(unHide, 1000);
+  }
+})();
+</script>
 </body>
 </html>
 
