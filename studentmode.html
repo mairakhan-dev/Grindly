@@ -3628,6 +3628,327 @@ body.focus-mode .main-content {
   });
 })();
 </script>
+<!-- ============================================================
+     GRINDLY · FOCUS PORTAL v3 · in front, glass cards, foreground FX
+     ============================================================ -->
+<style>
+/* ============================================================
+   A · FOREGROUND PORTAL LAYER (goes above cards, below text)
+   ============================================================ */
+.portal-foreground {
+  position: fixed;
+  inset: 0;
+  z-index: 20;              /* above content (10), below header (30) */
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+  overflow: hidden;
+}
+body.focus-mode .portal-foreground { opacity: 1; }
+
+/* Flying light streaks — pass horizontally across the screen */
+.portal-foreground .streak {
+  position: absolute;
+  height: 1.5px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, currentColor, transparent);
+  filter: blur(0.5px) drop-shadow(0 0 6px currentColor);
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: streakFly linear infinite;
+}
+@keyframes streakFly {
+  0%   { opacity: 0; transform: translateX(-20vw) scaleX(0.4); }
+  15%  { opacity: 1; }
+  85%  { opacity: 1; }
+  100% { opacity: 0; transform: translateX(120vw) scaleX(1.3); }
+}
+
+/* Rising sparks — tiny dots that drift upward */
+.portal-foreground .spark {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 8px currentColor, 0 0 16px currentColor;
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: sparkRise linear infinite;
+}
+@keyframes sparkRise {
+  0%   { opacity: 0; transform: translateY(20px) scale(0.6); }
+  20%  { opacity: 0.9; }
+  80%  { opacity: 0.6; }
+  100% { opacity: 0; transform: translateY(-100vh) scale(1.1); }
+}
+
+/* Edge glow — soft rim that pulses at the borders */
+.portal-foreground .edge-glow {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at top center, currentColor, transparent 55%) top / 100% 22% no-repeat,
+    radial-gradient(ellipse at bottom center, currentColor, transparent 55%) bottom / 100% 22% no-repeat,
+    radial-gradient(ellipse at left center, currentColor, transparent 60%) left / 18% 100% no-repeat,
+    radial-gradient(ellipse at right center, currentColor, transparent 60%) right / 18% 100% no-repeat;
+  opacity: 0.18;
+  mix-blend-mode: screen;
+  animation: edgePulse 6s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes edgePulse {
+  0%, 100% { opacity: 0.14; }
+  50%      { opacity: 0.28; }
+}
+
+/* Vignette — darkens the edges to increase depth, pushes focus to centre */
+.portal-foreground .vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center,
+    transparent 0%,
+    transparent 45%,
+    rgba(0, 0, 0, 0.10) 70%,
+    rgba(0, 0, 0, 0.30) 100%);
+  pointer-events: none;
+}
+
+/* Theme-aware foreground colour */
+body.focus-mode .portal-foreground { color: var(--ember-warm, #ffaa33); }
+body.dark.focus-mode .portal-foreground,
+body.purple.focus-mode .portal-foreground,
+body.rainbow.focus-mode .portal-foreground,
+body.premium.focus-mode .portal-foreground { color: var(--ember, #ff4714); }
+
+/* ============================================================
+   B · GLASSMORPHIC CARDS — so the portal shines through
+   ============================================================ */
+body.focus-mode .focus-card {
+  background: color-mix(in srgb, var(--card) 72%, transparent) !important;
+  backdrop-filter: blur(14px) saturate(1.15) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(1.15) !important;
+  border: 1px solid color-mix(in srgb, var(--ember) 22%, transparent) !important;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+  position: relative !important;
+  z-index: 15 !important;
+}
+body.focus-mode .focus-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--ember-warm) 40%, transparent),
+    transparent 40%,
+    color-mix(in srgb, var(--purple) 30%, transparent) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0.6;
+}
+body.focus-mode .focus-card:hover {
+  background: color-mix(in srgb, var(--card) 82%, transparent) !important;
+  border-color: color-mix(in srgb, var(--ember) 45%, transparent) !important;
+  box-shadow:
+    0 16px 48px color-mix(in srgb, var(--ember) 25%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.20) !important;
+}
+body.focus-mode .focus-card h3 {
+  color: var(--text) !important;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6);
+}
+body.dark.focus-mode .focus-card h3,
+body.purple.focus-mode .focus-card h3,
+body.rainbow.focus-mode .focus-card h3,
+body.premium.focus-mode .focus-card h3 {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+body.focus-mode .focus-card p {
+  color: color-mix(in srgb, var(--text-muted) 90%, var(--text)) !important;
+}
+
+/* Glass header pill */
+body.focus-mode .focus-header {
+  background: color-mix(in srgb, var(--card) 65%, transparent) !important;
+  backdrop-filter: blur(20px) saturate(1.2) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(1.2) !important;
+  border: 1px solid color-mix(in srgb, var(--ember) 25%, transparent) !important;
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.20) !important;
+  z-index: 30 !important;
+}
+
+/* Glass lock banner */
+body.focus-mode .focus-lock-banner {
+  background: color-mix(in srgb, var(--ember-soft) 60%, transparent) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+}
+
+/* Inner inputs stay legible */
+body.focus-mode .focus-card input,
+body.focus-mode .focus-card textarea,
+body.focus-mode .focus-card select {
+  background: color-mix(in srgb, var(--card) 85%, transparent) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+body.focus-mode .ritual-item {
+  background: color-mix(in srgb, var(--ink-2) 70%, transparent) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+body.focus-mode .sound-chip {
+  background: color-mix(in srgb, var(--ink-2) 75%, transparent) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+/* ============================================================
+   C · PORTAL DEPTH LAYERS · make the base portal richer
+   ============================================================ */
+body.focus-mode #portalCanvas { opacity: 1 !important; }
+body.focus-mode .portal-aurora {
+  opacity: 0.85 !important;
+  filter: blur(32px) saturate(1.25);
+  mix-blend-mode: screen;
+}
+body.focus-mode .portal-rings {
+  opacity: 1 !important;
+  mix-blend-mode: screen;
+}
+body.focus-mode .portal-core {
+  opacity: 1 !important;
+  mix-blend-mode: screen;
+  filter: drop-shadow(0 0 40px color-mix(in srgb, var(--ember) 60%, transparent));
+}
+
+/* ============================================================
+   D · MOBILE TUNING
+   ============================================================ */
+@media (max-width: 900px) {
+  body.focus-mode .focus-card {
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+  }
+  .portal-foreground .streak { height: 1.2px; }
+  .portal-foreground .spark { width: 2.5px; height: 2.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .portal-foreground .streak,
+  .portal-foreground .spark,
+  .portal-foreground .edge-glow { animation: none !important; opacity: 0.3 !important; }
+}
+</style>
+
+<script>
+/* ============================================================
+   Portal foreground · spawn streaks + rising sparks
+   Runs only in focus mode, pauses when tab is hidden.
+   ============================================================ */
+(function () {
+  'use strict';
+
+  var STREAK_COUNT = 14;
+  var SPARK_COUNT  = 26;
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function buildForeground() {
+    var existing = document.querySelector('.portal-foreground');
+    if (existing) return existing;
+
+    var fg = document.createElement('div');
+    fg.className = 'portal-foreground';
+    fg.setAttribute('aria-hidden', 'true');
+
+    // Edge glow layer
+    var edge = document.createElement('div');
+    edge.className = 'edge-glow';
+    fg.appendChild(edge);
+
+    // Streaks (flying horizontally)
+    for (var i = 0; i < STREAK_COUNT; i++) {
+      var s = document.createElement('div');
+      s.className = 'streak';
+      var y = Math.random() * 100;
+      var len = 60 + Math.random() * 140;
+      var dur = 3.5 + Math.random() * 4;
+      var delay = Math.random() * 8;
+      s.style.top = y + '%';
+      s.style.left = '0';
+      s.style.width = len + 'px';
+      s.style.animationDuration = dur + 's';
+      s.style.animationDelay = (-delay) + 's';
+      s.style.opacity = (0.35 + Math.random() * 0.5).toFixed(2);
+      fg.appendChild(s);
+    }
+
+    // Sparks (rising)
+    for (var j = 0; j < SPARK_COUNT; j++) {
+      var p = document.createElement('div');
+      p.className = 'spark';
+      var x = Math.random() * 100;
+      var dur = 6 + Math.random() * 8;
+      var delay = Math.random() * 12;
+      p.style.left = x + '%';
+      p.style.bottom = '0';
+      p.style.animationDuration = dur + 's';
+      p.style.animationDelay = (-delay) + 's';
+      p.style.opacity = (0.4 + Math.random() * 0.5).toFixed(2);
+      fg.appendChild(p);
+    }
+
+    // Vignette (topmost in fg)
+    var vig = document.createElement('div');
+    vig.className = 'vignette';
+    fg.appendChild(vig);
+
+    document.body.appendChild(fg);
+    return fg;
+  }
+
+  // Show / hide based on focus mode
+  var lastFocus = null;
+  function syncForeground() {
+    var isFocus = document.body.classList.contains('focus-mode');
+    if (isFocus === lastFocus) return;
+    lastFocus = isFocus;
+    if (isFocus) {
+      buildForeground();
+    } else {
+      var fg = document.querySelector('.portal-foreground');
+      if (fg) fg.remove();
+    }
+  }
+
+  new MutationObserver(syncForeground).observe(document.body, {
+    attributes: true, attributeFilter: ['class']
+  });
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', syncForeground);
+  } else {
+    syncForeground();
+  }
+
+  // Pause animations when tab is hidden to save battery
+  document.addEventListener('visibilitychange', function () {
+    var fg = document.querySelector('.portal-foreground');
+    if (!fg) return;
+    fg.style.animationPlayState = document.hidden ? 'paused' : '';
+    fg.querySelectorAll('.streak, .spark, .edge-glow').forEach(function (el) {
+      el.style.animationPlayState = document.hidden ? 'paused' : 'running';
+    });
+  });
+})();
+</script>
 </body>
 </html>
 
