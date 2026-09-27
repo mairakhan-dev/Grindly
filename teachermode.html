@@ -2366,71 +2366,49 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 <script>
-(function () {
-  function enterPresentation() {
+/* Presentation mode · fast, no observers, runs only on click */
+document.addEventListener('DOMContentLoaded', function () {
+  var PRESENT_SECTIONS = [
+    'dashboard','memoryWall','addMemoryPage','announcements','assignments',
+    'resources','polls','students','analytics','checkins','exitTickets',
+    'challenges','create-challenge','settings'
+  ];
+
+  function enter() {
     document.body.classList.add('presentation-mode');
-
-    /* Hide every dashboard section except #presentation */
-    document.querySelectorAll('.dashboard-content').forEach(function (el) {
-      if (el.id !== 'presentation') el.style.setProperty('display', 'none', 'important');
+    PRESENT_SECTIONS.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.style.display = 'none';
     });
-
-    /* Force presentation section visible */
     var p = document.getElementById('presentation');
-    if (p) {
-      p.style.setProperty('display', 'block', 'important');
-      p.style.setProperty('visibility', 'visible', 'important');
-      p.style.setProperty('opacity', '1', 'important');
-      p.style.setProperty('height', 'auto', 'important');
-    }
-
-    /* Hide chrome */
-    ['sidebar', 'mobile-header', 'sidebar-toggle', 'tmHeaderFinal', 'footer'].forEach(function (c) {
-      document.querySelectorAll('.' + c).forEach(function (el) {
-        el.style.setProperty('display', 'none', 'important');
-      });
-    });
+    if (p) p.style.display = 'block';
   }
 
-  function exitPresentation() {
+  function exit() {
     document.body.classList.remove('presentation-mode');
-
+    PRESENT_SECTIONS.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.style.removeProperty('display');
+    });
     var p = document.getElementById('presentation');
     if (p) p.style.removeProperty('display');
-
-    /* Restore dashboard */
-    var dash = document.getElementById('dashboard');
-    if (dash) {
-      dash.style.setProperty('display', 'block', 'important');
-      dash.style.setProperty('grid-column', 'span 12', 'important');
-    }
-
-    /* Restore chrome */
-    document.querySelectorAll('.sidebar').forEach(function (el) { el.style.removeProperty('display'); });
-    document.querySelectorAll('.mobile-header').forEach(function (el) { el.style.removeProperty('display'); });
-    document.querySelectorAll('.footer').forEach(function (el) { el.style.removeProperty('display'); });
+    var d = document.getElementById('dashboard');
+    if (d) d.style.display = 'block';
   }
 
-  /* Expose globally so your existing buttons work */
-  window.enterPresentation = enterPresentation;
-  window.exitPresentation = exitPresentation;
+  window.enterPresentation = enter;
+  window.exitPresentation = exit;
 
-  /* Auto-detect body class changes as a safety net */
-  new MutationObserver(function () {
-    if (document.body.classList.contains('presentation-mode')) enterPresentation();
-  }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
-
-  /* Re-run whenever the presentation section's inline display changes */
-  var p = document.getElementById('presentation');
-  if (p) {
-    new MutationObserver(function () {
-      if (p.style.display === 'block' && !document.body.classList.contains('presentation-mode')) {
-        document.body.classList.add('presentation-mode');
-        enterPresentation();
-      }
-    }).observe(p, { attributes: true, attributeFilter: ['style'] });
+  /* Just patch the two buttons — one event listener each, done */
+  var btnEnter = document.querySelector('[onclick*="togglePresentationMode"]');
+  if (btnEnter) {
+    btnEnter.setAttribute('onclick', 'enterPresentation()');
   }
-})();
+  var btnExit = document.querySelector('[onclick*="exitPresentationMode"]');
+  if (btnExit) {
+    btnExit.setAttribute('onclick', 'exitPresentation()');
+  }
+});
 </script>
 </body>
 </html>
