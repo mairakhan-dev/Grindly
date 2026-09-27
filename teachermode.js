@@ -102,6 +102,53 @@ let exitTicketListenerActive = false;
 
 const STORAGE_SCHEMA_VERSION = 2;
 
+/* ==========================================================================
+   SIDEBAR — drawer on mobile, pinned on desktop
+   ========================================================================== */
+
+function openSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  const backdrop = document.getElementById('sidebarBackdrop');
+  if (!sidebar) return;
+  sidebar.classList.add('active');
+  if (backdrop) backdrop.classList.add('show');
+  document.body.classList.add('drawer-open');
+}
+
+function closeSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  const backdrop = document.getElementById('sidebarBackdrop');
+  if (!sidebar) return;
+  sidebar.classList.remove('active');
+  if (backdrop) backdrop.classList.remove('show');
+  document.body.classList.remove('drawer-open');
+}
+
+function toggleSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  if (!sidebar) return;
+  if (sidebar.classList.contains('active')) {
+    closeSidebar();
+  } else {
+    openSidebar();
+  }
+}
+
+/* Alias — some old code calls closeSidebarOnMobile */
+function closeSidebarOnMobile() {
+  closeSidebar();
+}
+
+/* Close drawer when resizing back to desktop */
+window.addEventListener('resize', function () {
+  if (window.innerWidth > 1020) closeSidebar();
+});
+
+/* Close drawer with Escape key */
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') closeSidebar();
+});
+
 function initLocalStorageSchema() {
   try {
     const stored = parseInt(localStorage.getItem('lifeos_schema_version') || '1', 10);
@@ -141,85 +188,11 @@ let classToDelete = null;
 // ========== SIDEBAR TOGGLE FUNCTIONS ==========
 let isSidebarCollapsed = false;
 
-function toggleSidebar() {
-  const sidebar = document.querySelector('.sidebar');
-  const sidebarToggle = document.querySelector('.sidebar-toggle');
-  const appLayout = document.querySelector('.app-layout');
-  
-  if (window.innerWidth <= 1020) {
-    // Mobile behavior - toggle active class
-    sidebar.classList.toggle('active');
-    if (sidebar.classList.contains('active')) {
-      sidebarToggle.innerHTML = '→';
-      sidebarToggle.title = 'Close Sidebar';
-      sidebarToggle.style.left = 'calc(280px - 18px)';
-      sidebarToggle.style.background = 'var(--danger)';
-    } else {
-      sidebarToggle.innerHTML = '←';
-      sidebarToggle.title = 'Open Sidebar';
-      sidebarToggle.style.left = '20px';
-      sidebarToggle.style.background = 'var(--accent)';
-    }
-  } else {
-    // Desktop behavior - toggle collapsed class on app-layout
-    isSidebarCollapsed = !isSidebarCollapsed;
-    
-    if (isSidebarCollapsed) {
-      appLayout.classList.add('sidebar-collapsed');
-      sidebarToggle.innerHTML = '→';
-      sidebarToggle.title = 'Show Sidebar';
-      sidebarToggle.style.left = '20px';
-    } else {
-      appLayout.classList.remove('sidebar-collapsed');
-      sidebarToggle.innerHTML = '←';
-      sidebarToggle.title = 'Hide Sidebar';
-      sidebarToggle.style.left = '260px';
-    }
-    
-    // Save sidebar state to localStorage
-    localStorage.setItem('teacherSidebarCollapsed', isSidebarCollapsed);
-  }
-}
 
-function loadSidebarState() {
-  if (window.innerWidth <= 1020) return; // Don't load saved state on mobile
-  
-  const savedState = localStorage.getItem('teacherSidebarCollapsed');
-  if (savedState === 'true') {
-    isSidebarCollapsed = true;
-    const appLayout = document.querySelector('.app-layout');
-    const sidebarToggle = document.querySelector('.sidebar-toggle');
-    
-    if (appLayout) {
-      appLayout.classList.add('sidebar-collapsed');
-    }
-    if (sidebarToggle) {
-      sidebarToggle.innerHTML = '→';
-      sidebarToggle.title = 'Show Sidebar';
-      sidebarToggle.style.left = '20px';
-    }
-  }
-}
 
-function closeSidebarOnMobile() {
-  if (window.innerWidth <= 1020) {
-    const sidebar = document.querySelector('.sidebar');
-    const sidebarToggle = document.querySelector('.sidebar-toggle');
-    
-    sidebar.classList.remove('active');
-    sidebarToggle.innerHTML = '←';
-    sidebarToggle.title = 'Open Sidebar';
-    sidebarToggle.style.left = '20px';
-    sidebarToggle.style.background = 'var(--accent)';
-  }
-}
 
-function updateSidebarToggleVisibility() {
-  const sidebarToggle = document.querySelector('.sidebar-toggle');
-  if (!sidebarToggle) return;
-  
-  sidebarToggle.style.display = 'flex';
-}
+
+
 
 // ========== BROWSER SEPARATION ==========
 function ensureBrowserSeparation() {
@@ -387,8 +360,6 @@ function loadTeacherClassesFromLocalStorage() {
         if (mobileHeader) mobileHeader.style.display = 'flex';
     }
     
-    // Show sidebar toggle button
-    updateSidebarToggleVisibility();
     
     // Initialize teacher dashboard
     initializeTeacher();
@@ -693,8 +664,7 @@ async function loginTeacher() {
       document.querySelector('.mobile-header').style.display = 'flex';
     }
     
-    // Show sidebar toggle button
-    updateSidebarToggleVisibility();
+    
     
     // Initialize teacher dashboard
     await initializeTeacher();
@@ -840,8 +810,7 @@ async function initializeTeacher() {
   // Load sidebar state
   loadSidebarState();
   
-  // Show/hide sidebar toggle based on screen size
-  updateSidebarToggleVisibility();
+  
   
   console.log(`✅ Teacher dashboard initialized with ${teacherClasses.length} classes`);
   showNotification("Dashboard loaded successfully! ✅", "success");
@@ -6762,8 +6731,7 @@ setTimeout(createTeacherChatbot, 2000); // Use this instead if you want the chat
             document.querySelector('.mobile-header').style.display = 'flex';
           }
           
-          // Show sidebar toggle button
-          updateSidebarToggleVisibility();
+          
           
           // Initialize teacher dashboard
           initializeTeacher();
@@ -6804,8 +6772,7 @@ setTimeout(createTeacherChatbot, 2000); // Use this instead if you want the chat
   // Handle window resize
   window.addEventListener('resize', function() {
     resizeConfettiCanvas();
-    // Update sidebar toggle button visibility
-    updateSidebarToggleVisibility();
+    
     
     // Auto-show sidebar on resize to larger screens if it was collapsed
     if (window.innerWidth > 1020) {
@@ -12486,7 +12453,6 @@ async function originalInitializeTeacher() {
     }
     
     loadSidebarState();
-    updateSidebarToggleVisibility();
     
     console.log(`✅ Teacher dashboard initialized with ${teacherClasses.length} classes`);
     showNotification("Dashboard loaded successfully! ✅", "success");
@@ -15979,7 +15945,6 @@ function safeInitializeTeacher() {
     loadSidebarState();
     
     // Show/hide sidebar toggle
-    updateSidebarToggleVisibility();
     
     console.log(`✅ Teacher dashboard initialized with ${teacherClasses?.length || 0} classes`);
     showNotification("Dashboard loaded successfully! ✅", "success");
@@ -16050,7 +16015,6 @@ function safeUseDemoMode() {
     }
     
     // Show sidebar toggle button
-    updateSidebarToggleVisibility();
     
     // Initialize teacher dashboard
     setTimeout(() => {
@@ -16153,7 +16117,6 @@ document.addEventListener('DOMContentLoaded', function() {
         window.addEventListener('resize', function() {
             try {
                 resizeConfettiCanvas();
-                updateSidebarToggleVisibility();
                 
                 if (window.innerWidth > 1020) {
                     const sidebar = document.querySelector('.sidebar');

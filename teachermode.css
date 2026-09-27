@@ -6336,3 +6336,33 @@ body.presentation-mode #presentation {
   .pres-checkin-stat { padding: 10px 4px; }
   .pres-checkin-value { font-size: 1.15rem; }
 }
+
+/* Force the app-layout to a single column in presentation mode */
+body.presentation-mode .app-layout {
+  display: block !important;
+  grid-template-columns: 1fr !important;
+  min-height: 100vh;
+}
+
+body.presentation-mode .main-content {
+  margin: 0 !important;
+  margin-left: 0 !important;
+  padding: 16px !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  min-height: 100vh !important;
+  overflow: visible !important;
+  height: auto !important;
+}
+
+/* Kill any stuck scroll locks */
+body.presentation-mode {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+html, body {
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: auto;
+}
