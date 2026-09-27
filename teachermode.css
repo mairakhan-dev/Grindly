@@ -4990,3 +4990,197 @@ html body .mobile-header { z-index: 1000 !important; }
     font-size: 0.8125rem !important;
   }
 }
+
+/* ============================================================
+   RESTORE · dashboard header, controls bar, tabs
+   ============================================================ */
+
+.dashboard-header,
+#dashboardHeader {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  height: auto !important;
+  overflow: visible !important;
+  margin-top: 0 !important;
+}
+
+.dashboard-header h1,
+#dashboardHeader h1 {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: transparent !important;
+  background: var(--gradient-flame) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+}
+
+/* Fallback if the gradient-clip trick fails on some browsers */
+@supports not ((-webkit-background-clip: text) or (background-clip: text)) {
+  .dashboard-header h1,
+  #dashboardHeader h1 {
+    color: var(--ember) !important;
+    -webkit-text-fill-color: currentColor !important;
+    background: none !important;
+  }
+}
+
+.dashboard-subtitle,
+#dashboardSubtitle,
+.time-greeting {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  color: var(--text-muted) !important;
+}
+
+/* Controls bar + its buttons */
+.controls-bar {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  flex-wrap: wrap !important;
+}
+
+.controls-bar > div:not(.search-bar) {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  width: 100% !important;
+}
+
+@media (min-width: 769px) {
+  .controls-bar > div:not(.search-bar) { width: auto !important; }
+}
+
+.controls-bar .btn,
+.controls-bar .btn-icon {
+  display: inline-flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Dashboard button bar (the "Stats / Content / ..." tabs) */
+.dashboard-button-bar {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  flex-wrap: nowrap !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  scrollbar-width: none !important;
+  -webkit-overflow-scrolling: touch !important;
+  padding: 6px !important;
+  gap: 4px !important;
+}
+.dashboard-button-bar::-webkit-scrollbar { display: none !important; }
+
+.dashboard-section-btn {
+  display: inline-flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  flex-shrink: 0 !important;
+}
+
+/* ============================================================
+   TEACHER TOOLKIT · heading back + tighter top gap
+   ============================================================ */
+
+/* Bring back the heading (undo the earlier display:none) */
+.content-card:has(button[onclick="renderTeacherToolkit()"]) .content-header h2,
+.content-card:has([onclick="renderTeacherToolkit()"]) .content-header h2 {
+  display: flex !important;
+  font-size: 1.05rem !important;
+  white-space: normal !important;
+}
+
+.content-card:has(button[onclick="renderTeacherToolkit()"]) .content-header,
+.content-card:has([onclick="renderTeacherToolkit()"]) .content-header {
+  justify-content: space-between !important;
+  padding: 12px 14px !important;
+}
+
+/* Reduce the gap between Class Stats (quick-stats) and the Teacher Toolkit card */
+.quick-stats {
+  margin-bottom: 16px !important;
+}
+
+/* Also tighten any margin applied directly to the toolkit card */
+.content-card:has(button[onclick="renderTeacherToolkit()"]),
+.content-card:has([onclick="renderTeacherToolkit()"]) {
+  margin-top: 16px !important;
+}
+
+/* If the toolkit is inside #dashboard as a direct child */
+#dashboard > .content-card:has([onclick="renderTeacherToolkit()"]) {
+  margin-top: 16px !important;
+}
+
+/* And in case it's wrapped in another container */
+#dashboard > * + .content-card:has([onclick="renderTeacherToolkit()"]) {
+  margin-top: 16px !important;
+}
+
+/* Small gap between subsequent dashboard cards */
+@media (max-width: 768px) {
+  #dashboard > * + *,
+  .dashboard-content > * + * {
+    margin-top: 16px !important;
+  }
+}
+
+/* ============================================================
+   NARROW PHONES · smaller heading + controls
+   ============================================================ */
+@media (max-width: 480px) {
+  .dashboard-header h1 { font-size: 1.35rem !important; }
+  .dashboard-subtitle { font-size: 0.85rem !important; }
+  .controls-bar .btn,
+  .controls-bar .btn-icon {
+    padding: 8px 12px !important;
+    font-size: 0.75rem !important;
+    min-height: 38px !important;
+  }
+  .dashboard-section-btn {
+    padding: 7px 11px !important;
+    font-size: 0.75rem !important;
+    min-height: 36px !important;
+  }
+}
+/* ============================================================
+   DESKTOP · content hugs sidebar · equal left/right gutter
+   ============================================================ */
+
+@media (min-width: 1021px) {
+
+  /* Remove auto-centering that pushed content away from the sidebar */
+  .main-content {
+    margin-left: var(--sidebar-width) !important;
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+    padding-top: 32px !important;
+  }
+
+  /* Content fills the space edge-to-edge instead of being centered */
+  .main-content > * {
+    max-width: none !important;
+    width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+}
+
+/* Tablet: same idea but smaller gutters */
+@media (min-width: 769px) and (max-width: 1020px) {
+  .main-content {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+  .main-content > * {
+    max-width: none !important;
+    width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+}
