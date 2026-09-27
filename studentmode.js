@@ -8056,82 +8056,87 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-/* ---------- Join Whiteboard · open as modal, close cleanly ---------- */
+/* ---------- Join Whiteboard · robust open/close ---------- */
 (function () {
   'use strict';
 
-  function wire() {
-    var joinBtn = document.getElementById('joinWbBtn');
-    var joinBox = document.getElementById('joinWbContainer');
-    if (!joinBox) return;
+  function getBox() { return document.getElementById('joinWbContainer'); }
 
-    // Inject the × close button once
-    var header = joinBox.querySelector('.join-wb-header');
-    if (header && !header.querySelector('.wb-close-btn')) {
-      var xBtn = document.createElement('button');
-      xBtn.type = 'button';
-      xBtn.className = 'wb-close-btn';
-      xBtn.setAttribute('aria-label', 'Close');
-      xBtn.innerHTML = '✕';
-      xBtn.addEventListener('click', function (e) {
-        e.stopPropagation();
-        joinBox.classList.remove('wb-visible');
-        joinBox.style.display = '';
-      });
-      header.appendChild(xBtn);
-    }
-
-    // Backdrop click closes (but not clicks on inner content)
-    if (!joinBox._wbBound) {
-      joinBox._wbBound = true;
-      joinBox.addEventListener('click', function (e) {
-        if (e.target === joinBox) {
-          joinBox.classList.remove('wb-visible');
-          joinBox.style.display = '';
-        }
-      });
-      // ESC closes
-      document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && joinBox.classList.contains('wb-visible')) {
-          joinBox.classList.remove('wb-visible');
-          joinBox.style.display = '';
-        }
-      });
-    }
-
-    // Replace the sidebar button's original onclick so we control the modal
-    if (joinBtn && !joinBtn._wbWired) {
-      joinBtn._wbWired = true;
-      joinBtn.onclick = function (e) {
-        if (e) e.preventDefault();
-        joinBox.style.display = '';           // clear any leftover inline
-        joinBox.classList.add('wb-visible');
-        setTimeout(function () {
-          var input = document.getElementById('wbCodeInput');
-          if (input) input.focus();
-        }, 120);
-      };
-    }
+  function openBox() {
+    var box = getBox();
+    if (!box) return;
+    box.classList.add('wb-visible');
+    setTimeout(function () {
+      var input = document.getElementById('wbCodeInput');
+      if (input) input.focus();
+    }, 150);
   }
 
-  // Poll for the sidebar button (it's created by a feature script ~2s in)
+  function closeBox() {
+    var box = getBox();
+    if (!box) return;
+    box.classList.remove('wb-visible');
+  }
+
+  function injectCloseButton() {
+    var box = getBox();
+    if (!box) return;
+    var header = box.querySelector('.join-wb-header');
+    if (!header) return;
+    if (header.querySelector('.wb-close-btn')) return;
+    var x = document.createElement('button');
+    x.type = 'button';
+    x.className = 'wb-close-btn';
+    x.setAttribute('aria-label', 'Close');
+    x.textContent = '✕';
+    x.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      closeBox();
+    });
+    header.appendChild(x);
+  }
+
+  // Global click delegation — catches the sidebar Join button no matter
+  // who wired its onclick, and no matter how many times the sidebar gets rebuilt.
+  document.addEventListener('click', function (e) {
+    // Open — sidebar button
+    var opener = e.target.closest('#joinWbBtn');
+    if (opener) {
+      e.preventDefault();
+      e.stopPropagation();
+      openBox();
+      return;
+    }
+    // Close — backdrop
+    var box = getBox();
+    if (box && box.classList.contains('wb-visible') && e.target === box) {
+      closeBox();
+    }
+  }, true);  // capture phase — fires before any other onclick
+
+  // Escape closes
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      var box = getBox();
+      if (box && box.classList.contains('wb-visible')) closeBox();
+    }
+  });
+
+  // Keep the close button present even after sidebar rebuilds
   var tries = 0;
   var iv = setInterval(function () {
-    wire();
+    injectCloseButton();
     tries++;
-    if (document.getElementById('joinWbBtn') && document.getElementById('joinWbContainer')) {
-      // Once both exist, keep polling a bit longer in case sidebar reorgs rebuild them
-      if (tries > 12) clearInterval(iv);
-    }
     if (tries > 40) clearInterval(iv);
   }, 250);
 
-  // Re-wire whenever the sidebar's nav list is rebuilt by the reorganizer
+  // Watch the sidebar nav in case it gets wiped and re-cloned
   document.addEventListener('DOMContentLoaded', function () {
     var nav = document.querySelector('.sidebar-nav');
     if (nav && window.MutationObserver) {
-      new MutationObserver(function () { wire(); })
-        .observe(nav, { childList: true, subtree: false });
+      new MutationObserver(function () { injectCloseButton(); })
+        .observe(nav, { childList: true, subtree: true });
     }
   });
 })();

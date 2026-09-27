@@ -4134,41 +4134,52 @@ body.focus-mode .focus-mode-panel { display: block; }
 }
 
 
+
 /* ---------- 1 · JOIN WHITEBOARD · modal overlay ---------- */
+/* Kept display:flex ALWAYS — visibility controlled by opacity / pointer-events
+   so the inline style.display="block" from the feature script never fights us. */
 #joinWbContainer {
-  display: none !important;
-}
-#joinWbContainer.wb-visible {
   display: flex !important;
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 9999 !important;
   background: rgba(60, 42, 15, 0.55);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   align-items: center;
   justify-content: center;
   padding: 20px;
-  animation: wbFadeIn 0.22s ease;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+  margin: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
 }
-@keyframes wbFadeIn { from { opacity: 0; } to { opacity: 1; } }
+#joinWbContainer.wb-visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
 #joinWbContainer .join-wb-header {
   border-radius: var(--radius-xl, 26px);
   width: 100%;
   max-width: 460px;
-  padding: 40px 32px;
+  padding: 40px 32px 32px;
   position: relative;
   box-shadow: 0 40px 90px rgba(60, 42, 15, 0.30);
-  animation: wbSlideUp 0.3s cubic-bezier(0.34, 1.2, 0.64, 1);
+  transform: translateY(12px) scale(0.98);
+  transition: transform 0.24s cubic-bezier(0.34, 1.2, 0.64, 1);
 }
-@keyframes wbSlideUp {
-  from { opacity: 0; transform: translateY(20px) scale(0.96); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+#joinWbContainer.wb-visible .join-wb-header {
+  transform: translateY(0) scale(1);
 }
 .wb-close-btn {
   position: absolute;
-  top: 14px;
-  right: 18px;
+  top: 12px;
+  right: 14px;
   background: rgba(255, 255, 255, 0.22);
   color: #fff;
   border: none;
@@ -4187,16 +4198,28 @@ body.focus-mode .focus-mode-panel { display: block; }
 }
 .wb-close-btn:hover { background: rgba(255, 255, 255, 0.38); }
 
-/* Active session already uses `.active-wb-session { display: none }` — keep it
-   as a full-screen overlay when the student joins. */
+/* Active drawing session — feature script sets style.display="block" inline.
+   We detect that via attribute selector so it goes full-screen automatically. */
+#activeWbSession[style*="display: block"],
+#activeWbSession[style*="display:block"],
 #activeWbSession.show {
   display: block !important;
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  background: var(--bg);
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 9999 !important;
+  background: var(--bg, #fef9e8);
   overflow-y: auto;
-  padding: 20px;
+  padding: 24px;
+  padding-top: 80px;
+}
+#activeWbSession .wb-session-status {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10000;
+  border-radius: 0;
+  box-shadow: 0 4px 20px rgba(60, 42, 15, 0.12);
 }
 
 /* ---------- 2 · SIDEBAR NAV · bigger rectangles ---------- */
@@ -4222,10 +4245,6 @@ body.focus-mode .focus-mode-panel { display: block; }
 }
 
 /* ---------- 3 · ENGAGEMENT HEATMAP · every theme ---------- */
-body.light,
-body:not([class*="theme-"]):not(.dark):not(.ocean):not(.forest):not(.sunset):not(.purple):not(.rainbow):not(.premium) {
-  --heat-0: rgba(255, 71, 20, 0.06);
-}
 body.dark {
   --heat-0: rgba(255, 255, 255, 0.06);
   --heat-1: rgba(255, 87, 34, 0.28);
@@ -4275,12 +4294,8 @@ body.premium {
   --heat-3: rgba(108, 92, 231, 0.75);
   --heat-4: rgba(192, 132, 252, 0.95);
 }
-.aggregate-heatmap-cell,
-.heatmap-cell,
-.calendar-day {
-  background: var(--heat-0);
-}
 .aggregate-heatmap-cell {
+  background: var(--heat-0);
   min-height: 26px;
   border: 1px solid var(--border);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
@@ -4321,7 +4336,6 @@ body.premium {
   margin-top: var(--space-5, 32px) !important;
 }
 
-/* Mobile: slightly tighter */
 @media (max-width: 768px) {
   #inClassView > * + *,
   #inClassView .content-card + .content-card,
@@ -4332,5 +4346,10 @@ body.premium {
   #classroom.dashboard-content > * + * {
     margin-top: var(--space-5, 32px);
   }
+  #activeWbSession[style*="display: block"],
+  #activeWbSession[style*="display:block"],
+  #activeWbSession.show { padding: 16px; padding-top: 72px; }
 }
+
+
 
