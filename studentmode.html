@@ -2963,6 +2963,351 @@ body.focus-mode .portal-core {
   });
 })();
 </script>
+
+<!-- ============================================================
+     GRINDLY · FOCUS PORTAL · laptop layout fix
+     Sidebar hides, content centres and breathes, nothing clipped.
+     ============================================================ -->
+<style>
+/* ============================================================
+   A · HIDE SIDEBAR WHEN FOCUS MODE IS ON
+   ============================================================ */
+body.focus-mode .sidebar,
+body.focus-mode #sidebar {
+  transform: translateX(-105%) !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.22s ease,
+              visibility 0s linear 0.28s !important;
+}
+/* Also hide the mobile hamburger drawer trigger while in focus mode */
+body.focus-mode .mobile-menu-toggle,
+body.focus-mode .sidebar-toggle {
+  display: none !important;
+}
+/* Kill the mobile overlay too, in case it was left open */
+body.focus-mode .mobile-overlay,
+body.focus-mode #mobileOverlay {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* ============================================================
+   B · MAIN CONTENT FILLS THE SCREEN
+   ============================================================ */
+body.focus-mode .app-layout {
+  display: block !important;
+  min-height: 100vh !important;
+}
+
+body.focus-mode .main-content {
+  margin-left: 0 !important;
+  margin-right: auto !important;
+  margin-top: 0 !important;
+  padding: 40px 40px 120px !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  min-height: 100vh !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
+  position: relative !important;
+  z-index: 5 !important;
+  box-sizing: border-box !important;
+}
+
+/* Centre the focus panel with a comfortable reading width */
+body.focus-mode .focus-mode-panel {
+  display: block !important;
+  min-height: auto !important;
+  max-width: 1160px !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  width: 100% !important;
+  position: relative !important;
+  z-index: 6 !important;
+}
+
+/* ============================================================
+   C · ENSURE PORTAL LAYERS SIT BEHIND EVERYTHING
+   ============================================================ */
+body.focus-mode #portalCanvas,
+body.focus-mode .portal-aurora,
+body.focus-mode .portal-rings,
+body.focus-mode .portal-core {
+  z-index: 0 !important;
+  pointer-events: none !important;
+}
+/* Keep the individual ring + glow nodes above the aurora but below content */
+body.focus-mode .portal-rings { z-index: 1 !important; }
+body.focus-mode .portal-core  { z-index: 2 !important; }
+
+/* The whole stack */
+#portalCanvas { z-index: 0 !important; }
+.portal-aurora { z-index: 1 !important; }
+.portal-rings  { z-index: 2 !important; }
+.portal-core   { z-index: 3 !important; }
+
+/* Header pill / focus content must always be on top of the portal */
+body.focus-mode .focus-header {
+  position: relative !important;
+  z-index: 10 !important;
+}
+body.focus-mode .focus-grid,
+body.focus-mode .focus-card,
+body.focus-mode .focus-lock-banner {
+  position: relative !important;
+  z-index: 10 !important;
+}
+
+/* ============================================================
+   D · FOCUS HEADER · a proper top bar on desktop, sticky on mobile
+   ============================================================ */
+body.focus-mode .focus-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+  margin: 0 0 24px !important;
+  padding: 16px 20px !important;
+  background: color-mix(in srgb, var(--card) 82%, transparent) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 8px 24px rgba(60, 42, 15, 0.08) !important;
+}
+body.focus-mode .focus-header h2 {
+  margin: 0 !important;
+  font-family: var(--font-display) !important;
+  font-size: 1.35rem !important;
+  font-weight: 700 !important;
+  background: var(--gradient-flame) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+}
+body.focus-mode .focus-header .quick-notes-actions {
+  display: flex !important;
+  gap: 8px !important;
+}
+
+/* ============================================================
+   E · FOCUS GRID · roomy but efficient on desktop, tight on mobile
+   ============================================================ */
+body.focus-mode .focus-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+  gap: 18px !important;
+  padding-bottom: 40px !important;
+}
+body.focus-mode .focus-card {
+  padding: 20px !important;
+  border-radius: 16px !important;
+  box-shadow: 0 4px 14px rgba(60, 42, 15, 0.06) !important;
+  border: 1px solid var(--border) !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+}
+body.focus-mode .focus-card:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 10px 26px var(--ember-soft, rgba(255,71,20,0.12)) !important;
+  border-color: var(--ember) !important;
+}
+body.focus-mode .focus-card h3 {
+  font-family: var(--font-display) !important;
+  font-size: 1rem !important;
+  font-weight: 700 !important;
+  margin-bottom: 12px !important;
+  color: var(--text) !important;
+}
+body.focus-mode .focus-card p {
+  font-size: 0.8125rem !important;
+  line-height: 1.5 !important;
+  color: var(--text-muted) !important;
+}
+
+/* Lock banner */
+body.focus-mode .focus-lock-banner {
+  margin-bottom: 20px !important;
+  padding: 14px 18px !important;
+  border-radius: 12px !important;
+  background: color-mix(in srgb, var(--ember-soft) 90%, transparent) !important;
+  border: 1px dashed var(--ember) !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+}
+
+/* ============================================================
+   F · MOBILE FOCUS MODE · one column, tighter, still complete
+   ============================================================ */
+@media (max-width: 900px) {
+  body.focus-mode .main-content {
+    padding: 12px 12px 170px !important;
+  }
+  body.focus-mode .focus-header {
+    margin: 0 0 12px !important;
+    padding: 10px 12px !important;
+    position: sticky !important;
+    top: 8px !important;
+    z-index: 20 !important;
+    border-radius: 12px !important;
+  }
+  body.focus-mode .focus-header h2 {
+    font-size: 1rem !important;
+  }
+  body.focus-mode .focus-header .btn {
+    padding: 8px 12px !important;
+    font-size: 0.75rem !important;
+    min-height: 34px !important;
+  }
+  body.focus-mode .focus-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+    padding-bottom: 60px !important;
+  }
+  body.focus-mode .focus-card {
+    padding: 12px 14px !important;
+    border-radius: 13px !important;
+  }
+  body.focus-mode .focus-card h3 {
+    font-size: 0.9rem !important;
+    margin-bottom: 8px !important;
+  }
+  body.focus-mode .focus-timer-display {
+    font-size: 2rem !important;
+    text-align: center !important;
+  }
+  body.focus-mode .focus-metrics {
+    grid-template-columns: repeat(2, 1fr) !important;
+    font-size: 0.72rem !important;
+  }
+  body.focus-mode .focus-actions .btn {
+    flex: 1 1 calc(50% - 3px) !important;
+    padding: 8px 10px !important;
+    font-size: 0.72rem !important;
+    min-height: 36px !important;
+  }
+}
+
+/* Tiny phones */
+@media (max-width: 400px) {
+  body.focus-mode .main-content {
+    padding: 10px 10px 190px !important;
+  }
+  body.focus-mode .focus-actions .btn {
+    flex: 1 1 100% !important;
+  }
+}
+
+/* Tablet · 901–1020px · keep sidebar hidden, content centred */
+@media (min-width: 901px) and (max-width: 1020px) {
+  body.focus-mode .main-content {
+    padding: 32px 32px 120px !important;
+  }
+  body.focus-mode .focus-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Desktop · keep 3 columns for a real "control room" feel */
+@media (min-width: 1021px) {
+  body.focus-mode .focus-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 20px !important;
+  }
+  body.focus-mode .focus-card {
+    padding: 24px !important;
+  }
+}
+/* Wide desktop · 4 columns */
+@media (min-width: 1400px) {
+  body.focus-mode .focus-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+}
+
+/* ============================================================
+   G · HIDE FLOATING CHROME DURING FOCUS
+   ============================================================ */
+body.focus-mode .feedback-btn,
+body.focus-mode .chatbot-fab {
+  display: none !important;
+}
+
+/* ============================================================
+   H · PORTAL LAYERS · nice on ALL screen sizes
+   ============================================================ */
+/* Recalculate ring sizes on desktop so they scale with vmin, not vmax */
+@media (min-width: 1021px) {
+  .ring.r1 { width: 44vmin !important; height: 44vmin !important; }
+  .ring.r2 { width: 58vmin !important; height: 58vmin !important; }
+  .ring.r3 { width: 74vmin !important; height: 74vmin !important; }
+  .ring.r4 { width: 92vmin !important; height: 92vmin !important; }
+  .ring.r5 { width: 112vmin !important; height: 112vmin !important; }
+
+  .glow.g1 { width: 60vmin !important; height: 60vmin !important; }
+  .glow.g2 { width: 92vmin !important; height: 92vmin !important; }
+  .glow.g3 { width: 132vmin !important; height: 132vmin !important; }
+
+  .portal-core {
+    width: 22vmin !important;
+    height: 22vmin !important;
+  }
+}
+</style>
+
+<script>
+/* ============================================================
+   Ensure sidebar closes whenever focus mode activates.
+   Some flows (mobile bottom-nav, keyboard, focus button) may leave
+   the drawer open behind the portal — this closes it cleanly.
+   ============================================================ */
+(function () {
+  'use strict';
+
+  function closeSidebarIfOpen() {
+    var side = document.getElementById('sidebar');
+    var ov   = document.getElementById('mobileOverlay');
+    if (side) side.classList.remove('active');
+    if (ov)   ov.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  // Watch body class for focus-mode activation
+  new MutationObserver(function () {
+    if (document.body.classList.contains('focus-mode')) {
+      closeSidebarIfOpen();
+      // Scroll to top so the header pill is visible immediately
+      var mc = document.querySelector('main.main-content');
+      if (mc) mc.scrollTop = 0;
+    }
+  }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+
+  // If already in focus mode on load, close it now
+  if (document.body.classList.contains('focus-mode')) {
+    closeSidebarIfOpen();
+  }
+
+  // Force main-content to be the scroll container, not the body
+  // (some themes/mobile user agents push scrolling onto body)
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest('#focusModeBtn, .focus-toggle, .focus-portal-nav-btn, [data-focus]');
+    if (t) setTimeout(closeSidebarIfOpen, 40);
+  }, true);
+
+  // Shift+F shortcut
+  document.addEventListener('keydown', function (e) {
+    if (e.shiftKey && e.key.toLowerCase() === 'f') {
+      setTimeout(closeSidebarIfOpen, 40);
+    }
+  });
+})();
+</script>
 </body>
 </html>
 
