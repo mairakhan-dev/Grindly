@@ -2248,20 +2248,18 @@
   setTimeout(fix, 3000);
 })();
 </script>
-
+<!-- ============================================================
+     FORCE-VISIBLE CHROME · light version
+     Last CSS in the document = highest priority. No JS loop.
+     ============================================================ -->
 <style id="force-visible-final">
-  /* This block is the last CSS in the document. Nothing can beat it. */
   #dashboardHeader,
-  .dashboard-header,
-  .controls-bar,
-  .dashboard-button-bar {
+  .dashboard-header {
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
     filter: none !important;
     mix-blend-mode: normal !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
     transform: none !important;
     clip-path: none !important;
     overflow: visible !important;
@@ -2272,7 +2270,15 @@
   .controls-bar,
   .dashboard-button-bar {
     display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
     flex-wrap: wrap !important;
+    filter: none !important;
+    transform: none !important;
+    clip-path: none !important;
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
   }
 
   #dashboardHeader h1,
@@ -2286,6 +2292,7 @@
     -webkit-background-clip: initial !important;
     background-clip: initial !important;
     text-shadow: none !important;
+    filter: none !important;
   }
 
   .dashboard-subtitle,
@@ -2313,6 +2320,7 @@
     background-image: none !important;
     border: 1px solid rgba(60,42,15,0.10) !important;
     filter: none !important;
+    transform: none !important;
   }
 
   .controls-bar .btn-primary {
@@ -2338,63 +2346,39 @@
   }
 </style>
 
-<script id="force-visible-js">
-/* Belt-and-suspenders: also set inline styles with !important */
+<script>
+/* Runs exactly 3 times. No observer. No loop. */
 (function () {
-  var SEL = [
-    '#dashboardHeader', '.dashboard-header',
-    '.controls-bar', '.dashboard-button-bar',
-    '#dashboardHeader h1', '.dashboard-header h1',
-    '.dashboard-subtitle', '.time-greeting',
-    '.controls-bar .btn', '.controls-bar .btn-icon',
-    '.dashboard-section-btn'
-  ].join(',');
-
   function fix() {
-    document.querySelectorAll(SEL).forEach(function (el) {
-      // 1) Strip every inline style that could be hiding the element
-      ['display','opacity','visibility','filter','mix-blend-mode',
-       'transform','clip-path','text-shadow','background','background-image',
-       'background-color','background-clip','-webkit-background-clip',
-       '-webkit-text-fill-color','-webkit-text-stroke','color',
-       'height','max-height','overflow','position'].forEach(function (p) {
-        el.style.removeProperty(p);
-      });
+    var sel = [
+      '#dashboardHeader', '.dashboard-header',
+      '.controls-bar', '.dashboard-button-bar',
+      '#dashboardHeader h1', '.dashboard-header h1',
+      '.dashboard-subtitle', '.time-greeting',
+      '.controls-bar .btn', '.controls-bar .btn-icon',
+      '.dashboard-section-btn'
+    ].join(',');
 
-      // 2) Force the properties that make it visible
-      var tag = el.tagName.toLowerCase();
-      var isBlock = el.id === 'dashboardHeader'
-                 || el.classList.contains('dashboard-header')
-                 || tag === 'h1'
-                 || tag === 'p';
-      el.style.setProperty('display', isBlock ? 'block' : (el.classList.contains('controls-bar') || el.classList.contains('dashboard-button-bar') ? 'flex' : 'inline-flex'), 'important');
-      el.style.setProperty('opacity', '1', 'important');
-      el.style.setProperty('visibility', 'visible', 'important');
-      el.style.setProperty('filter', 'none', 'important');
-      el.style.setProperty('-webkit-text-fill-color', 'currentColor', 'important');
-      el.style.setProperty('background-clip', 'initial', 'important');
-      el.style.setProperty('-webkit-background-clip', 'initial', 'important');
-      el.style.setProperty('text-shadow', 'none', 'important');
-      el.style.setProperty('transform', 'none', 'important');
-      el.style.setProperty('clip-path', 'none', 'important');
+    document.querySelectorAll(sel).forEach(function (el) {
+      /* Only strip inline styles that actually hide things */
+      if (el.style.display === 'none')       el.style.removeProperty('display');
+      if (el.style.opacity === '0')          el.style.removeProperty('opacity');
+      if (el.style.visibility === 'hidden')  el.style.removeProperty('visibility');
+      if (el.style.filter)                   el.style.removeProperty('filter');
+      if (el.style.transform)                el.style.removeProperty('transform');
+      if (el.style.clipPath)                 el.style.removeProperty('clip-path');
+      if (el.style.webkitTextFillColor)      el.style.removeProperty('-webkit-text-fill-color');
+      if (el.style.backgroundClip)           el.style.removeProperty('background-clip');
     });
   }
 
-  // Run at every plausible moment anything could hide them
-  ['DOMContentLoaded', 'load'].forEach(function (ev) {
-    document.addEventListener(ev, function () { fix(); setTimeout(fix, 50); });
-  });
-  [0, 100, 300, 600, 1000, 2000, 3000].forEach(function (ms) {
-    setTimeout(fix, ms);
-  });
-
-  // Watch for later DOM changes (dashboard-buttons.js injects tabs)
-  if (window.MutationObserver) {
-    new MutationObserver(function () { fix(); }).observe(document.body, {
-      childList: true, subtree: true, attributes: true,
-      attributeFilter: ['style','class']
-    });
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', fix, { once: true });
+  } else {
+    fix();
   }
+  window.addEventListener('load', fix, { once: true });
+  setTimeout(fix, 500);
 })();
 </script>
 </body>
