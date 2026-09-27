@@ -5571,10 +5571,11 @@ html body .mobile-header { z-index: 1000 !important; }
   }
 }
 /* ============================================================
-   PRESENTATION MODE · force everything visible
+   PRESENTATION MODE · FINAL
    ============================================================ */
 
-/* 1 · When body has .presentation-mode, hide chrome and show the section */
+body.presentation-mode { overflow-y: auto !important; overflow-x: hidden !important; }
+
 body.presentation-mode .sidebar,
 body.presentation-mode .mobile-header,
 body.presentation-mode .sidebar-toggle,
@@ -5586,43 +5587,21 @@ body.presentation-mode .footer {
   display: none !important;
 }
 
-/* 2 · Main content fills full width in presentation mode */
 body.presentation-mode .main-content {
-  margin-left: 0 !important;
-  margin-right: 0 !important;
+  margin: 0 !important;
   padding: 16px !important;
-  max-width: 100% !important;
   width: 100% !important;
+  max-width: 100% !important;
   display: block !important;
 }
 
 body.presentation-mode .main-content > * {
-  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
   width: 100% !important;
-  padding-left: 0 !important;
-  padding-right: 0 !important;
-  margin-left: 0 !important;
-  margin-right: 0 !important;
+  max-width: 100% !important;
 }
 
-/* 3 · Force #presentation visible in presentation mode */
-body.presentation-mode #presentation {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  height: auto !important;
-  overflow: visible !important;
-}
-
-/* 4 · Also force it visible if inline display:block is set (fallback) */
-#presentation[style*="display: block"],
-#presentation[style*="display:block"] {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-}
-
-/* 5 · Hide other dashboard sections while presentation is on */
 body.presentation-mode #dashboard,
 body.presentation-mode #memoryWall,
 body.presentation-mode #addMemoryPage,
@@ -5640,7 +5619,24 @@ body.presentation-mode #settings {
   display: none !important;
 }
 
-/* 6 · Make the presentation grid usable full-screen */
+body.presentation-mode #presentation,
+#presentation[style*="display: block"],
+#presentation[style*="display:block"] {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  height: auto !important;
+  overflow: visible !important;
+}
+
+body.presentation-mode .presentation-toolbar {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  flex-wrap: wrap !important;
+  position: static !important;
+}
+
 body.presentation-mode .presentation-grid {
   display: grid !important;
   grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
@@ -5654,14 +5650,6 @@ body.presentation-mode .presentation-card {
   opacity: 1 !important;
 }
 
-body.presentation-mode .presentation-toolbar {
-  display: flex !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  position: static !important;
-}
-
-/* 7 · Tablet + mobile: stack presentation cards */
 @media (max-width: 1020px) {
   body.presentation-mode .presentation-grid {
     grid-template-columns: 1fr !important;
