@@ -313,7 +313,8 @@
       
       <!-- Dashboard Section -->
       <div id="dashboard" class="dashboard-content" style="grid-column: span 12; display: block;">
-   <div class="pulse-widget" id="classPulseWidget" data-state="warm">
+   
+        <div class="pulse-widget" id="classPulseWidget" data-state="mid">
   <div class="pulse-ring-wrapper">
     <svg class="pulse-ring-svg" viewBox="0 0 200 200" aria-hidden="true">
       <defs>
@@ -338,52 +339,38 @@
       </defs>
       <circle class="pulse-ring-track" cx="100" cy="100" r="86"/>
       <circle class="pulse-ring-progress" cx="100" cy="100" r="86"
-              stroke-dasharray="540.35" stroke-dashoffset="151.3"/>
+              stroke-dasharray="540.35" stroke-dashoffset="540.35"/>
     </svg>
     <div class="pulse-ring-value">
-      <div class="pulse-ring-number" id="pulseNumber">72</div>
+      <div class="pulse-ring-number" id="pulseNumber">—</div>
       <div class="pulse-ring-label">Pulse</div>
     </div>
   </div>
 
   <div class="pulse-info">
-    <h2 id="pulseTitle">Your class is on fire 🔥</h2>
-    <p class="pulse-desc" id="pulseDesc">18 of 22 students active today. Streaks are climbing.</p>
+    <h2 id="pulseTitle">Reading your class…</h2>
+    <p class="pulse-desc" id="pulseDesc">Loading live data.</p>
 
     <div class="pulse-metrics">
       <div class="pulse-metric">
-        <span class="pulse-metric-value" id="pulseActive">18</span>
+        <span class="pulse-metric-value" id="pulseActive">—</span>
         <span class="pulse-metric-label">Active today</span>
       </div>
       <div class="pulse-metric">
-        <span class="pulse-metric-value" id="pulseStreak">7.2</span>
+        <span class="pulse-metric-value" id="pulseStreak">—</span>
         <span class="pulse-metric-label">Avg streak</span>
       </div>
       <div class="pulse-metric">
-        <span class="pulse-metric-value" id="pulseConfidence">94%</span>
+        <span class="pulse-metric-value" id="pulseConfidence">—</span>
         <span class="pulse-metric-label">Confidence</span>
       </div>
     </div>
 
-    <div class="pulse-history" aria-hidden="true">
-      <span style="--h:42%"></span>
-      <span style="--h:50%"></span>
-      <span style="--h:46%"></span>
-      <span style="--h:58%"></span>
-      <span style="--h:64%"></span>
-      <span style="--h:72%"></span>
-      <span style="--h:68%"></span>
-      <span style="--h:78%"></span>
-      <span style="--h:82%"></span>
-      <span style="--h:88%"></span>
-      <span style="--h:92%"></span>
-      <span style="--h:86%"></span>
-      <span style="--h:94%"></span>
-      <span style="--h:100%"></span>
-    </div>
+    <div class="pulse-history" id="pulseHistory" aria-hidden="true"></div>
   </div>
 </div>
-        
+  
+
         <!-- Quick Stats -->
         <div class="quick-stats">
           <div class="stat-card">

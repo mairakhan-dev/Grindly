@@ -1063,6 +1063,7 @@ async function switchClass(classIndex) {
   }
   // Load check-in data for new class
 loadCheckInDataForClass();
+renderClassPulse(); // add this
 }
 
 function showCreateClassModal() {
@@ -4977,7 +4978,7 @@ function updateStats() {
     const announcementsCount = announcements.length;
     const assignmentsCount = assignments.length;
     const resourcesCount = resources.length;
-    
+    renderClassPulse(); // add this
     // Update main stats
     const studentsCountEl = document.getElementById('studentsCount');
     const announcementsCountEl = document.getElementById('announcementsCount');
@@ -5406,7 +5407,7 @@ function updateCheckInUI() {
     const strugglingEl = document.getElementById('strugglingCount');
     const totalEl = document.getElementById('totalResponses');
     const chartEl = document.getElementById('checkinChart');
-    
+    renderClassPulse()
     // If elements don't exist, exit silently
     if (!confidentEl || !okayEl || !strugglingEl || !totalEl) {
         return;
@@ -16417,3 +16418,129 @@ setTimeout(() => {
   // Try multiple times because the reorganizer runs at different moments
   [1000, 2000, 3000, 4000, 5000].forEach(t => setTimeout(tryAdd, t));
 })();
+// ============ CLASS PULSE — REAL DATA ============
+function renderClassPulse() {
+  const widget = document.getElementById('classPulseWidget');
+  if (!widget) return;
+
+  // Use the live students array (teachermode.js already has it)
+  const realStudents = (typeof students !== 'undefined' ? students : []).filter(s => !s.isTeacher);
+
+  const numEl = document.getElementById('pulseNumber');
+  const titleEl = document.getElementById('pulseTitle');
+  const descEl = document.getElementById('pulseDesc');
+  const activeEl = document.getElementById('pulseActive');
+  const streakEl = document.getElementById('pulseStreak');
+  const confEl = document.getElementById('pulseConfidence');
+  const historyEl = document.getElementById('pulseHistory');
+
+  // ---- Empty state ----
+  if (!realStudents.length) {
+    if (numEl) numEl.textContent = '—';
+    if (titleEl) titleEl.textContent = 'No students yet';
+    if (descEl) descEl.textContent = 'Share your class code so students can join.';
+    if (activeEl) activeEl.textContent = '0';
+    if (streakEl) streakEl.textContent = '0.0';
+    if (confEl) confEl.textContent = '—';
+    if (historyEl) historyEl.innerHTML = '';
+    widget.dataset.state = 'cold';
+    const ring = widget.querySelector('.pulse-ring-progress');
+    if (ring) ring.style.strokeDashoffset = 540.35;
+    return;
+  }
+
+  // ---- Compute real metrics ----
+  const total = realStudents.length;
+
+  const now = Date.now();
+  const activeToday = realStudents.filter(s => {
+    const t = s.lastActive && s.lastActive !== 'Unknown' ? new Date(s.lastActive).getTime() : 0;
+    if (!t) return false;
+    return (now - t) <= 24 * 60 * 60 * 1000;
+  }).length;
+
+  const avgStreak = realStudents.reduce((sum, s) => sum + (Number(s.streak) || 0), 0) / total;
+
+  const cd = (typeof checkinData !== 'undefined' && checkinData) ? checkinData : null;
+  const totalCheckins = cd ? ((cd.confident || 0) + (cd.okay || 0) + (cd.struggling || 0)) : 0;
+  const confidence = totalCheckins > 0
+    ? Math.round(((cd.confident || 0) / totalCheckins) * 100)
+    : null;
+
+  // ---- Pulse formula (0-100) ----
+  // Active ratio: 40 pts max
+  // Avg streak normalized (streak of 10 = full): 35 pts max
+  // Confidence: 25 pts max (if no check-ins, redistribute to the other two)
+  const activeScore = (activeToday / total) * 40;
+  const streakScore = Math.min(avgStreak / 10, 1) * 35;
+
+  let pulse;
+  if (confidence === null) {
+    // Redistribute confidence's 25 pts across active + streak proportionally
+    const raw = activeScore + streakScore;
+    const scaled = raw * (100 / 75);
+    pulse = Math.round(scaled);
+  } else {
+    const confidenceScore = (confidence / 100) * 25;
+    pulse = Math.round(activeScore + streakScore + confidenceScore);
+  }
+  pulse = Math.max(0, Math.min(100, pulse));
+
+  // ---- Write to DOM ----
+  if (numEl) numEl.textContent = pulse;
+  if (activeEl) activeEl.textContent = `${activeToday}/${total}`;
+  if (streakEl) streakEl.textContent = avgStreak.toFixed(1);
+  if (confEl) confEl.textContent = confidence === null ? '—' : confidence + '%';
+
+  // ---- Title + description based on state ----
+  let state, title, desc;
+  if (pulse < 34) {
+    state = 'cold';
+    title = 'Class is quiet';
+    desc = `${activeToday} of ${total} students active today. Consider a nudge or a fun challenge.`;
+  } else if (pulse < 67) {
+    state = 'mid';
+    title = 'Steady and warm';
+    desc = `${activeToday} of ${total} students active today. Momentum is building.`;
+  } else {
+    state = 'warm';
+    title = 'Your class is on fire 🔥';
+    desc = `${activeToday} of ${total} students active today. Streaks are climbing.`;
+  }
+  widget.dataset.state = state;
+  if (titleEl) titleEl.textContent = title;
+  if (descEl) descEl.textContent = desc;
+
+  // ---- Animate the ring ----
+  const ring = widget.querySelector('.pulse-ring-progress');
+  if (ring) {
+    const circumference = 540.35;
+    const offset = circumference - (pulse / 100) * circumference;
+    ring.style.strokeDashoffset = offset;
+  }
+
+  // ---- 14-day history sparkline from liveActivity ----
+  if (historyEl) {
+    const days = 14;
+    const counts = new Array(days).fill(0);
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const acts = (typeof liveActivity !== 'undefined' && Array.isArray(liveActivity)) ? liveActivity : [];
+    acts.forEach(item => {
+      const t = item.createdAt ? new Date(item.createdAt).getTime() : 0;
+      if (!t) return;
+      const diffDays = Math.floor((startOfToday.getTime() - new Date(t).setHours(0,0,0,0)) / (24*60*60*1000));
+      if (diffDays >= 0 && diffDays < days) {
+        counts[days - 1 - diffDays] += 1;
+      }
+    });
+
+    // If no activity at all, fall back to a flat line so the widget doesn't look broken
+    const max = Math.max(...counts, 1);
+    historyEl.innerHTML = counts.map(c => {
+      const heightPct = Math.max(c > 0 ? (c / max) * 100 : 12, 8);
+      return `<span style="--h:${heightPct}%"></span>`;
+    }).join('');
+  }
+}
