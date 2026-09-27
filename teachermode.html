@@ -2365,6 +2365,32 @@ document.addEventListener('DOMContentLoaded', function () {
   if (tc) observer.observe(tc, { childList: true });
 });
 </script>
+<script>
+(function () {
+  function syncPresentation() {
+    var on = document.body.classList.contains('presentation-mode');
+    var p  = document.getElementById('presentation');
+    if (!p) return;
+    if (on) {
+      p.style.setProperty('display', 'block', 'important');
+      p.style.setProperty('visibility', 'visible', 'important');
+      p.style.setProperty('opacity', '1', 'important');
+    }
+  }
+
+  // Watch body class changes for presentation-mode
+  var mo = new MutationObserver(function (muts) {
+    muts.forEach(function (m) {
+      if (m.attributeName === 'class' || m.attributeName === 'style') syncPresentation();
+    });
+  });
+  mo.observe(document.body, { attributes: true, attributeFilter: ['class','style'] });
+
+  // Also run once on load and after a tick
+  document.addEventListener('DOMContentLoaded', syncPresentation);
+  window.addEventListener('load', syncPresentation);
+})();
+</script>
 </body>
 </html>
 

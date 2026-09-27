@@ -5570,3 +5570,107 @@ html body .mobile-header { z-index: 1000 !important; }
     padding-right: 14px !important;
   }
 }
+/* ============================================================
+   PRESENTATION MODE · force everything visible
+   ============================================================ */
+
+/* 1 · When body has .presentation-mode, hide chrome and show the section */
+body.presentation-mode .sidebar,
+body.presentation-mode .mobile-header,
+body.presentation-mode .sidebar-toggle,
+body.presentation-mode .sidebar-backdrop,
+body.presentation-mode #tmHeaderFinal,
+body.presentation-mode .dashboard-button-bar,
+body.presentation-mode .feedback-btn,
+body.presentation-mode .footer {
+  display: none !important;
+}
+
+/* 2 · Main content fills full width in presentation mode */
+body.presentation-mode .main-content {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  padding: 16px !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  display: block !important;
+}
+
+body.presentation-mode .main-content > * {
+  max-width: 100% !important;
+  width: 100% !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* 3 · Force #presentation visible in presentation mode */
+body.presentation-mode #presentation {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  height: auto !important;
+  overflow: visible !important;
+}
+
+/* 4 · Also force it visible if inline display:block is set (fallback) */
+#presentation[style*="display: block"],
+#presentation[style*="display:block"] {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* 5 · Hide other dashboard sections while presentation is on */
+body.presentation-mode #dashboard,
+body.presentation-mode #memoryWall,
+body.presentation-mode #addMemoryPage,
+body.presentation-mode #announcements,
+body.presentation-mode #assignments,
+body.presentation-mode #resources,
+body.presentation-mode #polls,
+body.presentation-mode #students,
+body.presentation-mode #analytics,
+body.presentation-mode #checkins,
+body.presentation-mode #exitTickets,
+body.presentation-mode #challenges,
+body.presentation-mode #create-challenge,
+body.presentation-mode #settings {
+  display: none !important;
+}
+
+/* 6 · Make the presentation grid usable full-screen */
+body.presentation-mode .presentation-grid {
+  display: grid !important;
+  grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
+  gap: 16px !important;
+}
+
+body.presentation-mode .presentation-card {
+  display: flex !important;
+  flex-direction: column !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+body.presentation-mode .presentation-toolbar {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: static !important;
+}
+
+/* 7 · Tablet + mobile: stack presentation cards */
+@media (max-width: 1020px) {
+  body.presentation-mode .presentation-grid {
+    grid-template-columns: 1fr !important;
+  }
+  body.presentation-mode .pres-span-3,
+  body.presentation-mode .pres-span-4,
+  body.presentation-mode .pres-span-6,
+  body.presentation-mode .pres-span-8,
+  body.presentation-mode .pres-span-12 {
+    grid-column: span 1 !important;
+  }
+}
