@@ -261,30 +261,38 @@
   <!-- Main Content -->
   <main class="main-content">
     
-    <!-- Dashboard Header -->
-    <div class="dashboard-header" id="dashboardHeader">
-      <h1>Welcome to Your Classroom</h1>
-      <p class="dashboard-subtitle" id="dashboardSubtitle">Manage announcements, assignments, and track student progress</p>
-      
-      <div class="controls-bar">
-        <div class="search-bar" style="position: relative; flex: 1; max-width: 400px;">
-          <input type="text" id="studentSearch" placeholder="Search students by id ....." oninput="searchStudents()" style="width: 100%; padding: 0.875rem 1rem 0.875rem 3rem; background: var(--bg); border: 2px solid var(--border); border-radius: var(--radius); font-size: 0.9375rem;">
-          <span style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none;">🔍</span>
-        </div>
-        <div style="display: flex; gap: var(--spacing-sm);">
-          <button class="btn btn-primary" onclick="refreshStudents()">🔄 Refresh</button>
-          <button class="btn btn-primary" onclick="window.location.href='index.html'">
-    Home
-</button>
-<!-- Or add to desktop controls bar -->
-<button class="btn btn-secondary" onclick="togglePresentationMode()">Presentation Mode</button>
-<button class="btn btn-secondary notification-bell" onclick="showNotifications()" style="position: relative;">
-    🔔 Notifications
-    <span id="notificationCountDesktop" class="badge" style="display: none;">0</span>
-</button>
-          <button class="btn btn-warning" onclick="toggleDemoMode()" id="demoModeBtn" style="background: var(--gradient-warning);">🌐 Demo Mode: ON</button>
-        </div>
-      </div>
+    
+      <!-- ═══════════════════════════════════════════════════════════
+     TEACHER HEADER · self-contained · nothing can hide it
+     ═══════════════════════════════════════════════════════════ -->
+<div class="tm-header">
+  <h1 class="tm-title">Welcome to Your Classroom</h1>
+  <p class="tm-sub">Manage announcements, assignments, and track student progress</p>
+
+  <div class="tm-bar">
+    <input type="text" class="tm-search" placeholder="🔍 Search students by id..." oninput="searchStudents()" id="studentSearch">
+    <button class="tm-btn tm-btn-primary" onclick="refreshStudents()">🔄 Refresh</button>
+    <button class="tm-btn" onclick="window.location.href='index.html'">🏠 Home</button>
+    <button class="tm-btn" onclick="togglePresentationMode()">📺 Presentation Mode</button>
+    <button class="tm-btn tm-bell" onclick="showNotifications()">
+      🔔 Notifications
+      <span id="notificationCountDesktop" class="tm-badge" style="display:none;">0</span>
+    </button>
+    <button class="tm-btn tm-warn" onclick="toggleDemoMode()" id="demoModeBtn">🌐 Demo Mode: ON</button>
+  </div>
+
+  <div class="tm-tabs" id="tmTabs">
+    <button class="tm-tab active" data-section="dashboard">📊 Dashboard</button>
+    <button class="tm-tab" data-section="announcements">📢 Announcements</button>
+    <button class="tm-tab" data-section="assignments">📚 Assignments</button>
+    <button class="tm-tab" data-section="resources">📁 Resources</button>
+    <button class="tm-tab" data-section="polls">🗳️ Polls</button>
+    <button class="tm-tab" data-section="students">👥 Students</button>
+    <button class="tm-tab" data-section="checkins">😊 Check-ins</button>
+    <button class="tm-tab" data-section="exitTickets">🎫 Exit Tickets</button>
+    <button class="tm-tab" data-section="settings">⚙️ Settings</button>
+  </div>
+</div>
       
       <div class="pro-tip">
         <strong>💡 Pro Tip</strong>
@@ -2248,139 +2256,224 @@
   setTimeout(fix, 3000);
 })();
 </script>
-<!-- ============================================================
-     FORCE-VISIBLE CHROME · light version
-     Last CSS in the document = highest priority. No JS loop.
-     ============================================================ -->
-<style id="force-visible-final">
-  #dashboardHeader,
-  .dashboard-header {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    filter: none !important;
-    mix-blend-mode: normal !important;
-    transform: none !important;
-    clip-path: none !important;
-    overflow: visible !important;
-    height: auto !important;
-    max-height: none !important;
-  }
 
-  .controls-bar,
-  .dashboard-button-bar {
-    display: flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    flex-wrap: wrap !important;
-    filter: none !important;
-    transform: none !important;
-    clip-path: none !important;
-    overflow: visible !important;
-    height: auto !important;
-    max-height: none !important;
-  }
+<style>
+/* ═══════════════════════════════════════════════════════════
+   TM HEADER · self-contained styles
+   ═══════════════════════════════════════════════════════════ */
 
-  #dashboardHeader h1,
-  .dashboard-header h1 {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    color: #ff4714 !important;
-    -webkit-text-fill-color: #ff4714 !important;
-    background: none !important;
-    -webkit-background-clip: initial !important;
-    background-clip: initial !important;
-    text-shadow: none !important;
-    filter: none !important;
-  }
+.tm-header {
+  display: block;
+  margin-bottom: 24px;
+  padding: 0;
+}
 
-  .dashboard-subtitle,
-  .time-greeting {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    color: #5a5a7a !important;
-    -webkit-text-fill-color: #5a5a7a !important;
-    background: none !important;
-    -webkit-background-clip: initial !important;
-    background-clip: initial !important;
-  }
+.tm-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin: 0 0 6px;
+  color: #ff4714;
+  -webkit-text-fill-color: #ff4714;
+  background: none;
+}
 
-  .controls-bar .btn,
-  .controls-bar .btn-icon,
-  .controls-bar button,
-  .dashboard-section-btn {
-    display: inline-flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    color: #1a1a2e !important;
-    -webkit-text-fill-color: #1a1a2e !important;
-    background: #ffffff !important;
-    background-image: none !important;
-    border: 1px solid rgba(60,42,15,0.10) !important;
-    filter: none !important;
-    transform: none !important;
-  }
+.tm-sub {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1.5;
+  color: #5a5a7a;
+  margin: 0 0 16px;
+  max-width: 660px;
+}
 
-  .controls-bar .btn-primary {
-    background: linear-gradient(135deg, #ffaa33 0%, #ff4714 50%, #d61f00 100%) !important;
-    color: #ffffff !important;
-    -webkit-text-fill-color: #ffffff !important;
-    border-color: transparent !important;
-  }
+/* ─── Controls bar ─── */
+.tm-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: 10px;
+  background: #ffffff;
+  border: 1px solid rgba(60, 42, 15, 0.10);
+  border-radius: 16px;
+  margin-bottom: 16px;
+}
 
-  .dashboard-section-btn.active {
-    background: linear-gradient(135deg, #ffaa33 0%, #ff4714 50%, #d61f00 100%) !important;
-    color: #ffffff !important;
-    -webkit-text-fill-color: #ffffff !important;
-    border-color: transparent !important;
-  }
+.tm-search {
+  flex: 1 1 200px;
+  min-width: 0;
+  padding: 10px 14px;
+  border: 2px solid rgba(60, 42, 15, 0.10);
+  border-radius: 12px;
+  background: #faf5e8;
+  color: #1a1a2e;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  min-height: 42px;
+  outline: none;
+}
+.tm-search::placeholder { color: #8a8aa8; }
+.tm-search:focus {
+  border-color: #ff4714;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(255, 71, 20, 0.12);
+}
 
-  .controls-bar input,
-  .controls-bar .search-bar input {
-    color: #1a1a2e !important;
-    -webkit-text-fill-color: #1a1a2e !important;
-    background: #faf5e8 !important;
-    opacity: 1 !important;
-  }
+.tm-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(60, 42, 15, 0.10);
+  background: #ffffff;
+  color: #1a1a2e;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  min-height: 42px;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  position: relative;
+  -webkit-text-fill-color: currentColor;
+}
+.tm-btn:hover {
+  border-color: #ff4714;
+  color: #ff4714;
+  -webkit-text-fill-color: #ff4714;
+}
+.tm-btn:active { transform: scale(0.97); }
+
+.tm-btn-primary {
+  background: linear-gradient(135deg, #ffaa33 0%, #ff4714 50%, #d61f00 100%);
+  color: #ffffff;
+  -webkit-text-fill-color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 4px 14px rgba(255, 71, 20, 0.35);
+}
+.tm-btn-primary:hover {
+  color: #ffffff;
+  -webkit-text-fill-color: #ffffff;
+  filter: brightness(1.05);
+}
+
+.tm-warn {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #ffffff;
+  -webkit-text-fill-color: #ffffff;
+  border-color: transparent;
+}
+.tm-warn:hover {
+  color: #ffffff;
+  -webkit-text-fill-color: #ffffff;
+  filter: brightness(1.05);
+}
+
+.tm-bell { position: relative; }
+.tm-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #ff4714;
+  color: #ffffff;
+  -webkit-text-fill-color: #ffffff;
+  border-radius: 999px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ─── Tab bar ─── */
+.tm-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 5px;
+  background: #faf5e8;
+  border: 1px solid rgba(60, 42, 15, 0.10);
+  border-radius: 999px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.tm-tabs::-webkit-scrollbar { display: none; }
+
+.tm-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: #5a5a7a;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-height: 38px;
+  transition: all 0.15s ease;
+}
+.tm-tab:hover {
+  background: #ffffff;
+  color: #1a1a2e;
+}
+.tm-tab.active {
+  background: linear-gradient(135deg, #ffaa33 0%, #ff4714 50%, #d61f00 100%);
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(255, 71, 20, 0.28);
+}
+
+/* ─── Mobile tweaks ─── */
+@media (max-width: 768px) {
+  .tm-title { font-size: 1.35rem; }
+  .tm-sub { font-size: 0.875rem; }
+  .tm-bar { padding: 8px; gap: 6px; }
+  .tm-btn { padding: 9px 12px; font-size: 12px; min-height: 40px; }
+  .tm-search { min-height: 40px; }
+  .tm-tab { padding: 8px 12px; font-size: 12px; min-height: 36px; }
+}
 </style>
 
 <script>
-/* Runs exactly 3 times. No observer. No loop. */
-(function () {
-  function fix() {
-    var sel = [
-      '#dashboardHeader', '.dashboard-header',
-      '.controls-bar', '.dashboard-button-bar',
-      '#dashboardHeader h1', '.dashboard-header h1',
-      '.dashboard-subtitle', '.time-greeting',
-      '.controls-bar .btn', '.controls-bar .btn-icon',
-      '.dashboard-section-btn'
-    ].join(',');
-
-    document.querySelectorAll(sel).forEach(function (el) {
-      /* Only strip inline styles that actually hide things */
-      if (el.style.display === 'none')       el.style.removeProperty('display');
-      if (el.style.opacity === '0')          el.style.removeProperty('opacity');
-      if (el.style.visibility === 'hidden')  el.style.removeProperty('visibility');
-      if (el.style.filter)                   el.style.removeProperty('filter');
-      if (el.style.transform)                el.style.removeProperty('transform');
-      if (el.style.clipPath)                 el.style.removeProperty('clip-path');
-      if (el.style.webkitTextFillColor)      el.style.removeProperty('-webkit-text-fill-color');
-      if (el.style.backgroundClip)           el.style.removeProperty('background-clip');
+/* ─── Wire the tabs to showSection() ─── */
+document.addEventListener('DOMContentLoaded', function () {
+  var tabs = document.querySelectorAll('.tm-tab');
+  tabs.forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      tabs.forEach(function (t) { t.classList.remove('active'); });
+      tab.classList.add('active');
+      var section = tab.getAttribute('data-section');
+      if (section && typeof showSection === 'function') {
+        showSection(section);
+      }
+      // Also sync the sidebar's active state
+      document.querySelectorAll('.sidebar .nav-item').forEach(function (n) {
+        n.classList.remove('active');
+        if (n.textContent.toLowerCase().indexOf(section) !== -1) {
+          n.classList.add('active');
+        }
+      });
     });
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', fix, { once: true });
-  } else {
-    fix();
-  }
-  window.addEventListener('load', fix, { once: true });
-  setTimeout(fix, 500);
-})();
+  });
+});
 </script>
+
 </body>
 </html>
 
