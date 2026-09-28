@@ -284,15 +284,7 @@ var firebaseConfig = {
   return null;
 }
 
-  var params = new URLSearchParams(window.location.search);
-  var fromUrl = params.get('class');
-  if (fromUrl) {
-    localStorage.setItem('currentClassCode', fromUrl);
-    return fromUrl;                       // ← no .toUpperCase()
-  }
-  var fromStorage = localStorage.getItem('currentClassCode');
-  if (fromStorage) return fromStorage;    // ← no .toUpperCase()
-  return null;
+
 
 
 var CLASS_CODE = getClassCode();
@@ -669,6 +661,167 @@ setInterval(render, 5000); /* refresh derived values every 5s */
   }
 
   rewire();
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PRESENTATION DIAGNOSTIC · self-contained · runs independently
+     ═══════════════════════════════════════════════════════════════ -->
+<script>
+(function () {
+  var B = 'color:#ff4714;font-weight:bold;font-size:13px';
+  var H = 'color:#3b82f6;font-weight:bold';
+  var OK = 'color:#10b981;font-weight:bold';
+  var WARN = 'color:#f59e0b;font-weight:bold';
+
+  console.log('%c════════ PRESENTATION DIAGNOSTIC ════════', B);
+
+  /* ── 1 · Class code sources ── */
+  var urlCode = new URLSearchParams(location.search).get('class');
+  var ls1 = localStorage.getItem('currentClassCode');
+  var ls2 = localStorage.getItem('classCode');
+  var ls3 = localStorage.getItem('selectedClass');
+
+  console.log('%c📍 Class-code sources', H);
+  console.table({
+    'URL ?class':                    urlCode || '(none)',
+    'localStorage.currentClassCode': ls1 || '(none)',
+    'localStorage.classCode':        ls2 || '(none)',
+    'localStorage.selectedClass':    ls3 || '(none)'
+  });
+
+  var CODE = urlCode || ls1 || ls2 || ls3;
+  if (!CODE) {
+    console.error('❌ No class code found anywhere. Aborting.');
+    return;
+  }
+  console.log('✅ Using class code:', JSON.stringify(CODE), '(length ' + CODE.length + ')');
+
+  /* ── 2 · Firebase init (isolated) ── */
+  var cfg = {
+    apiKey: "AIzaSyBAIPxgXPZmGdPvB98TLFRfTAClgXWEIM0",
+    authDomain: "student-teacher-app-4e7c9.firebaseapp.com",
+    databaseURL: "https://student-teacher-app-4e7c9-default-rtdb.firebaseio.com",
+    projectId: "student-teacher-app-4e7c9",
+    storageBucket: "student-teacher-app-4e7c9.firebasestorage.app",
+    messagingSenderId: "737621420458",
+    appId: "1:737621420458:web:74c873869a1a47c2ce23d3"
+  };
+
+  var app;
+  try {
+    app = firebase.app();              // reuse if already init'd
+    console.log('🔥 Reusing existing Firebase app:', app.name);
+  } catch (e) {
+    app = firebase.initializeApp(cfg, 'diag-' + Date.now());
+    console.log('🔥 Initialized NEW Firebase app:', app.name);
+  }
+  var db = firebase.database(app);
+
+  /* ── 3 · Auth state ── */
+  var authUser = null;
+  try { authUser = firebase.auth ? firebase.auth().currentUser : null; } catch (e) {}
+  console.log('%c🔐 Auth state', H);
+  console.log('   currentUser:', authUser
+    ? authUser.uid + (authUser.isAnonymous ? '  (anonymous)' : '')
+    : 'NONE — unauthenticated');
+
+  /* ── 4 · Build candidate paths ── */
+  var variants = [];
+  var seen = {};
+  [CODE, CODE.toUpperCase(), CODE.toLowerCase(), CODE.trim()].forEach(function (v) {
+    if (v && !seen[v]) { seen[v] = 1; variants.push(v); }
+  });
+  console.log('%c🔎 Code variants to test:', H, variants);
+
+  var paths = [];
+  variants.forEach(function (c) {
+    paths.push('classes/' + c + '/students');
+    paths.push('classes/' + c + '/activity');
+    paths.push('classes/' + c + '/checkins');
+    paths.push('announcements/' + c);
+    paths.push('assignments/' + c);
+    paths.push('resources/' + c);
+    paths.push('classStudents/' + c);
+    paths.push('classCodes/' + c);
+  });
+
+  var rootProbes = ['classes', 'announcements', 'assignments', 'resources',
+                    'challenges', 'classStudents', 'classCodes', 'checkins'];
+
+  function probe(path) {
+    return db.ref(path).once('value')
+      .then(function (s) {
+        var v = s.val();
+        var size = v == null ? 0 : (Array.isArray(v) ? v.length : Object.keys(v).length);
+        return { path: path, ok: true, size: size,
+                 keys: v ? Object.keys(v).slice(0, 4) : [] };
+      })
+      .catch(function (e) {
+        return { path: path, ok: false, err: (e && e.code) || (e && e.message) || 'unknown' };
+      });
+  }
+
+  console.log('%c⏳ Probing Firebase…', WARN);
+
+  /* ── 5 · Root structure probe ── */
+  Promise.all(rootProbes.map(probe)).then(function (rootRes) {
+    console.log('%c── Root-level nodes ──', H);
+    console.table(rootRes.map(function (r) {
+      return {
+        node: r.path,
+        status: r.ok ? '✅ ' + r.size + ' keys' : '❌ ' + r.err,
+        sampleKeys: r.ok ? r.keys.join(', ') : '—'
+      };
+    }));
+
+    if (rootRes.some(function (r) { return r.ok && r.path === 'classes' && r.size > 0; })) {
+      // Print all class codes actually present in the DB
+      return db.ref('classes').once('value').then(function (s) {
+        var v = s.val() || {};
+        var codesInDb = Object.keys(v);
+        console.log('%c🏫 Class codes actually in DB:', H, codesInDb);
+        if (codesInDb.indexOf(CODE) === -1) {
+          console.warn('%c⚠️  Your URL code "' + CODE + '" is NOT in the DB list above!', WARN);
+          var ci = codesInDb.find(function (x) { return x.toLowerCase() === CODE.toLowerCase(); });
+          if (ci) console.warn('   Case-insensitive match exists: "' + ci + '" — use that instead.');
+        } else {
+          console.log('%c✅ Exact match found in DB: ' + CODE, OK);
+        }
+      });
+    }
+
+    return null;
+  })
+  /* ── 6 · Class path probe ── */
+  .then(function () { return Promise.all(paths.map(probe)); })
+  .then(function (res) {
+    console.log('%c── Candidate class paths ──', H);
+    console.table(res.map(function (r) {
+      return {
+        path: r.path,
+        status: r.ok ? '✅ ' + r.size + ' items' : '❌ ' + r.err,
+        sampleKeys: r.ok ? r.keys.join(', ') : '—'
+      };
+    }));
+
+    var hits = res.filter(function (r) { return r.ok && r.size > 0; });
+
+    console.log('%c════════ VERDICT ════════', OK);
+    if (hits.length) {
+      console.log('%c✅ Paths with live data:', OK);
+      hits.forEach(function (r) { console.log('   →', r.path, '(' + r.size + ')'); });
+      console.log('%c🎯 Rewire presentation.html to use these exact paths.', OK);
+    } else {
+      console.warn('%c⚠️  No candidate path returned data.', WARN);
+      console.warn('   Most likely causes:');
+      console.warn('   1) DB key case differs — see "Class codes actually in DB" above.');
+      console.warn('   2) Data lives at a different node — see Root-level table.');
+      console.warn('   3) Firebase rules block unauth reads — look for ❌ permission_denied.');
+    }
+
+    console.log('%c═══════ DIAGNOSTIC COMPLETE ═══════', B);
+  });
 })();
 </script>
 
