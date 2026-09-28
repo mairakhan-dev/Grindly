@@ -117,9 +117,7 @@
       <div class="nav-item active" onclick="showSection('dashboard'); closeSidebarOnMobile();">
         📊 Dashboard
       </div>
-      <div class="nav-item" onclick="showSection('presentation'); closeSidebarOnMobile();">
-        Presentation Mode
-      </div>
+    
     <!-- Memory Wall Navigation -->
 <div class="nav-item" onclick="showSection('memoryWall'); closeSidebarOnMobile();">
     📝 Memory Wall
@@ -2376,7 +2374,7 @@
         (btn.classList.contains('nav-item') &&
          txt.indexOf('presentation mode') !== -1 &&
          !document.body.classList.contains('presentation-mode'))) {
-          
+
       e.stopImmediatePropagation();
       e.stopPropagation();
       showPresentation();
