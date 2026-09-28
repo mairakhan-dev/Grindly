@@ -276,19 +276,21 @@ function getClassCode() {
   var fromUrl = params.get('class');
   if (fromUrl) {
     localStorage.setItem('currentClassCode', fromUrl);
-    return fromUrl.toUpperCase();
+    return fromUrl;                       // ← no .toUpperCase()
   }
   var fromStorage = localStorage.getItem('currentClassCode');
-  if (fromStorage) return fromStorage.toUpperCase();
+  if (fromStorage) return fromStorage;    // ← no .toUpperCase()
   return null;
 }
 
 var CLASS_CODE = getClassCode();
 
 if (!CLASS_CODE) {
+  console.warn('[Presentation] No class code. localStorage.currentClassCode =',
+               localStorage.getItem('currentClassCode'));
   document.getElementById('classTitle').textContent = 'No class selected';
   document.getElementById('classCodePill').textContent = '------';
-  showBanner('No class code found. Open this page with ?class=YOURCODE in the URL, or select a class in the Teacher Dashboard first.');
+  showBanner('No class code found. Open this page with ?class=YOURCODE in the URL.');
 } else {
   document.getElementById('classCodePill').textContent = CLASS_CODE;
   document.getElementById('classTitle').textContent = 'Class ' + CLASS_CODE;
@@ -317,7 +319,8 @@ function connect() {
   if (!db || !CLASS_CODE) return;
   var base = 'classes/' + CLASS_CODE;
 
-  /* Adjust these paths to match your DB structure if needed */
+  console.log('[Presentation] Reading from:', base);
+
   refs.students      = db.ref(base + '/students');
   refs.announcements = db.ref(base + '/announcements');
   refs.assignments   = db.ref(base + '/assignments');
@@ -328,11 +331,16 @@ function connect() {
 
   Object.keys(refs).forEach(function (k) {
     refs[k].on('value', function (snap) {
-      DATA[k] = snap.val() || {};
+      var val = snap.val();
+      console.log('[Presentation] ' + k + ' →',
+        val ? (Array.isArray(val) ? val.length : Object.keys(val).length) + ' items' : 'EMPTY');
+      DATA[k] = val || {};
       render();
       markUpdated();
     }, function (err) {
-      console.warn('Read denied for ' + k + ':', err.message);
+      console.error('[Presentation] READ DENIED for ' + k + ':', err.message);
+      showBanner('Cannot read "' + k + '" from /' + base + ': ' + err.message +
+                 ' — check Firebase rules or class-code case.');
     });
   });
 }

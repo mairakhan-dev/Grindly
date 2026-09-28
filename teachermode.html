@@ -2417,25 +2417,23 @@
 function openPresentationMode() {
   var code = '';
 
-  /* Try every possible source */
   if (typeof currentClassCode !== 'undefined' && currentClassCode) code = currentClassCode;
   else if (window.currentClassCode)                                 code = window.currentClassCode;
   else if (localStorage.getItem('currentClassCode'))                code = localStorage.getItem('currentClassCode');
   else if (localStorage.getItem('classCode'))                       code = localStorage.getItem('classCode');
   else if (localStorage.getItem('selectedClass'))                   code = localStorage.getItem('selectedClass');
   else {
-    /* Last resort: read it from the on-screen class code display */
     var el = document.getElementById('currentClassCodeDisplay');
     if (el && el.textContent && el.textContent.trim() !== '------') code = el.textContent.trim();
   }
 
-  code = String(code || '').toUpperCase().trim();
+  // ⚠️ DO NOT uppercase — must match the DB key exactly
+  code = String(code || '').trim();
 
-  /* Debug — remove later once it's working */
   console.log('[Presentation] class code =', code);
 
   if (!code) {
-    alert('No class code found.\n\nMake sure you:\n1. Selected a class from the dropdown at the top of the sidebar\n2. Waited for the class code to load (should show under "Class Code")\n\nThen try again.');
+    alert('No class code found.\n\nMake sure you:\n1. Selected a class from the dropdown\n2. Waited for the code to load under "Class Code"\n\nThen try again.');
     return;
   }
 
