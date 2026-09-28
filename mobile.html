@@ -1,858 +1,1850 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Grindly Learn</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        /* ===== BASE VARIABLES ===== */
-        body {
-            padding: 20px 16px 40px;
-            line-height: 1.5;
-            transition: all 0.3s ease;
-        }
-        
-        /* ===== LIGHT THEME - NOTEBOOK STYLE ===== */
-        body.light {
-            background: #f5f0e1;
-            background-image: radial-gradient(circle at 25px 25px, rgba(200, 180, 140, 0.15) 2px, transparent 2px);
-            background-size: 50px 50px;
-            font-family: 'Comic Neue', 'Comic Sans MS', 'Chalkboard SE', cursive;
-            color: #4a3728;
-        }
-        
-        /* Notebook paper lines effect */
-        body.light .notebook-lines {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            pointer-events: none;
-            z-index: 0;
-        }
-        body.light .notebook-lines::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: repeating-linear-gradient(
-                to bottom,
-                transparent 0px,
-                transparent 28px,
-                rgba(150, 130, 100, 0.15) 28px,
-                rgba(150, 130, 100, 0.15) 29px
-            );
-        }
-        
-        /* ===== DARK THEME ===== */
-        body.dark {
-            background: #0f172a;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            color: #f1f5f9;
-        }
-        
-        /* ===== OCEAN THEME ===== */
-        body.ocean {
-            background: linear-gradient(135deg, #0c4a6e, #075985);
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            color: #e0f2fe;
-        }
-        
-        /* ===== FOREST THEME ===== */
-        body.forest {
-            background: linear-gradient(135deg, #064e3b, #047857);
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            color: #d1fae5;
-        }
-        
-        /* ===== PURPLE THEME ===== */
-        body.purple {
-            background: linear-gradient(135deg, #1e1b4b, #312e81);
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            color: #e0e7ff;
-        }
-        
-        /* Notebook lines container - only for light theme */
-        .notebook-lines {
-            display: none;
-        }
-        body.light .notebook-lines {
-            display: block;
-        }
-        
-        /* Header */
-        .mobile-header { text-align: center; margin-bottom: 20px; position: relative; z-index: 5; }
-        .mobile-header h1 {
-            font-size: 2rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #4f46e5, #7c3aed);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        body.light .mobile-header h1 { background: linear-gradient(135deg, #d4a017, #f5a623); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        
-        /* Theme Selector */
-        .theme-selector { text-align: center; margin-bottom: 20px; position: relative; z-index: 5; }
-        .theme-selector select {
-            background: rgba(255,255,255,0.95);
-            border: 1px solid #ddd;
-            border-radius: 30px;
-            padding: 8px 16px;
-            font-size: 0.75rem;
-            cursor: pointer;
-        }
-        body.light .theme-selector select { background: white; border: 2px solid #d4a017; font-family: 'Comic Sans MS', cursive; }
-        body.dark .theme-selector select { background: #1e293b; border-color: #334155; color: #f1f5f9; }
-        body.ocean .theme-selector select { background: #075985; border-color: #0369a1; color: #e0f2fe; }
-        body.forest .theme-selector select { background: #047857; border-color: #059669; color: #d1fae5; }
-        body.purple .theme-selector select { background: #312e81; border-color: #4f46e5; color: #e0e7ff; }
-        
-        /* Stats Row */
-        .stats-row {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin: 20px 0;
-            text-align: center;
-            position: relative;
-            z-index: 5;
-        }
-        .stat-card {
-            background: white;
-            border-radius: 20px;
-            padding: 12px;
-            transition: transform 0.2s;
-        }
-        body.light .stat-card { background: #fff8e7; border: 2px solid #d4a017; box-shadow: 4px 4px 0 rgba(0,0,0,0.05); }
-        body.dark .stat-card { background: #1e293b; border: 1px solid #334155; }
-        body.ocean .stat-card { background: #075985; border: 1px solid #0369a1; }
-        body.forest .stat-card { background: #047857; border: 1px solid #059669; }
-        body.purple .stat-card { background: #312e81; border: 1px solid #4f46e5; }
-        .stat-card:active { transform: scale(0.97); }
-        .stat-number { font-size: 1.5rem; font-weight: 800; color: #4f46e5; }
-        .stat-label { font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.5px; }
-        body.light .stat-number { color: #d4a017; }
-        body.light .stat-label { color: #8B4513; }
-        body.dark .stat-number { color: #818cf8; }
-        body.dark .stat-label { color: #94a3b8; }
-        body.ocean .stat-number { color: #7dd3fc; }
-        body.ocean .stat-label { color: #bae6fd; }
-        body.forest .stat-number { color: #6ee7b7; }
-        body.forest .stat-label { color: #a7f3d0; }
-        body.purple .stat-number { color: #c4b5fd; }
-        body.purple .stat-label { color: #a5b4fc; }
-        
-        /* MODES GRID */
-        .modes-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin-bottom: 20px;
-            position: relative;
-            z-index: 5;
-        }
-        .mode-card {
-            background: white;
-            border-radius: 20px;
-            padding: 20px 12px;
-            text-align: center;
-            transition: transform 0.2s;
-        }
-        body.light .mode-card { background: #fff8e7; border: 2px solid #d4a017; box-shadow: 5px 5px 0 rgba(0,0,0,0.05); }
-        body.light .mode-card:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 rgba(0,0,0,0.05); }
-        body.dark .mode-card { background: #1e293b; border: 1px solid #334155; }
-        body.ocean .mode-card { background: #075985; border: 1px solid #0369a1; }
-        body.forest .mode-card { background: #047857; border: 1px solid #059669; }
-        body.purple .mode-card { background: #312e81; border: 1px solid #4f46e5; }
-        .mode-card:active { transform: scale(0.98); }
-        .mode-icon { font-size: 2.5rem; margin-bottom: 12px; }
-        .mode-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 12px; }
-        body.light .mode-title { color: #8B4513; }
-        body.dark .mode-title { color: #f1f5f9; }
-        body.ocean .mode-title { color: #e0f2fe; }
-        body.forest .mode-title { color: #d1fae5; }
-        body.purple .mode-title { color: #e0e7ff; }
-        
-        .feature-row {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 6px;
-            margin-bottom: 12px;
-        }
-        .feature-chip {
-            font-size: 0.6rem;
-            padding: 4px 10px;
-            border-radius: 20px;
-        }
-        body.light .feature-chip { background: #f0e6c5; border: 1px solid #d4a017; color: #8B4513; }
-        body.dark .feature-chip { background: #334155; color: #94a3b8; }
-        body.ocean .feature-chip { background: #0369a1; color: #bae6fd; }
-        body.forest .feature-chip { background: #059669; color: #a7f3d0; }
-        body.purple .feature-chip { background: #4f46e5; color: #c4b5fd; }
-        
-        .feature-list {
-            margin: 12px 0;
-            padding-left: 16px;
-            text-align: left;
-        }
-        .feature-list li {
-            font-size: 0.65rem;
-            margin: 6px 0;
-            line-height: 1.3;
-        }
-        body.light .feature-list li { color: #8B4513; }
-        body.dark .feature-list li { color: #94a3b8; }
-        body.ocean .feature-list li { color: #bae6fd; }
-        body.forest .feature-list li { color: #a7f3d0; }
-        body.purple .feature-list li { color: #c4b5fd; }
-        
-        .tier-s, .tier-a, .tier-b {
-            display: inline-block;
-            font-size: 0.55rem;
-            padding: 2px 8px;
-            border-radius: 12px;
-            margin-right: 6px;
-            font-weight: 600;
-        }
-        .tier-s { background: #fef3c7; color: #d97706; }
-        .tier-a { background: #dcfce7; color: #059669; }
-        .tier-b { background: #dbeafe; color: #2563eb; }
-        body.light .tier-s { background: #fff3c9; border: 1px solid #d4a017; color: #d97706; }
-        body.light .tier-a { background: #e8f5e9; border: 1px solid #81c784; color: #059669; }
-        body.light .tier-b { background: #e3f2fd; border: 1px solid #90caf9; color: #2563eb; }
-        body.dark .tier-s { background: #713f12; color: #fbbf24; }
-        body.dark .tier-a { background: #064e3b; color: #34d399; }
-        body.dark .tier-b { background: #1e3a8a; color: #60a5fa; }
-        
-        .mode-btn {
-            width: 100%;
-            padding: 10px;
-            border-radius: 30px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 12px;
-            transition: all 0.1s;
-            border: none;
-        }
-        body.light .mode-btn { background: #d4a017; color: white; border-bottom: 3px solid #8B6914; }
-        body.light .mode-btn:active { transform: translateY(2px); border-bottom-width: 1px; }
-        body.dark .mode-btn { background: linear-gradient(135deg, #4f46e5, #7c3aed); color: white; }
-        body.ocean .mode-btn { background: linear-gradient(135deg, #0891b2, #06b6d4); color: white; }
-        body.forest .mode-btn { background: linear-gradient(135deg, #059669, #10b981); color: white; }
-        body.purple .mode-btn { background: linear-gradient(135deg, #8b5cf6, #a78bfa); color: white; }
-        .teacher-btn { background: linear-gradient(135deg, #10b981, #059669); }
-        body.light .teacher-btn { background: #5cb85c; border-bottom-color: #3d8b3d; }
-        
-        /* Social Feed Card */
-        .social-feed {
-            border-radius: 20px;
-            padding: 16px 20px;
-            margin: 20px 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            transition: transform 0.1s;
-        }
-        body.light .social-feed { background: #fff8e7; border: 2px solid #d4a017; box-shadow: 4px 4px 0 rgba(0,0,0,0.05); }
-        body.dark .social-feed { background: linear-gradient(135deg, #1da1f2, #0d8bd9); }
-        body.ocean .social-feed { background: linear-gradient(135deg, #0891b2, #06b6d4); }
-        body.forest .social-feed { background: linear-gradient(135deg, #059669, #10b981); }
-        body.purple .social-feed { background: linear-gradient(135deg, #8b5cf6, #a78bfa); }
-        .social-feed:active { transform: scale(0.98); }
-        .social-feed h4 { font-size: 1rem; margin-bottom: 4px; color: white; }
-        .social-feed p { font-size: 0.7rem; color: rgba(255,255,255,0.9); }
-        body.light .social-feed h4 { color: #8B4513; }
-        body.light .social-feed p { color: #a0692c; }
-        .feed-btn { background: white; padding: 6px 14px; border-radius: 30px; font-size: 0.7rem; font-weight: 600; }
-        body.light .feed-btn { background: #d4a017; color: white; }
-        body.light .feed-btn:active { transform: translateY(1px); }
-        
-        /* Slideshow */
-        .slideshow-container {
-            position: relative;
-            overflow: hidden;
-            border-radius: 20px;
-            margin-bottom: 20px;
-            position: relative;
-            z-index: 5;
-        }
-        body.light .slideshow-container { background: #fff8e7; border: 2px solid #d4a017; box-shadow: 4px 4px 0 rgba(0,0,0,0.05); }
-        body.dark .slideshow-container { background: #1e293b; border: 1px solid #334155; }
-        body.ocean .slideshow-container { background: #075985; border: 1px solid #0369a1; }
-        body.forest .slideshow-container { background: #047857; border: 1px solid #059669; }
-        body.purple .slideshow-container { background: #312e81; border: 1px solid #4f46e5; }
-        .slide { display: none; padding: 16px; }
-        .slide.active { display: block; animation: fadeIn 0.4s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
-        
-        .slide-content { display: flex; flex-direction: column; gap: 12px; }
-        .slide-image { text-align: center; width: 100%; }
-        .slide-image img { width: 100%; max-width: 100%; height: auto; border-radius: 16px; object-fit: cover; }
-        body.light .slide-image img { border: 2px solid #d4a017; }
-        
-        .slide-text h3 { font-size: 0.9rem; margin-bottom: 6px; }
-        .slide-text p { font-size: 0.7rem; margin-bottom: 8px; }
-        body.light .slide-text h3 { color: #8B4513; }
-        body.light .slide-text p { color: #a0692c; }
-        body.dark .slide-text h3 { color: #f1f5f9; }
-        body.dark .slide-text p { color: #94a3b8; }
-        body.ocean .slide-text h3 { color: #e0f2fe; }
-        body.ocean .slide-text p { color: #bae6fd; }
-        body.forest .slide-text h3 { color: #d1fae5; }
-        body.forest .slide-text p { color: #a7f3d0; }
-        body.purple .slide-text h3 { color: #e0e7ff; }
-        body.purple .slide-text p { color: #c4b5fd; }
-        
-        .feature-list-slide { list-style: none; padding-left: 0; margin: 0; }
-        .feature-list-slide li { font-size: 0.65rem; padding: 3px 0; display: flex; align-items: center; gap: 6px; }
-        .feature-list-slide li i { color: #10b981; width: 14px; font-size: 0.6rem; }
-        body.light .feature-list-slide li { color: #8B4513; }
-        body.ocean .feature-list-slide li { color: #bae6fd; }
-        body.forest .feature-list-slide li { color: #a7f3d0; }
-        body.purple .feature-list-slide li { color: #c4b5fd; }
-        
-        .nav-arrow {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 10;
-            font-size: 0.7rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        body.light .nav-arrow { background: #fff8e7; border: 2px solid #d4a017; color: #8B4513; }
-        body.dark .nav-arrow { background: #1e293b; border: 1px solid #334155; color: #f1f5f9; }
-        body.ocean .nav-arrow { background: #075985; border: 1px solid #0369a1; color: #e0f2fe; }
-        body.forest .nav-arrow { background: #047857; border: 1px solid #059669; color: #d1fae5; }
-        body.purple .nav-arrow { background: #312e81; border: 1px solid #4f46e5; color: #e0e7ff; }
-        .nav-arrow.left { left: 8px; }
-        .nav-arrow.right { right: 8px; }
-        
-        .slideshow-nav {
-            display: flex;
-            justify-content: center;
-            gap: 6px;
-            margin: 12px 0 20px;
-            position: relative;
-            z-index: 5;
-        }
-        .nav-dot { width: 6px; height: 6px; border-radius: 50%; cursor: pointer; }
-        .nav-dot.active { width: 20px; border-radius: 12px; }
-        body.light .nav-dot { background: #d4a017; opacity: 0.5; }
-        body.light .nav-dot.active { background: #d4a017; opacity: 1; }
-        body.dark .nav-dot { background: #334155; }
-        body.dark .nav-dot.active { background: #818cf8; }
-        body.ocean .nav-dot { background: #0369a1; }
-        body.ocean .nav-dot.active { background: #0891b2; }
-        body.forest .nav-dot { background: #059669; }
-        body.forest .nav-dot.active { background: #10b981; }
-        body.purple .nav-dot { background: #4f46e5; }
-        body.purple .nav-dot.active { background: #a78bfa; }
-        
-        /* Feature Grid */
-        .feature-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin: 20px 0;
-            position: relative;
-            z-index: 5;
-        }
-        .grid-item {
-            border-radius: 16px;
-            padding: 10px;
-            text-align: center;
-            transition: transform 0.1s;
-        }
-        body.light .grid-item { background: #fff8e7; border: 2px solid #d4a017; box-shadow: 3px 3px 0 rgba(0,0,0,0.05); }
-        body.dark .grid-item { background: #1e293b; border: 1px solid #334155; }
-        body.ocean .grid-item { background: #075985; border: 1px solid #0369a1; }
-        body.forest .grid-item { background: #047857; border: 1px solid #059669; }
-        body.purple .grid-item { background: #312e81; border: 1px solid #4f46e5; }
-        .grid-item:active { transform: scale(0.97); }
-        .grid-item i { font-size: 1rem; display: block; margin-bottom: 4px; }
-        .grid-item span { font-size: 0.65rem; font-weight: 600; display: block; }
-        .grid-item small { font-size: 0.5rem; margin-top: 4px; display: block; }
-        body.light .grid-item i { color: #d4a017; }
-        body.light .grid-item span { color: #8B4513; }
-        body.light .grid-item small { color: #a0692c; }
-        body.dark .grid-item i { color: #818cf8; }
-        body.dark .grid-item span { color: #f1f5f9; }
-        body.dark .grid-item small { color: #94a3b8; }
-        body.ocean .grid-item i { color: #7dd3fc; }
-        body.ocean .grid-item span { color: #e0f2fe; }
-        body.ocean .grid-item small { color: #bae6fd; }
-        body.forest .grid-item i { color: #6ee7b7; }
-        body.forest .grid-item span { color: #d1fae5; }
-        body.forest .grid-item small { color: #a7f3d0; }
-        body.purple .grid-item i { color: #c4b5fd; }
-        body.purple .grid-item span { color: #e0e7ff; }
-        body.purple .grid-item small { color: #c4b5fd; }
-        
-        /* Testimonials */
-        .testimonials-section { margin: 20px 0; position: relative; z-index: 5; }
-        .testimonials-title { text-align: center; font-size: 0.9rem; font-weight: 700; margin-bottom: 16px; }
-        body.light .testimonials-title { color: #8B4513; }
-        .testimonials-scroll {
-            display: flex;
-            overflow-x: auto;
-            gap: 16px;
-            scroll-snap-type: x mandatory;
-            padding-bottom: 8px;
-        }
-        .testimonial-card {
-            flex: 0 0 280px;
-            border-radius: 20px;
-            padding: 16px;
-            scroll-snap-align: start;
-        }
-        body.light .testimonial-card { background: #fff8e7; border: 2px solid #d4a017; box-shadow: 3px 3px 0 rgba(0,0,0,0.05); }
-        body.dark .testimonial-card { background: #1e293b; border: 1px solid #334155; }
-        body.ocean .testimonial-card { background: #075985; border: 1px solid #0369a1; }
-        body.forest .testimonial-card { background: #047857; border: 1px solid #059669; }
-        body.purple .testimonial-card { background: #312e81; border: 1px solid #4f46e5; }
-        .testimonial-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-        .testimonial-avatar {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, #4f46e5, #7c3aed);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 700;
-        }
-        body.light .testimonial-avatar { background: #d4a017; }
-        .testimonial-name { font-weight: 700; font-size: 0.85rem; }
-        .testimonial-stars { color: #fbbf24; font-size: 0.7rem; letter-spacing: 2px; }
-        .testimonial-text { font-size: 0.7rem; font-style: italic; line-height: 1.4; }
-        body.light .testimonial-text { color: #8B4513; }
-        body.dark .testimonial-text { color: #94a3b8; }
-        body.ocean .testimonial-text { color: #bae6fd; }
-        body.forest .testimonial-text { color: #a7f3d0; }
-        body.purple .testimonial-text { color: #c4b5fd; }
-        
-        /* Live Row */
-        .live-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 16px;
-            border-radius: 40px;
-            margin: 20px 0;
-            position: relative;
-            z-index: 5;
-        }
-        body.light .live-row { background: #fff8e7; border: 2px solid #d4a017; box-shadow: 3px 3px 0 rgba(0,0,0,0.05); }
-        body.dark .live-row { background: #1e293b; border: 1px solid #334155; }
-        body.ocean .live-row { background: #075985; border: 1px solid #0369a1; }
-        body.forest .live-row { background: #047857; border: 1px solid #059669; }
-        body.purple .live-row { background: #312e81; border: 1px solid #4f46e5; }
-        .avatars { display: flex; gap: 4px; }
-        .avatar {
-            width: 28px;
-            height: 28px;
-            background: linear-gradient(135deg, #4f46e5, #7c3aed);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 0.6rem;
-        }
-        body.light .avatar { background: #d4a017; }
-        .live-text { font-size: 0.7rem; color: #10b981; font-weight: 600; }
-        
-        /* Newsletter */
-        .newsletter-section {
-            margin: 20px 0;
-            padding: 20px;
-            border-radius: 20px;
-            text-align: center;
-            position: relative;
-            z-index: 5;
-        }
-        body.light .newsletter-section { background: #fff8e7; border: 2px solid #d4a017; box-shadow: 3px 3px 0 rgba(0,0,0,0.05); }
-        body.dark .newsletter-section { background: #1e293b; border: 1px solid #334155; }
-        body.ocean .newsletter-section { background: #075985; border: 1px solid #0369a1; }
-        body.forest .newsletter-section { background: #047857; border: 1px solid #059669; }
-        body.purple .newsletter-section { background: #312e81; border: 1px solid #4f46e5; }
-        .newsletter-title { font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
-        body.light .newsletter-title { color: #8B4513; }
-        .newsletter-desc { font-size: 0.65rem; margin-bottom: 16px; }
-        body.light .newsletter-desc { color: #8B4513; }
-        body.dark .newsletter-desc { color: #94a3b8; }
-        body.ocean .newsletter-desc { color: #bae6fd; }
-        body.forest .newsletter-desc { color: #a7f3d0; }
-        body.purple .newsletter-desc { color: #c4b5fd; }
-        .newsletter-form { display: flex; flex-direction: column; gap: 10px; }
-        .newsletter-input {
-            width: 100%;
-            padding: 12px;
-            border-radius: 30px;
-            font-size: 0.85rem;
-        }
-        body.light .newsletter-input { background: white; border: 2px solid #d4a017; font-family: 'Comic Sans MS', cursive; }
-        body.dark .newsletter-input { background: #0f172a; border: 1px solid #334155; color: #f1f5f9; }
-        body.ocean .newsletter-input { background: #0c4a6e; border: 1px solid #0369a1; color: #e0f2fe; }
-        body.forest .newsletter-input { background: #064e3b; border: 1px solid #059669; color: #d1fae5; }
-        body.purple .newsletter-input { background: #1e1b4b; border: 1px solid #4f46e5; color: #e0e7ff; }
-        .newsletter-input:focus { outline: none; border-color: #4f46e5; }
-        .newsletter-btn {
-            padding: 12px;
-            border-radius: 30px;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-        }
-        body.light .newsletter-btn { background: #d4a017; color: white; border-bottom: 3px solid #8B6914; }
-        body.light .newsletter-btn:active { transform: translateY(2px); border-bottom-width: 1px; }
-        body.dark .newsletter-btn { background: linear-gradient(135deg, #4f46e5, #7c3aed); color: white; }
-        body.ocean .newsletter-btn { background: linear-gradient(135deg, #0891b2, #06b6d4); color: white; }
-        body.forest .newsletter-btn { background: linear-gradient(135deg, #059669, #10b981); color: white; }
-        body.purple .newsletter-btn { background: linear-gradient(135deg, #8b5cf6, #a78bfa); color: white; }
-        
-        /* Footer */
-        .mobile-footer {
-            text-align: center;
-            padding: 16px 0;
-            font-size: 0.6rem;
-            border-top: 1px solid;
-            margin-top: 20px;
-            position: relative;
-            z-index: 5;
-        }
-        body.light .mobile-footer { border-color: #d4a017; color: #a0692c; }
-        body.dark .mobile-footer { border-color: #334155; color: #94a3b8; }
-        body.ocean .mobile-footer { border-color: #0369a1; color: #bae6fd; }
-        body.forest .mobile-footer { border-color: #059669; color: #a7f3d0; }
-        body.purple .mobile-footer { border-color: #4f46e5; color: #c4b5fd; }
-        .social-links { display: flex; justify-content: center; gap: 16px; margin: 12px 0; flex-wrap: wrap; }
-        .social-links a { text-decoration: none; font-size: 0.8rem; }
-        body.light .social-links a { color: #8B4513; }
-        body.dark .social-links a { color: #94a3b8; }
-        body.ocean .social-links a { color: #bae6fd; }
-        body.forest .social-links a { color: #a7f3d0; }
-        body.purple .social-links a { color: #c4b5fd; }
-        
-        @media (max-width: 550px) {
-            .modes-grid { grid-template-columns: 1fr; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#ff4714">
+<title>Grindly · Modern Learning Ecosystem</title>
+
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="icon" href="/favicon.ico">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="canonical" href="https://grindlylearn.com/">
+
+<meta name="title" content="Grindly · Free Study Tool with Live Study Groups & Class Battles">
+<meta name="description" content="Join 1,200+ students using Grindly for focus timers, study streaks, class battles, and live whiteboards. 100% free for teachers and students.">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
+
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://grindlylearn.com/">
+<meta property="og:title" content="Grindly · The Complete Learning Ecosystem">
+<meta property="og:description" content="Study groups, focus timers, class battles, and real-time teacher analytics. 100% free.">
+<meta property="og:image" content="https://grindlylearn.com/og-image.png">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Grindly · Learn Smarter Together">
+<meta name="twitter:description" content="Free platform for students and teachers.">
+<meta name="twitter:image" content="https://grindlylearn.com/twitter-image.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" referrerpolicy="no-referrer">
+
+<script type="application/ld+json">
+{ "@context":"https://schema.org","@type":"WebApplication","name":"Grindly","url":"https://grindlylearn.com","description":"Free study platform with focus timers, class battles, memory wall, and real-time teacher analytics","applicationCategory":"EducationalApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"aggregateRating":{"@type":"AggregateRating","ratingValue":"4.8","ratingCount":"342"} }
+</script>
+
+<style>
+/* ============================================================
+   TOKENS
+   ============================================================ */
+:root {
+  --bg:#fef9e8;
+  --bg-alt:#f9f3e0;
+  --card:#ffffff;
+  --text:#14110d;
+  --text-mid:#4a4540;
+  --text-soft:#8a8078;
+  --border:rgba(20,17,13,.10);
+  --accent:#ff4714;
+  --accent-hot:#d61f00;
+  --accent-soft:rgba(255,71,20,.12);
+  --accent-glow:rgba(255,71,20,.30);
+  --gradient-flame:linear-gradient(135deg,#ffaa33 0%,#ff4714 50%,#d61f00 100%);
+  --paper-line:rgba(255,71,20,.10);
+  --radius-sm:8px;
+  --radius:14px;
+  --radius-lg:20px;
+  --radius-xl:24px;
+  --radius-pill:999px;
+  --shadow-sm:0 1px 3px rgba(60,42,15,.06);
+  --shadow:0 6px 20px rgba(60,42,15,.08);
+  --shadow-lg:0 20px 50px rgba(60,42,15,.12);
+  --ease:cubic-bezier(.2,.8,.2,1);
+}
+
+body.theme-dark   { --bg:#0f1014; --bg-alt:#17181e; --card:#17181e; --text:#eceef4; --text-mid:#b8bcc8; --text-soft:#6d7280; --border:rgba(255,255,255,.07); --accent:#ff5722; --accent-hot:#ff2200; --accent-soft:rgba(255,87,34,.14); --accent-glow:rgba(255,87,34,.35); --paper-line:transparent; }
+body.theme-purple { --bg:#140a26; --bg-alt:#1d1038; --card:#1d1038; --text:#f3eefe; --text-mid:#c7b7e6; --text-soft:#8a7aa8; --border:rgba(255,255,255,.09); --accent:#b388ff; --accent-hot:#9b5cff; --accent-soft:rgba(179,136,255,.14); --accent-glow:rgba(179,136,255,.35); --gradient-flame:linear-gradient(135deg,#d6bcff,#b388ff,#7c3aed); --paper-line:transparent; }
+body.theme-ocean  { --bg:#061a24; --bg-alt:#0a2532; --card:#0a2532; --text:#e0f2fe; --text-mid:#a3c8dd; --text-soft:#6c93a8; --border:rgba(125,211,252,.15); --accent:#22d3ee; --accent-hot:#0891b2; --accent-soft:rgba(34,211,238,.14); --accent-glow:rgba(34,211,238,.32); --gradient-flame:linear-gradient(135deg,#a5f3fc,#22d3ee,#0e7490); --paper-line:transparent; }
+body.theme-forest { --bg:#04180e; --bg-alt:#0a2818; --card:#0a2818; --text:#d1fae5; --text-mid:#a3ccbb; --text-soft:#6d9884; --border:rgba(74,222,128,.15); --accent:#4ade80; --accent-hot:#16a34a; --accent-soft:rgba(74,222,128,.14); --accent-glow:rgba(74,222,128,.32); --gradient-flame:linear-gradient(135deg,#6ee7b7,#059669,#065f46); --paper-line:transparent; }
+body.theme-sunset { --bg:#1a0a14; --bg-alt:#240e1c; --card:#240e1c; --text:#ffedd5; --text-mid:#e0c0a8; --text-soft:#a88a76; --border:rgba(251,113,133,.17); --accent:#fb7185; --accent-hot:#e11d48; --accent-soft:rgba(251,113,133,.14); --accent-glow:rgba(251,113,133,.34); --gradient-flame:linear-gradient(135deg,#fcd34d,#ea580c,#9a3412); --paper-line:transparent; }
+
+/* ============================================================
+   RESET + BASE (mobile-first)
+   ============================================================ */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;}
+
+body{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  font-size:16px;
+  line-height:1.6;
+  color:var(--text);
+  background:var(--bg);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  -webkit-tap-highlight-color:transparent;
+  overflow-x:hidden;
+  min-height:100vh;
+  padding-bottom:calc(84px + env(safe-area-inset-bottom));
+  transition:background .3s var(--ease),color .3s var(--ease);
+}
+
+/* Notebook ruled lines — default theme only, subtle on mobile */
+body:not([class*="theme-"])::before{
+  content:'';
+  position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-color:var(--bg);
+  background-image:linear-gradient(to bottom,transparent 0,transparent 31px,var(--paper-line) 31px,var(--paper-line) 32px);
+  background-size:100% 32px;
+  background-repeat:repeat-y;
+}
+body > *{position:relative;z-index:1;}
+
+img{max-width:100%;height:auto;display:block;}
+button,select,input{font:inherit;color:inherit;}
+button{cursor:pointer;border:none;background:none;}
+a{color:var(--accent);text-decoration:none;}
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+.wrap{padding:0 18px;max-width:640px;margin:0 auto;}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+.site-header{
+  position:sticky;top:0;z-index:50;
+  background:color-mix(in srgb,var(--bg) 86%,transparent);
+  border-bottom:1px solid var(--border);
+  padding:10px 0;
+  padding-top:calc(10px + env(safe-area-inset-top));
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+}
+.site-header .wrap{display:flex;justify-content:space-between;align-items:center;gap:10px;}
+
+.brand{
+  display:flex;align-items:center;gap:7px;
+  font-size:1.1rem;font-weight:800;letter-spacing:-.02em;
+  color:var(--text);flex-shrink:0;
+}
+.brand-flame{
+  font-size:1.35rem;
+  animation:flicker 2.6s ease-in-out infinite;
+  filter:drop-shadow(0 0 8px var(--accent-glow));
+}
+@keyframes flicker{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.08);opacity:.9;}}
+
+.header-right{display:flex;align-items:center;gap:8px;min-width:0;}
+
+.studying-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 11px 6px 9px;
+  border-radius:var(--radius-pill);
+  background:var(--card);
+  border:1px solid var(--border);
+  font-size:.6875rem;
+  font-weight:600;
+  color:var(--text-mid);
+  white-space:nowrap;
+  flex-shrink:0;
+}
+.studying-pill__dot{
+  width:6px;height:6px;border-radius:50%;
+  background:#22c55e;position:relative;flex-shrink:0;
+}
+.studying-pill__dot::after{
+  content:'';position:absolute;inset:-3px;border-radius:50%;
+  background:#22c55e;opacity:.4;animation:pulse-dot 2s infinite;
+}
+@keyframes pulse-dot{
+  0%{transform:scale(1);opacity:.4;}
+  70%{transform:scale(2.2);opacity:0;}
+  100%{transform:scale(1);opacity:0;}
+}
+.studying-pill__count{color:var(--accent);font-weight:800;}
+
+.theme-select{
+  padding:7px 28px 7px 11px;
+  border-radius:var(--radius-pill);
+  border:1px solid var(--border);
+  background:var(--card);
+  color:var(--text);
+  font-size:.75rem;
+  font-weight:600;
+  -webkit-appearance:none;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 16 16'%3E%3Cpath fill='%23ff4714' d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 11px center;
+  background-size:9px;
+  transition:border-color .2s var(--ease);
+  min-height:36px;
+}
+.theme-select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);}
+
+@media (max-width:400px){ .studying-pill{display:none;} }
+
+/* ============================================================
+   HERO
+   ============================================================ */
+.hero{
+  text-align:center;
+  padding:44px 0 8px;
+}
+.hero__eyebrow{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:5px 12px;
+  border-radius:var(--radius-pill);
+  background:var(--accent-soft);
+  color:var(--accent-hot);
+  font-size:.6875rem;
+  font-weight:700;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  margin-bottom:18px;
+  border:1px solid var(--accent-glow);
+}
+.hero h1{
+  font-size:clamp(1.85rem,8.2vw,2.6rem);
+  font-weight:900;
+  letter-spacing:-.035em;
+  line-height:1.08;
+  margin-bottom:16px;
+}
+.hero h1 .accent{
+  background:var(--gradient-flame);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+.hero p{
+  font-size:.9375rem;
+  color:var(--text-mid);
+  max-width:520px;
+  margin:0 auto 30px;
+  line-height:1.65;
+}
+
+/* ============================================================
+   FOCUS TIMER DEMO
+   ============================================================ */
+.demo-timer{
+  position:relative;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius-xl);
+  padding:26px 20px 22px;
+  box-shadow:var(--shadow);
+  overflow:hidden;
+  isolation:isolate;
+  transition:border-color .4s var(--ease),box-shadow .4s var(--ease),transform .3s var(--ease);
+}
+.demo-timer::before{
+  content:'';position:absolute;inset:-3px;
+  background:var(--gradient-flame);
+  border-radius:calc(var(--radius-xl) + 3px);
+  opacity:0;filter:blur(22px);z-index:-1;
+  transition:opacity .5s var(--ease);
+}
+.demo-timer.running{
+  border-color:var(--accent);
+  box-shadow:0 20px 50px var(--accent-glow);
+  transform:translateY(-2px);
+}
+.demo-timer.running::before{opacity:.5;}
+.demo-timer.done{animation:doneFlash 1.2s var(--ease);}
+@keyframes doneFlash{
+  0%,100%{box-shadow:0 20px 50px var(--accent-glow);}
+  50%{box-shadow:0 20px 70px var(--accent-hot);}
+}
+
+.demo-timer__label{
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  font-size:.625rem;font-weight:700;
+  letter-spacing:.15em;text-transform:uppercase;
+  color:var(--text-soft);
+  margin-bottom:6px;
+}
+
+.demo-timer__display{
+  font-family:'JetBrains Mono',monospace;
+  font-size:clamp(3rem,16vw,4rem);
+  font-weight:800;
+  letter-spacing:-.045em;
+  line-height:1;
+  font-variant-numeric:tabular-nums;
+  background:var(--gradient-flame);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;
+  text-align:center;
+  margin-bottom:6px;
+  transition:transform .2s var(--ease);
+}
+.demo-timer.running .demo-timer__display{animation:breath 4s ease-in-out infinite;}
+@keyframes breath{
+  0%,100%{transform:scale(1);}
+  50%{transform:scale(1.02);}
+}
+
+.demo-timer__sub{
+  text-align:center;
+  font-size:.75rem;
+  color:var(--text-soft);
+  margin-bottom:18px;
+}
+
+.demo-timer__controls{
+  display:flex;gap:9px;justify-content:center;
+  margin-bottom:16px;
+}
+.demo-btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  padding:13px 22px;
+  border-radius:var(--radius-pill);
+  font-size:.875rem;
+  font-weight:700;
+  min-height:48px;
+  transition:all .2s var(--ease);
+  flex:1;
+  max-width:170px;
+}
+.demo-btn--primary{
+  background:var(--gradient-flame);
+  color:#fff;
+  box-shadow:0 8px 22px var(--accent-glow);
+}
+.demo-btn--primary:active{transform:scale(.97);}
+.demo-btn--ghost{
+  background:transparent;
+  color:var(--text-mid);
+  border:1px solid var(--border);
+  flex:0 0 auto;
+  padding:13px 18px;
+}
+.demo-btn--ghost:active{transform:scale(.97);}
+
+.demo-timer__sounds{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:7px;
+  padding-top:16px;
+  border-top:1px dashed var(--border);
+}
+.sound-pill{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  padding:10px 8px;
+  border-radius:var(--radius-pill);
+  background:var(--bg-alt);
+  border:1px solid var(--border);
+  color:var(--text-mid);
+  font-size:.75rem;
+  font-weight:600;
+  min-height:42px;
+  transition:all .2s var(--ease);
+}
+.sound-pill:active{transform:scale(.97);}
+.sound-pill.active{
+  background:var(--accent-soft);
+  color:var(--accent-hot);
+  border-color:var(--accent);
+}
+.sound-pill i{font-size:.8rem;}
+
+.demo-timer__hint{
+  text-align:center;
+  font-size:.6875rem;
+  color:var(--text-soft);
+  margin-top:14px;
+  font-style:italic;
+}
+.demo-timer__hint strong{color:var(--accent);font-style:normal;font-weight:700;}
+
+/* ============================================================
+   SECTION HEADS
+   ============================================================ */
+.section{margin-top:64px;}
+.section-head{text-align:center;margin-bottom:28px;}
+.section-head__eyebrow{
+  display:inline-block;
+  font-size:.6875rem;font-weight:700;
+  letter-spacing:.16em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:9px;
+}
+.section-head__title{
+  font-size:clamp(1.5rem,6.4vw,2rem);
+  font-weight:900;letter-spacing:-.03em;
+  margin-bottom:9px;line-height:1.15;
+}
+.section-head__desc{color:var(--text-mid);font-size:.875rem;}
+
+/* ============================================================
+   MODE CARDS
+   ============================================================ */
+.modes{display:flex;flex-direction:column;gap:18px;margin-top:52px;}
+
+.mode-card{
+  display:flex;flex-direction:column;align-items:center;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius-xl);
+  padding:30px 20px 26px;
+  text-align:center;
+  position:relative;overflow:hidden;
+  color:var(--text);
+  box-shadow:var(--shadow-sm);
+  transition:transform .3s var(--ease),border-color .3s var(--ease),box-shadow .3s var(--ease);
+}
+.mode-card::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,var(--accent-soft) 0%,transparent 55%);
+  opacity:0;transition:opacity .3s var(--ease);pointer-events:none;
+}
+.mode-card:active{transform:scale(.985);border-color:var(--accent);}
+.mode-card:active::before{opacity:1;}
+
+.mode-card__icon{
+  width:64px;height:64px;border-radius:20px;
+  background:var(--gradient-flame);
+  color:#fff;font-size:1.7rem;
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:18px;
+  box-shadow:0 10px 26px var(--accent-glow);
+  position:relative;z-index:1;
+}
+.mode-card__title{
+  font-size:1.5rem;font-weight:900;
+  letter-spacing:-.03em;margin-bottom:6px;
+  position:relative;z-index:1;
+}
+.mode-card__sub{
+  color:var(--text-soft);font-size:.8125rem;
+  margin-bottom:16px;position:relative;z-index:1;
+  max-width:300px;
+}
+.mode-card__tags{
+  display:flex;flex-wrap:wrap;justify-content:center;
+  gap:6px;margin-bottom:18px;
+  position:relative;z-index:1;
+}
+.mode-tag{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:5px 10px;border-radius:var(--radius-pill);
+  font-size:.6875rem;font-weight:600;
+  background:var(--bg-alt);color:var(--text-mid);
+  border:1px solid var(--border);
+}
+.mode-tag--hot{
+  background:var(--gradient-flame);
+  color:#fff;border-color:transparent;
+}
+.mode-card__details{
+  text-align:left;
+  background:var(--bg-alt);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:15px 16px;
+  margin-bottom:20px;
+  font-size:.8125rem;
+  line-height:1.65;
+  color:var(--text-mid);
+  position:relative;z-index:1;
+  width:100%;
+}
+.mode-card__details p + p{margin-top:9px;}
+.mode-card__details strong{
+  color:var(--accent);font-weight:800;
+  letter-spacing:.02em;
+  font-size:.75rem;
+}
+.mode-card__cta{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:14px 26px;
+  background:var(--gradient-flame);
+  color:#fff;
+  border-radius:var(--radius-pill);
+  font-weight:700;font-size:.875rem;
+  min-height:48px;
+  width:100%;
+  position:relative;z-index:1;
+  box-shadow:0 8px 22px var(--accent-glow);
+  transition:transform .2s var(--ease);
+}
+.mode-card:active .mode-card__cta{transform:scale(.97);}
+.mode-card__cta i{transition:transform .2s var(--ease);}
+
+/* ============================================================
+   SLIDESHOW
+   ============================================================ */
+.slideshow{
+  position:relative;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius-xl);
+  padding:20px 18px 18px;
+  box-shadow:var(--shadow);
+  touch-action:pan-y;
+}
+.slide{display:none;}
+.slide.active{display:block;animation:fadeSlide .35s var(--ease);}
+@keyframes fadeSlide{
+  from{opacity:0;transform:translateY(8px);}
+  to{opacity:1;transform:translateY(0);}
+}
+.slide__inner{display:flex;flex-direction:column;gap:16px;}
+.slide__img{
+  aspect-ratio:16/10;
+  border-radius:var(--radius);
+  overflow:hidden;
+  background:var(--bg-alt);
+  border:1px solid var(--border);
+}
+.slide__img img{width:100%;height:100%;object-fit:cover;}
+.slide__title{
+  display:flex;align-items:center;gap:9px;
+  font-size:1.125rem;font-weight:800;
+  letter-spacing:-.025em;margin-bottom:8px;
+  line-height:1.25;
+}
+.slide__title i{color:var(--accent);font-size:1rem;flex-shrink:0;}
+.slide__desc{
+  color:var(--text-mid);
+  margin-bottom:14px;
+  line-height:1.6;
+  font-size:.8125rem;
+}
+.slide__list{list-style:none;display:flex;flex-direction:column;gap:8px;}
+.slide__list li{
+  display:flex;align-items:flex-start;gap:8px;
+  font-size:.8125rem;color:var(--text-mid);line-height:1.45;
+}
+.slide__list i{color:var(--accent);font-size:.65rem;margin-top:5px;flex-shrink:0;}
+
+/* Nav row: prev · dots · next */
+.slideshow__nav{
+  display:flex;align-items:center;justify-content:center;gap:14px;
+  margin-top:18px;
+  padding-top:16px;
+  border-top:1px solid var(--border);
+}
+.slideshow__dots{
+  display:flex;justify-content:center;gap:7px;align-items:center;
+}
+.slide-arrow{
+  width:40px;height:40px;border-radius:50%;
+  background:var(--bg-alt);
+  border:1px solid var(--border);
+  color:var(--text);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.8rem;
+  flex-shrink:0;
+  transition:all .2s var(--ease);
+}
+.slide-arrow:active{
+  background:var(--gradient-flame);
+  color:#fff;border-color:transparent;
+  transform:scale(.94);
+}
+
+.slideshow__dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--border);
+  padding:0;
+  position:relative;
+  transition:all .25s var(--ease);
+}
+/* Bigger tap area without visual change */
+.slideshow__dot::after{
+  content:'';position:absolute;inset:-11px;
+}
+.slideshow__dot.active{
+  background:var(--accent);
+  width:22px;border-radius:var(--radius-pill);
+  box-shadow:0 0 10px var(--accent-glow);
+}
+
+/* ============================================================
+   BENTO
+   ============================================================ */
+.bento{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.bento__item{
+  position:relative;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:16px 14px;
+  display:flex;flex-direction:column;gap:8px;
+  transition:all .25s var(--ease);
+  overflow:hidden;
+  min-height:132px;
+}
+.bento__item:active{
+  border-color:var(--accent);
+  transform:scale(.98);
+}
+.bento__item--big{grid-column:span 2;min-height:150px;padding:20px 18px;}
+
+.bento__tier{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 9px;
+  border-radius:var(--radius-pill);
+  font-size:.625rem;
+  font-weight:800;
+  letter-spacing:.06em;
+  width:fit-content;
+  border:1px solid;
+  text-transform:uppercase;
+}
+.bento__tier--s{background:var(--gradient-flame);color:#fff;border-color:transparent;}
+.bento__tier--a{background:var(--accent-soft);color:var(--accent-hot);border-color:var(--accent-glow);}
+.bento__tier--b{background:var(--bg-alt);color:var(--text-mid);border-color:var(--border);}
+
+.bento__icon{
+  font-size:1.35rem;
+  color:var(--accent);
+  margin-top:auto;
+  line-height:1;
+}
+.bento__title{
+  font-size:.875rem;
+  font-weight:800;
+  letter-spacing:-.015em;
+  color:var(--text);
+  line-height:1.25;
+}
+.bento__item--big .bento__title{font-size:1.0625rem;}
+.bento__sub{
+  font-size:.75rem;
+  color:var(--text-soft);
+  line-height:1.45;
+}
+
+/* ============================================================
+   STATS
+   ============================================================ */
+.stats{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.stat{
+  text-align:center;
+  padding:22px 12px;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  transition:all .25s var(--ease);
+}
+.stat:active{
+  border-color:var(--accent);
+  transform:scale(.98);
+}
+.stat__number{
+  font-family:'JetBrains Mono',monospace;
+  font-size:1.75rem;font-weight:800;
+  letter-spacing:-.05em;
+  background:var(--gradient-flame);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;
+  line-height:1;margin-bottom:8px;
+  font-variant-numeric:tabular-nums;
+}
+.stat__label{
+  font-size:.6875rem;color:var(--text-mid);
+  font-weight:700;letter-spacing:.04em;
+  text-transform:uppercase;
+}
+
+/* ============================================================
+   TESTIMONIALS — horizontal snap scroll on mobile
+   ============================================================ */
+.testimonials{
+  display:flex;
+  gap:14px;
+  overflow-x:auto;
+  scroll-snap-type:x mandatory;
+  padding:4px 18px 14px;
+  margin:0 -18px;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+.testimonials::-webkit-scrollbar{display:none;}
+
+.testimonial{
+  flex:0 0 82%;
+  max-width:320px;
+  scroll-snap-align:center;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:22px 20px;
+  position:relative;
+  overflow:hidden;
+}
+.testimonial::before{
+  content:'"';
+  position:absolute;
+  top:2px;right:16px;
+  font-family:Georgia,serif;
+  font-size:4.5rem;
+  line-height:1;
+  color:var(--accent);
+  opacity:.08;
+  font-weight:900;
+}
+.testimonial__head{
+  display:flex;align-items:center;gap:11px;
+  margin-bottom:14px;
+  position:relative;z-index:1;
+}
+.testimonial__avatar{
+  width:42px;height:42px;border-radius:50%;
+  background:var(--gradient-flame);
+  color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:.875rem;
+  flex-shrink:0;
+}
+.testimonial__meta{min-width:0;}
+.testimonial__name{font-weight:700;font-size:.875rem;line-height:1.2;}
+.testimonial__role{font-size:.6875rem;color:var(--text-soft);margin-top:2px;}
+.testimonial__stars{
+  color:#f5b042;font-size:.75rem;
+  letter-spacing:1px;margin-top:3px;display:block;
+}
+.testimonial__quote{
+  color:var(--text-mid);
+  line-height:1.65;
+  font-size:.8125rem;
+  position:relative;z-index:1;
+}
+.testimonial__quote em{
+  font-style:normal;
+  background:var(--accent-soft);
+  padding:0 4px;
+  border-radius:3px;
+  color:var(--accent-hot);
+  font-weight:600;
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.site-footer{
+  border-top:1px solid var(--border);
+  margin-top:64px;
+  padding:36px 0 32px;
+  text-align:center;
+  color:var(--text-mid);
+  font-size:.8125rem;
+}
+.site-footer p + p{margin-top:6px;}
+
+.footer-socials{
+  display:flex;justify-content:center;gap:10px;
+  margin:20px 0;
+  flex-wrap:wrap;
+}
+.footer-socials a{
+  width:44px;height:44px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:50%;
+  background:var(--card);
+  border:1px solid var(--border);
+  color:var(--text);
+  transition:all .2s var(--ease);
+}
+.footer-socials a:active{
+  border-color:var(--accent);
+  color:var(--accent);
+  transform:scale(.94);
+}
+
+.newsletter{
+  display:flex;flex-direction:column;gap:9px;
+  max-width:440px;margin:22px auto 0;
+}
+.newsletter input{
+  width:100%;
+  padding:14px 18px;
+  border:1px solid var(--border);
+  border-radius:var(--radius-pill);
+  background:var(--card);
+  color:var(--text);
+  font-size:.9375rem;
+  min-height:50px;
+  transition:border-color .2s var(--ease);
+}
+.newsletter input:focus{
+  outline:none;
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px var(--accent-soft);
+}
+.newsletter button{
+  width:100%;
+  padding:14px 24px;
+  background:var(--gradient-flame);
+  color:#fff;
+  border-radius:var(--radius-pill);
+  font-weight:700;
+  font-size:.9375rem;
+  min-height:50px;
+  box-shadow:0 6px 18px var(--accent-glow);
+  transition:transform .2s var(--ease);
+}
+.newsletter button:active{transform:scale(.97);}
+.newsletter__message{
+  text-align:center;
+  margin-top:10px;
+  font-size:.8125rem;
+  color:var(--accent);
+  min-height:20px;
+}
+
+.footer-links{
+  display:flex;justify-content:center;gap:16px;
+  margin-top:26px;padding-top:22px;
+  border-top:1px solid var(--border);
+  flex-wrap:wrap;font-size:.75rem;
+}
+.footer-links a{color:var(--text-mid);padding:8px 4px;}
+.footer-links a:active{color:var(--accent);}
+
+/* ============================================================
+   STICKY BOTTOM CTA
+   ============================================================ */
+.cta-bar{
+  position:fixed;
+  left:0;right:0;bottom:0;
+  z-index:60;
+  padding:10px 18px calc(10px + env(safe-area-inset-bottom));
+  background:color-mix(in srgb,var(--bg) 88%,transparent);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  border-top:1px solid var(--border);
+  transform:translateY(120%);
+  transition:transform .35s var(--ease);
+}
+.cta-bar.show{transform:translateY(0);}
+.cta-bar__btn{
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  width:100%;
+  padding:14px 22px;
+  border-radius:var(--radius-pill);
+  background:var(--gradient-flame);
+  color:#fff;
+  font-weight:800;
+  font-size:.9375rem;
+  min-height:50px;
+  box-shadow:0 8px 24px var(--accent-glow);
+  transition:transform .2s var(--ease);
+}
+.cta-bar__btn:active{transform:scale(.97);}
+
+/* ============================================================
+   LARGER PHONES / SMALL TABLETS
+   ============================================================ */
+@media (min-width:560px){
+  .wrap{padding:0 24px;}
+  .demo-timer{padding:32px 28px 26px;}
+  .demo-timer__sounds{grid-template-columns:repeat(4,1fr);}
+  .mode-card{padding:36px 28px 30px;}
+  .mode-card__title{font-size:1.7rem;}
+  .mode-card__icon{width:72px;height:72px;font-size:1.9rem;}
+  .slideshow{padding:26px 24px 22px;}
+  .slide__list{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;}
+  .bento{grid-template-columns:repeat(3,1fr);gap:12px;}
+  .bento__item--big{grid-column:span 3;}
+  .stats{grid-template-columns:repeat(4,1fr);}
+  .stat__number{font-size:2rem;}
+  .testimonial{flex:0 0 62%;}
+  .newsletter{flex-direction:row;}
+  .newsletter button{width:auto;white-space:nowrap;}
+}
+
+@media (min-width:768px){
+  .bento{grid-template-columns:repeat(4,1fr);}
+  .bento__item--big{grid-column:span 2;}
+  .testimonial{flex:0 0 44%;}
+}
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms !important;
+    transition-duration:.01ms !important;
+    animation-iteration-count:1 !important;
+    scroll-behavior:auto !important;
+  }
+}
+</style>
 </head>
+
 <body>
-<script>if(window.innerWidth>768)window.location.href='index.html';</script>
-    <div class="notebook-lines"></div>
 
-    <div class="mobile-header">
-        <h1>🔥 grindly</h1>
+<!-- Desktop users get the full experience -->
+<script>
+if (window.innerWidth > 768 && !location.pathname.includes('index.html')) {
+  location.replace('index.html');
+}
+</script>
+
+<!-- ============================================================
+     HEADER
+     ============================================================ -->
+<header class="site-header">
+  <div class="wrap">
+    <a href="/" class="brand">
+      <span class="brand-flame">🔥</span>
+      <span>grindly</span>
+    </a>
+    <div class="header-right">
+      <div class="studying-pill" title="Live activity">
+        <span class="studying-pill__dot"></span>
+        <span><span class="studying-pill__count" id="studyingCount">14</span> studying</span>
+      </div>
+      <select class="theme-select" id="themeSelector" aria-label="Choose theme">
+        <option value="">🔥 Ember</option>
+        <option value="theme-dark">🌙 Dark</option>
+        <option value="theme-purple">💜 Purple</option>
+        <option value="theme-ocean">🌊 Ocean</option>
+        <option value="theme-forest">🌲 Forest</option>
+        <option value="theme-sunset">🌅 Sunset</option>
+      </select>
     </div>
-    
-    <div class="theme-selector">
-        <select id="themeSelect" onchange="changeTheme(this.value)">
-            <option value="light">📓 Notebook (Light)</option>
-            <option value="dark">🌙 Dark Theme</option>
-            <option value="ocean">🌊 Ocean Theme</option>
-            <option value="forest">🌲 Forest Theme</option>
-            <option value="purple">💜 Purple Theme</option>
-        </select>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============================================================
+       HERO + FOCUS TIMER DEMO
+       ============================================================ -->
+  <section class="hero">
+    <span class="hero__eyebrow"><i class="fas fa-bolt"></i> Free forever · Students &amp; teachers</span>
+    <h1>Students focus better. Teachers see it <span class="accent">happen live.</span></h1>
+    <p>One ecosystem, two modes. Grindly gives students the tools to build real study habits — and gives teachers the visibility to help when it matters.</p>
+
+    <div class="demo-timer" id="demoTimer">
+      <div class="demo-timer__label">
+        <i class="fas fa-hourglass-half"></i>
+        <span>Try a focus session</span>
+      </div>
+      <div class="demo-timer__display" id="timerDisplay">25:00</div>
+      <p class="demo-timer__sub">25-minute Pomodoro — see how it feels</p>
+
+      <div class="demo-timer__controls">
+        <button class="demo-btn demo-btn--primary" id="timerStartBtn" aria-label="Start focus timer">
+          <i class="fas fa-play"></i>
+          <span>Start</span>
+        </button>
+        <button class="demo-btn demo-btn--ghost" id="timerResetBtn" aria-label="Reset timer">
+          <i class="fas fa-rotate-left"></i>
+          <span>Reset</span>
+        </button>
+      </div>
+
+      <div class="demo-timer__sounds" role="radiogroup" aria-label="Ambient sound">
+        <button class="sound-pill" data-sound="rain" role="radio" aria-checked="false"><i class="fas fa-cloud-rain"></i>Rain</button>
+        <button class="sound-pill" data-sound="brown" role="radio" aria-checked="false"><i class="fas fa-water"></i>Brown</button>
+        <button class="sound-pill" data-sound="library" role="radio" aria-checked="false"><i class="fas fa-book"></i>Library</button>
+        <button class="sound-pill active" data-sound="silent" role="radio" aria-checked="true"><i class="fas fa-volume-xmark"></i>Silent</button>
+      </div>
+
+      <p class="demo-timer__hint">Real students use this <strong>4–6 times a day</strong>. No account needed.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       MODE CARDS
+       ============================================================ -->
+  <section class="modes" aria-label="Choose your mode">
+    <a href="studentmode.html" class="mode-card">
+      <div class="mode-card__icon"><i class="fas fa-user-graduate"></i></div>
+      <h2 class="mode-card__title">Student Mode</h2>
+      <p class="mode-card__sub">For learners who want to focus, compete, and grow.</p>
+
+      <div class="mode-card__tags">
+        <span class="mode-tag mode-tag--hot">Study Groups</span>
+        <span class="mode-tag mode-tag--hot">Battle Arena</span>
+        <span class="mode-tag mode-tag--hot">Memory Wall</span>
+        <span class="mode-tag mode-tag--hot">Focus Persona</span>
+        <span class="mode-tag">12 Badges</span>
+        <span class="mode-tag">Streak Chain</span>
+        <span class="mode-tag">Soundscapes</span>
+      </div>
+
+      <div class="mode-card__details">
+        <p><strong>S-TIER</strong> — Live study groups with synced timers · battle friends in class competitions · share on the memory wall · discover your focus persona.</p>
+        <p><strong>A-TIER</strong> — Collect 12 badges · build visual streak chains · track everything with deep analytics.</p>
+        <p><strong>B-TIER</strong> — Free Pomodoro with 4 soundscapes · priority task manager · 6 stunning themes.</p>
+      </div>
+
+      <span class="mode-card__cta">Enter Student Mode <i class="fas fa-arrow-right"></i></span>
+    </a>
+
+    <a href="teachermode.html" class="mode-card">
+      <div class="mode-card__icon"><i class="fas fa-chalkboard-user"></i></div>
+      <h2 class="mode-card__title">Teacher Mode</h2>
+      <p class="mode-card__sub">For educators who want to understand, engage, and grow their class.</p>
+
+      <div class="mode-card__tags">
+        <span class="mode-tag mode-tag--hot">Battle Arena</span>
+        <span class="mode-tag mode-tag--hot">Memory Wall</span>
+        <span class="mode-tag mode-tag--hot">Class Challenges</span>
+        <span class="mode-tag">Live Dashboard</span>
+        <span class="mode-tag">At-Risk Alerts</span>
+        <span class="mode-tag">Check-ins</span>
+        <span class="mode-tag">Exit Tickets</span>
+      </div>
+
+      <div class="mode-card__details">
+        <p><strong>S-TIER</strong> — Create class vs class battles (study hours or streaks) · moderate the memory wall in real time · live competitions with confetti wins.</p>
+        <p><strong>A-TIER</strong> — See student progress live · identify at-risk students instantly · export analytics for admin.</p>
+        <p><strong>B-TIER</strong> — Emotional check-ins with QR codes · teacher toolkit (random picker, group generator, exit tickets).</p>
+      </div>
+
+      <span class="mode-card__cta">Enter Teacher Mode <i class="fas fa-arrow-right"></i></span>
+    </a>
+  </section>
+
+  <!-- ============================================================
+       STUDENT SLIDESHOW
+       ============================================================ -->
+  <section class="section">
+    <div class="section-head">
+      <span class="section-head__eyebrow">For learners</span>
+      <h2 class="section-head__title">Everything a student needs</h2>
+      <p class="section-head__desc">Focus, track, compete, and grow — all in one place.</p>
     </div>
 
-    <!-- Student & Teacher Cards -->
-    <div class="modes-grid">
-        <div class="mode-card">
-            <div class="mode-icon">🎓</div>
-            <div class="mode-title">Student</div>
-            <div class="feature-row">
-                <span class="feature-chip">✨ Study Groups</span>
-                <span class="feature-chip">⚡ Battle Arena</span>
-                <span class="feature-chip">📌 Memory Wall</span>
-                <span class="feature-chip">🎴 Focus Persona</span>
-            </div>
-            <ul class="feature-list">
-                <li><span class="tier-s">S-TIER</span> Live study groups with synced timers</li>
-                <li><span class="tier-s">S-TIER</span> Battle friends in class competitions</li>
-                <li><span class="tier-a">A-TIER</span> Collect 12 badges like Pokémon</li>
-                <li><span class="tier-a">A-TIER</span> Build visual streak chains</li>
-                <li><span class="tier-b">B-TIER</span> Free Pomodoro with 4 soundscapes</li>
+    <div class="slideshow" id="studentSlideshow" data-autoplay="6500">
+      <div class="slide active">
+        <div class="slide__inner">
+          <div class="slide__img"><img src="student-dashboard.png" alt="Student dashboard" loading="lazy"></div>
+          <div>
+            <h3 class="slide__title"><i class="fas fa-tachometer-alt"></i> Personal Dashboard</h3>
+            <p class="slide__desc">Track your streaks, set goals, manage tasks, and monitor assignments — all on one clean screen.</p>
+            <ul class="slide__list">
+              <li><i class="fas fa-check"></i> Study streak with milestone rewards</li>
+              <li><i class="fas fa-check"></i> Daily goals with confetti</li>
+              <li><i class="fas fa-check"></i> Priority task manager</li>
+              <li><i class="fas fa-check"></i> Quick notes with autosave</li>
             </ul>
-            <button class="mode-btn" onclick="location.href='studentmode.html'">Enter Student Mode →</button>
+          </div>
         </div>
-        
-        <div class="mode-card">
-            <div class="mode-icon">👩‍🏫</div>
-            <div class="mode-title">Teacher</div>
-            <div class="feature-row">
-                <span class="feature-chip">🎨 Live Sketchpad</span>
-                <span class="feature-chip">⚔️ Battle Arena</span>
-                <span class="feature-chip">📌 Memory Wall</span>
-                <span class="feature-chip">🎮 Challenges</span>
-            </div>
-            <ul class="feature-list">
-                <li><span class="tier-s">S-TIER</span> Live Sketchpad · Class vs Class battles</li>
-                <li><span class="tier-s">S-TIER</span> Moderate Memory Wall in real-time</li>
-                <li><span class="tier-a">A-TIER</span> See student progress LIVE</li>
-                <li><span class="tier-a">A-TIER</span> Identify at-risk students instantly</li>
-                <li><span class="tier-b">B-TIER</span> Emotional check-ins with QR codes</li>
+      </div>
+
+      <div class="slide">
+        <div class="slide__inner">
+          <div class="slide__img"><img src="student-focus.png" alt="Focus portal" loading="lazy"></div>
+          <div>
+            <h3 class="slide__title"><i class="fas fa-hourglass-half"></i> Focus Portal</h3>
+            <p class="slide__desc">A distraction-free space with timers, ambient sounds, and energy tracking.</p>
+            <ul class="slide__list">
+              <li><i class="fas fa-check"></i> Customizable Pomodoro timer</li>
+              <li><i class="fas fa-check"></i> Rain, brown noise, library sounds</li>
+              <li><i class="fas fa-check"></i> Energy log for peak hours</li>
+              <li><i class="fas fa-check"></i> Learn-by-teaching growth tree</li>
             </ul>
-            <button class="mode-btn teacher-btn" onclick="location.href='teachermode.html'">Enter Teacher Mode →</button>
+          </div>
         </div>
+      </div>
+
+      <div class="slide">
+        <div class="slide__inner">
+          <div class="slide__img"><img src="student-memory.png" alt="Memory wall" loading="lazy"></div>
+          <div>
+            <h3 class="slide__title"><i class="fas fa-chalkboard"></i> Memory Wall</h3>
+            <p class="slide__desc">An interactive class whiteboard for achievements, encouragement, and questions.</p>
+            <ul class="slide__list">
+              <li><i class="fas fa-check"></i> Add colored sticky notes</li>
+              <li><i class="fas fa-check"></i> Drag anywhere on the wall</li>
+              <li><i class="fas fa-check"></i> Like and react to notes</li>
+              <li><i class="fas fa-check"></i> Real-time updates</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide">
+        <div class="slide__inner">
+          <div class="slide__img"><img src="student-badges.png" alt="Badges and analytics" loading="lazy"></div>
+          <div>
+            <h3 class="slide__title"><i class="fas fa-medal"></i> Gamification &amp; Analytics</h3>
+            <p class="slide__desc">Unlock badges, grow a tree, and track your progress with detailed charts.</p>
+            <ul class="slide__list">
+              <li><i class="fas fa-check"></i> 12 achievement badges</li>
+              <li><i class="fas fa-check"></i> Growth tree from 🌱 to 🌳</li>
+              <li><i class="fas fa-check"></i> Six analytics charts</li>
+              <li><i class="fas fa-check"></i> Study heatmap &amp; focus score</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide">
+        <div class="slide__inner">
+          <div class="slide__img"><img src="focus-persona.png" alt="Focus persona card" loading="lazy"></div>
+          <div>
+            <h3 class="slide__title"><i class="fas fa-id-card"></i> Focus Persona</h3>
+            <p class="slide__desc">Discover your unique study identity based on your last 7 days of activity.</p>
+            <ul class="slide__list">
+              <li><i class="fas fa-check"></i> Analyzes time, duration, frequency</li>
+              <li><i class="fas fa-check"></i> Five unique personas</li>
+              <li><i class="fas fa-check"></i> 7-day focus hours chart</li>
+              <li><i class="fas fa-check"></i> Shareable RPG-style card</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="slideshow__nav">
+        <button class="slide-arrow" data-slide-prev aria-label="Previous slide"><i class="fas fa-chevron-left"></i></button>
+        <div class="slideshow__dots" data-dots>
+          <button class="slideshow__dot active" aria-label="Go to slide 1"></button>
+          <button class="slideshow__dot" aria-label="Go to slide 2"></button>
+          <button class="slideshow__dot" aria-label="Go to slide 3"></button>
+          <button class="slideshow__dot" aria-label="Go to slide 4"></button>
+          <button class="slideshow__dot" aria-label="Go to slide 5"></button>
+        </div>
+        <button class="slide-arrow" data-slide-next aria-label="Next slide"><i class="fas fa-chevron-right"></i></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       TEACHER SLIDESHOW
+       ============================================================ -->
+  <section class="section">
+    <div class="section-head">
+      <span class="section-head__eyebrow">For educators</span>
+      <h2 class="section-head__title">Every tool a teacher needs</h2>
+      <p class="section-head__desc">Understand, engage, and grow your class — live.</p>
     </div>
 
-    <!-- Social Feed -->
-    <div class="social-feed" onclick="location.href='social-feed.html'">
-        <div>
-            <h4>🐦 Social Feed</h4>
-            <p>Connect with learners worldwide! Share your journey and help others.</p>
+    <div class="slideshow" id="teacherSlideshow" data-autoplay="6500">
+      <div class="slide active">
+        <div class="slide__inner">
+          <div class="slide__img"><img src="teacher-checkins.png" alt="Live check-ins" loading="lazy"></div>
+          <div>
+            <h3 class="slide__title"><i class="fas fa-heart"></i> Live Emotional Check-ins</h3>
+            <p class="slide__desc">Anonymous student check-ins — see class sentiment in real time.</p>
+            <ul class="slide__list">
+              <li><i class="fas fa-check"></i> 6-digit code + QR code</li>
+              <li><i class="fas fa-check"></i> Live bars 😊 😐 😕</li>
+              <li><i class="fas fa-check"></i> Action suggestions per emotion</li>
+              <li><i class="fas fa-check"></i> Full response history</li>
+            </ul>
+          </div>
         </div>
-        <div class="feed-btn">Explore →</div>
+      </div>
+
+      <div class="slide">
+        <div class="slide__inner">
+          <div class="slide__img"><img src="teacher-challenges.png" alt="Class challenges" loading="lazy"></div>
+          <div>
+            <h3 class="slide__title"><i class="fas fa-crosshairs"></i> Class Challenges</h3>
+            <p class="slide__desc">Challenge other classes on study hours or average streak.</p>
+            <ul class="slide__list">
+              <li><i class="fas fa-check"></i> 1, 3, or 7 day durations</li>
+              <li><i class="fas fa-check"></i> Live scoreboard</li>
+              <li><i class="fas fa-check"></i> Winner celebration</li>
+              <li><i class="fas fa-check"></i> Filter by status</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide">
+        <div class="slide__inner">
+          <div class="slide__img"><img src="teacher-analytics.png" alt="Analytics and heatmap" loading="lazy"></div>
+          <div>
+            <h3 class="slide__title"><i class="fas fa-chart-bar"></i> Class Analytics &amp; Heatmap</h3>
+            <p class="slide__desc">Understand when and how your class studies.</p>
+            <ul class="slide__list">
+              <li><i class="fas fa-check"></i> 12-week activity heatmap</li>
+              <li><i class="fas fa-check"></i> Daily active count</li>
+              <li><i class="fas fa-check"></i> At-risk student alerts</li>
+              <li><i class="fas fa-check"></i> Top performers leaderboard</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide">
+        <div class="slide__inner">
+          <div class="slide__img"><img src="teacher-toolkit.png" alt="Teacher toolkit" loading="lazy"></div>
+          <div>
+            <h3 class="slide__title"><i class="fas fa-wrench"></i> Teacher Toolkit</h3>
+            <p class="slide__desc">In-class tools that keep you organized and responsive.</p>
+            <ul class="slide__list">
+              <li><i class="fas fa-check"></i> Random student picker</li>
+              <li><i class="fas fa-check"></i> Group generator</li>
+              <li><i class="fas fa-check"></i> Priority list</li>
+              <li><i class="fas fa-check"></i> Focus bell &amp; lightning plan</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="slideshow__nav">
+        <button class="slide-arrow" data-slide-prev aria-label="Previous slide"><i class="fas fa-chevron-left"></i></button>
+        <div class="slideshow__dots" data-dots>
+          <button class="slideshow__dot active" aria-label="Go to slide 1"></button>
+          <button class="slideshow__dot" aria-label="Go to slide 2"></button>
+          <button class="slideshow__dot" aria-label="Go to slide 3"></button>
+          <button class="slideshow__dot" aria-label="Go to slide 4"></button>
+        </div>
+        <button class="slide-arrow" data-slide-next aria-label="Next slide"><i class="fas fa-chevron-right"></i></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       FEATURE BENTO
+       ============================================================ -->
+  <section class="section">
+    <div class="section-head">
+      <span class="section-head__eyebrow">All features</span>
+      <h2 class="section-head__title">Built for real classrooms</h2>
+      <p class="section-head__desc">Tiered by what actually moves the needle.</p>
     </div>
 
-    <!-- Stats Row with ANIMATED COUNTERS -->
-    <div class="stats-row">
-        <div class="stat-card"><div class="stat-number" id="stat1">0</div><div class="stat-label">features</div></div>
-        <div class="stat-card"><div class="stat-number" id="stat2">0</div><div class="stat-label">badges</div></div>
-        <div class="stat-card"><div class="stat-number" id="stat3">0</div><div class="stat-label">personas</div></div>
-        <div class="stat-card"><div class="stat-number" id="stat4">0</div><div class="stat-label">themes</div></div>
-        <div class="stat-card"><div class="stat-number" id="stat5">0</div><div class="stat-label">users</div></div>
-        <div class="stat-card"><div class="stat-number" id="stat6">0</div><div class="stat-label">classes</div></div>
+    <div class="bento">
+      <div class="bento__item bento__item--big">
+        <span class="bento__tier bento__tier--s">S · Live</span>
+        <i class="fas fa-users bento__icon"></i>
+        <div class="bento__title">Live Study Groups</div>
+        <div class="bento__sub">Synced timers with classmates. Join a room, focus together, watch streaks build in real time.</div>
+      </div>
+
+      <div class="bento__item bento__item--big">
+        <span class="bento__tier bento__tier--s">S · Competition</span>
+        <i class="fas fa-crosshairs bento__icon"></i>
+        <div class="bento__title">Class vs Class Battles</div>
+        <div class="bento__sub">Compete on study hours or average streak. Live scoreboards. Confetti for the winners.</div>
+      </div>
+
+      <div class="bento__item">
+        <span class="bento__tier bento__tier--s">S · Community</span>
+        <i class="fas fa-chalkboard bento__icon"></i>
+        <div class="bento__title">Memory Wall</div>
+        <div class="bento__sub">Sticky-note board for your class</div>
+      </div>
+
+      <div class="bento__item">
+        <span class="bento__tier bento__tier--s">S · Insight</span>
+        <i class="fas fa-id-card bento__icon"></i>
+        <div class="bento__title">Focus Persona</div>
+        <div class="bento__sub">Your study identity, visualized</div>
+      </div>
+
+      <div class="bento__item">
+        <span class="bento__tier bento__tier--a">A · Habit</span>
+        <i class="fas fa-fire bento__icon"></i>
+        <div class="bento__title">Streak Chain</div>
+        <div class="bento__sub">Visual milestones that stick</div>
+      </div>
+
+      <div class="bento__item">
+        <span class="bento__tier bento__tier--a">A · Rewards</span>
+        <i class="fas fa-medal bento__icon"></i>
+        <div class="bento__title">12 Achievements</div>
+        <div class="bento__sub">Badges that mean something</div>
+      </div>
+
+      <div class="bento__item">
+        <span class="bento__tier bento__tier--a">A · Data</span>
+        <i class="fas fa-chart-line bento__icon"></i>
+        <div class="bento__title">Deep Analytics</div>
+        <div class="bento__sub">Heatmaps, focus scores, trends</div>
+      </div>
+
+      <div class="bento__item">
+        <span class="bento__tier bento__tier--b">B · Focus</span>
+        <i class="fas fa-clock bento__icon"></i>
+        <div class="bento__title">Pomodoro Timer</div>
+        <div class="bento__sub">+ 4 ambient soundscapes</div>
+      </div>
+
+      <div class="bento__item">
+        <span class="bento__tier bento__tier--b">B · Planning</span>
+        <i class="fas fa-tasks bento__icon"></i>
+        <div class="bento__title">Priority Tasks</div>
+        <div class="bento__sub">Urgent · important · optional</div>
+      </div>
+
+      <div class="bento__item">
+        <span class="bento__tier bento__tier--b">B · Style</span>
+        <i class="fas fa-palette bento__icon"></i>
+        <div class="bento__title">6 Handcrafted Themes</div>
+        <div class="bento__sub">From Ember to Obsidian</div>
+      </div>
+
+      <div class="bento__item">
+        <span class="bento__tier bento__tier--b">B · Pulse</span>
+        <i class="fas fa-smile bento__icon"></i>
+        <div class="bento__title">Emotional Check-ins</div>
+        <div class="bento__sub">See how your class really feels</div>
+      </div>
+
+      <div class="bento__item">
+        <span class="bento__tier bento__tier--b">B · Classroom</span>
+        <i class="fas fa-random bento__icon"></i>
+        <div class="bento__title">Random Picker</div>
+        <div class="bento__sub">Fair participation, zero favorites</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       STATS
+       ============================================================ -->
+  <section class="section">
+    <div class="stats">
+      <div class="stat"><div class="stat__number" data-count="52" data-suffix="+">0</div><div class="stat__label">Features</div></div>
+      <div class="stat"><div class="stat__number" data-count="1247" data-suffix="+">0</div><div class="stat__label">Students</div></div>
+      <div class="stat"><div class="stat__number" data-count="214" data-suffix="">0</div><div class="stat__label">Classes</div></div>
+      <div class="stat"><div class="stat__number" data-count="12" data-suffix="">0</div><div class="stat__label">Badges</div></div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       TESTIMONIALS
+       ============================================================ -->
+  <section class="section">
+    <div class="section-head">
+      <span class="section-head__eyebrow">Real people, real sessions</span>
+      <h2 class="section-head__title">What our community says</h2>
+      <p class="section-head__desc">Swipe through — unedited notes from students and teachers.</p>
     </div>
 
-    <!-- Student Slideshow -->
-    <div class="slideshow-container" id="studentSlideshowMobile">
-        <div class="slide active">
-            <div class="slide-content">
-                <div class="slide-image"><img src="student-dashboard.png" alt="Dashboard"></div>
-                <div class="slide-text">
-                    <h3><i class="fas fa-tachometer-alt"></i> personal dashboard</h3>
-                    <p>Track streaks, set daily goals, manage priority tasks, and monitor assignments.</p>
-                    <ul class="feature-list-slide"><li><i class="fas fa-check"></i> study streak (milestones at 3,7,14,30,60,90)</li><li><i class="fas fa-check"></i> daily goal with confetti celebrations</li><li><i class="fas fa-check"></i> urgent / not urgent / optional tasks</li><li><i class="fas fa-check"></i> quick notes with autosave</li></ul>
-                </div>
-            </div>
+    <div class="testimonials">
+      <div class="testimonial">
+        <div class="testimonial__head">
+          <div class="testimonial__avatar">AS</div>
+          <div class="testimonial__meta">
+            <div class="testimonial__name">Ayesha Siddiqui</div>
+            <div class="testimonial__role">A-Levels student · Karachi</div>
+            <span class="testimonial__stars">★★★★★</span>
+          </div>
         </div>
-        <div class="slide">
-            <div class="slide-content">
-                <div class="slide-image"><img src="student-focus.png" alt="Focus Portal"></div>
-                <div class="slide-text"><h3><i class="fas fa-hourglass-half"></i> focus portal</h3><p>Distraction‑free zone with timer, sounds, and energy tracking.</p><ul class="feature-list-slide"><li><i class="fas fa-check"></i> pomodoro timer (customizable)</li><li><i class="fas fa-check"></i> distraction blocker (60s emergency unlock)</li><li><i class="fas fa-check"></i> study sounds – brown noise, rain, library</li><li><i class="fas fa-check"></i> learn by teaching – grow your tree 🌱</li></ul></div>
-            </div>
-        </div>
-        <div class="slide">
-            <div class="slide-content">
-                <div class="slide-image"><img src="student-memory.png" alt="Memory Wall"></div>
-                <div class="slide-text"><h3><i class="fas fa-chalkboard"></i> memory wall</h3><p>Interactive class whiteboard – share achievements, encouragement, and questions.</p><ul class="feature-list-slide"><li><i class="fas fa-check"></i> add sticky notes with 6 colours</li><li><i class="fas fa-check"></i> drag & drop anywhere</li><li><i class="fas fa-check"></i> like others' notes</li><li><i class="fas fa-check"></i> real‑time updates</li></ul></div>
-            </div>
-        </div>
-        <div class="slide">
-            <div class="slide-content">
-                <div class="slide-image"><img src="student-badges.png" alt="Badges"></div>
-                <div class="slide-text"><h3><i class="fas fa-medal"></i> gamification & analytics</h3><p>Unlock badges, grow a tree, and track progress with detailed charts.</p><ul class="feature-list-slide"><li><i class="fas fa-check"></i> 12 achievement badges</li><li><i class="fas fa-check"></i> growth tree (🌱 → 🌳)</li><li><i class="fas fa-check"></i> 6 analytics charts</li><li><i class="fas fa-check"></i> study heatmap & focus score</li></ul></div>
-            </div>
-        </div>
-        <div class="slide">
-            <div class="slide-content">
-                <div class="slide-image"><img src="focus-persona.png" alt="Focus Persona"></div>
-                <div class="slide-text"><h3><i class="fas fa-id-card"></i> focus persona</h3><p>Discover your unique study identity based on your actual study patterns.</p><ul class="feature-list-slide"><li><i class="fas fa-check"></i> analyzes start time, duration & frequency</li><li><i class="fas fa-check"></i> 5 unique personas to unlock</li><li><i class="fas fa-check"></i> 7-day focus hours chart</li><li><i class="fas fa-check"></i> shareable RPG-style card</li></ul><div style="margin-top: 8px; display: flex; gap: 4px; flex-wrap: wrap;"><span class="tag">🦉 Night Owl</span><span class="tag">🏊 Deep Diver</span><span class="tag">⚡ Sprinter</span><span class="tag">📚 Steady Scholar</span><span class="tag">🌙 Unawakened</span></div></div>
-            </div>
-        </div>
-        <div class="nav-arrow left" onclick="changeStudentSlideMobile(-1)">‹</div>
-        <div class="nav-arrow right" onclick="changeStudentSlideMobile(1)">›</div>
-    </div>
-    <div class="slideshow-nav" id="studentDotsMobile"><span class="nav-dot active" onclick="goToStudentSlideMobile(0)"></span><span class="nav-dot" onclick="goToStudentSlideMobile(1)"></span><span class="nav-dot" onclick="goToStudentSlideMobile(2)"></span><span class="nav-dot" onclick="goToStudentSlideMobile(3)"></span><span class="nav-dot" onclick="goToStudentSlideMobile(4)"></span></div>
+        <p class="testimonial__quote">I kept failing to stay consistent with my A2 Chemistry prep. The streak chain is the only reason I've studied <em>47 days in a row</em>. Mocks went from a C to an A.</p>
+      </div>
 
-    <!-- Teacher Slideshow -->
-    <div class="slideshow-container" id="teacherSlideshowMobile">
-        <div class="slide active">
-            <div class="slide-content">
-                <div class="slide-image"><img src="teacher-checkins.png" alt="Check-ins"></div>
-                <div class="slide-text"><h3><i class="fas fa-heart"></i> live emotional check‑ins</h3><p>Anonymous student check‑ins – see class sentiment in real time.</p><ul class="feature-list-slide"><li><i class="fas fa-check"></i> 6‑digit code + QR code</li><li><i class="fas fa-check"></i> live bars (😊 😐 😕)</li><li><i class="fas fa-check"></i> action suggestions for each emotion</li><li><i class="fas fa-check"></i> response history</li></ul></div>
-            </div>
+      <div class="testimonial">
+        <div class="testimonial__head">
+          <div class="testimonial__avatar">BA</div>
+          <div class="testimonial__meta">
+            <div class="testimonial__name">Sir Bilal Ahmed</div>
+            <div class="testimonial__role">Chemistry teacher · Lahore</div>
+            <span class="testimonial__stars">★★★★★</span>
+          </div>
         </div>
-        <div class="slide">
-            <div class="slide-content">
-                <div class="slide-image"><img src="teacher-challenges.png" alt="Challenges"></div>
-                <div class="slide-text"><h3><i class="fas fa-crosshairs"></i> class challenges</h3><p>Challenge other classes – compete on study hours or average streak.</p><ul class="feature-list-slide"><li><i class="fas fa-check"></i> 1, 3, or 7 day durations</li><li><i class="fas fa-check"></i> live scoreboard</li><li><i class="fas fa-check"></i> winner celebration with confetti</li><li><i class="fas fa-check"></i> filter by status</li></ul></div>
-            </div>
-        </div>
-        <div class="slide">
-            <div class="slide-content">
-                <div class="slide-image"><img src="teacher-analytics.png" alt="Analytics"></div>
-                <div class="slide-text"><h3><i class="fas fa-chart-bar"></i> class analytics & heatmap</h3><p>Understand when and how your class studies.</p><ul class="feature-list-slide"><li><i class="fas fa-check"></i> 12‑week activity heatmap</li><li><i class="fas fa-check"></i> daily active count</li><li><i class="fas fa-check"></i> at‑risk student alerts</li><li><i class="fas fa-check"></i> top performers leaderboard</li></ul></div>
-            </div>
-        </div>
-        <div class="slide">
-            <div class="slide-content">
-                <div class="slide-image"><img src="teacher-toolkit.png" alt="Toolkit"></div>
-                <div class="slide-text"><h3><i class="fas fa-wrench"></i> teacher toolkit</h3><p>10+ in‑class tools to keep you organized and responsive.</p><ul class="feature-list-slide"><li><i class="fas fa-check"></i> random student picker</li><li><i class="fas fa-check"></i> group generator</li><li><i class="fas fa-check"></i> priority list</li><li><i class="fas fa-check"></i> focus bell & lightning plan</li><li><i class="fas fa-check"></i> exit tickets & weekly wins</li></ul></div>
-            </div>
-        </div>
-        <div class="nav-arrow left" onclick="changeTeacherSlideMobile(-1)">‹</div>
-        <div class="nav-arrow right" onclick="changeTeacherSlideMobile(1)">›</div>
-    </div>
-    <div class="slideshow-nav" id="teacherDotsMobile"><span class="nav-dot active" onclick="goToTeacherSlideMobile(0)"></span><span class="nav-dot" onclick="goToTeacherSlideMobile(1)"></span><span class="nav-dot" onclick="goToTeacherSlideMobile(2)"></span><span class="nav-dot" onclick="goToTeacherSlideMobile(3)"></span></div>
+        <p class="testimonial__quote">I use the check-ins before every test now. Six students said they were <em>'struggling'</em> last week — and their test scores matched almost exactly. Ended up doing an extra revision session with them.</p>
+      </div>
 
-    <!-- Testimonials Section -->
-    <div class="testimonials-section">
-        <div class="testimonials-title">❤️ loved by thousands · what our community says</div>
-        <div class="testimonials-scroll">
-            <div class="testimonial-card"><div class="testimonial-header"><div class="testimonial-avatar">⭐</div><div><div class="testimonial-name">Sarah Johnson</div><div class="testimonial-stars">★★★★★</div></div></div><div class="testimonial-text">"The study groups feature transformed my classroom! Students are actually excited to study together."</div></div>
-            <div class="testimonial-card"><div class="testimonial-header"><div class="testimonial-avatar">🎓</div><div><div class="testimonial-name">Michael Chen</div><div class="testimonial-stars">★★★★★</div></div></div><div class="testimonial-text">"My focus score went up by 40% in just two weeks. The Pomodoro timer is a game-changer!"</div></div>
-            <div class="testimonial-card"><div class="testimonial-header"><div class="testimonial-avatar">👩‍🏫</div><div><div class="testimonial-name">Emily Rodriguez</div><div class="testimonial-stars">★★★★★</div></div></div><div class="testimonial-text">"The analytics dashboard helps me identify struggling students instantly. Best free tool ever!"</div></div>
+      <div class="testimonial">
+        <div class="testimonial__head">
+          <div class="testimonial__avatar">ZT</div>
+          <div class="testimonial__meta">
+            <div class="testimonial__name">Zainab Tariq</div>
+            <div class="testimonial__role">Matric student · Islamabad</div>
+            <span class="testimonial__stars">★★★★★</span>
+          </div>
         </div>
+        <p class="testimonial__quote">Honestly installed this for the leaderboard. Now I'm #3 in my class and my parents don't know what's happening. <em>Not telling them.</em></p>
+      </div>
+
+      <div class="testimonial">
+        <div class="testimonial__head">
+          <div class="testimonial__avatar">HR</div>
+          <div class="testimonial__meta">
+            <div class="testimonial__name">Hamza Raza</div>
+            <div class="testimonial__role">MDCAT aspirant · Faisalabad</div>
+            <span class="testimonial__stars">★★★★★</span>
+          </div>
+        </div>
+        <p class="testimonial__quote">The study groups thing is genius. Me and three friends lock in 25 minutes together every night at 9. We're at <em>62 sessions</em>. It's become a whole thing.</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="site-footer">
+  <div class="wrap">
+    <p>© 2026 Grindly · Made for students and teachers everywhere.</p>
+    <p style="font-size:.75rem;color:var(--text-soft);">Free forever. No credit card. No limits.</p>
+
+    <div class="footer-socials">
+      <a href="https://www.instagram.com/mairahomie/" target="_blank" rel="noopener" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+      <a href="https://www.tiktok.com/@grindlylearn.com" target="_blank" rel="noopener" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+      <a href="https://www.linkedin.com/in/maira-khan-2936b93aa/" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+      <a href="https://x.com/Grindlyink" target="_blank" rel="noopener" aria-label="X"><i class="fab fa-x-twitter"></i></a>
+      <a href="https://www.facebook.com/profile.php?id=61582559935828" target="_blank" rel="noopener" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+      <a href="https://github.com/mairakhancontact-sudo" target="_blank" rel="noopener" aria-label="GitHub"><i class="fab fa-github"></i></a>
     </div>
 
-    <!-- Feature Grid -->
-    <div class="feature-grid">
-        <div class="grid-item"><i class="fas fa-users"></i><span>study groups</span><small>live sessions</small></div>
-        <div class="grid-item"><i class="fas fa-crosshairs"></i><span>battle arena</span><small>class vs class</small></div>
-        <div class="grid-item"><i class="fas fa-chalkboard"></i><span>memory wall</span><small>interactive</small></div>
-        <div class="grid-item"><i class="fas fa-id-card"></i><span>focus persona</span><small>study identity</small></div>
-        <div class="grid-item"><i class="fas fa-fire"></i><span>streak chain</span><small>visual milestones</small></div>
-        <div class="grid-item"><i class="fas fa-medal"></i><span>12 badges</span><small>achievements</small></div>
-        <div class="grid-item"><i class="fas fa-clock"></i><span>pomodoro</span><small>+ soundscapes</small></div>
-        <div class="grid-item"><i class="fas fa-tasks"></i><span>task manager</span><small>priority levels</small></div>
-        <div class="grid-item"><i class="fas fa-palette"></i><span>9 themes</span><small>customization</small></div>
-        <div class="grid-item"><i class="fas fa-smile"></i><span>check‑ins</span><small>emotional pulse</small></div>
-        <div class="grid-item"><i class="fas fa-poll"></i><span>polls</span><small>real-time</small></div>
-        <div class="grid-item"><i class="fas fa-bullhorn"></i><span>announcements</span><small>updates</small></div>
-        <div class="grid-item"><i class="fas fa-random"></i><span>random picker</span><small>participation</small></div>
-        <div class="grid-item"><i class="fas fa-share-alt"></i><span>resources</span><small>library</small></div>
-    </div>
+    <form class="newsletter" id="newsletterForm" action="https://formspree.io/f/xkoqyven" method="POST" target="hidden_iframe">
+      <input type="email" name="email" placeholder="your@email.com" required aria-label="Email address" autocomplete="email">
+      <input type="hidden" name="_gotcha" style="display:none">
+      <input type="hidden" name="_subject" value="New Grindly Newsletter Subscriber">
+      <button type="submit">Subscribe</button>
+    </form>
+    <div id="newsletterMessage" class="newsletter__message" role="status" aria-live="polite"></div>
 
-    <!-- Live Row -->
-    <div class="live-row">
-        <div class="avatars"><div class="avatar">👤</div><div class="avatar">👤</div><div class="avatar">👤</div><div class="avatar">+6</div></div>
-        <div class="live-text">🔥 9 students studying now</div>
+    <div class="footer-links">
+      <a href="studentmode.html">Student Mode</a>
+      <a href="teachermode.html">Teacher Mode</a>
+      <a href="social-feed.html">Social Feed</a>
     </div>
+  </div>
+</footer>
 
-    <!-- Newsletter Signup -->
-    <div class="newsletter-section">
-        <div class="newsletter-title">📧 Stay Updated</div>
-        <div class="newsletter-desc">Get the latest updates, tips, and new features directly to your inbox!</div>
-        <form class="newsletter-form" action="https://formspree.io/f/xkoqyven" method="POST" target="_blank">
-            <input type="email" name="email" class="newsletter-input" placeholder="Enter your email address" required>
-            <button type="submit" class="newsletter-btn">Subscribe →</button>
-        </form>
-    </div>
+<!-- ============================================================
+     STICKY BOTTOM CTA
+     ============================================================ -->
+<div class="cta-bar" id="ctaBar">
+  <a href="studentmode.html" class="cta-bar__btn">
+    <i class="fas fa-bolt"></i>
+    <span>Start focusing free</span>
+  </a>
+</div>
 
-    <!-- Footer -->
-    <div class="mobile-footer">
-        <p>FREE FOREVER · 1,247 views · 214 active classes</p>
-        <div class="social-links">
-            <a href="https://x.com/Grindlyink" target="_blank">🐦 Twitter</a>
-            <a href="https://www.facebook.com/profile.php?id=61582559935828" target="_blank">📘 Facebook</a>
-            <a href="https://www.instagram.com/mairahomie/" target="_blank">📸 Instagram</a>
-            <a href="https://discord.gg/grindly" target="_blank">💬 Discord</a>
-            <a href="https://github.com/mairakhancontact-sudo" target="_blank">💻 GitHub</a>
-        </div>
-        <p>© 2024 Grindly Learn — Learn. Compete. Grow.</p>
-    </div>
+<iframe name="hidden_iframe" style="display:none" title="form target"></iframe>
 
-    <script>
-        // ===== ANIMATED NUMBER COUNTER =====
-        function animateNumber(element, start, end, duration) {
-            let startTimestamp = null;
-            const step = (timestamp) => {
-                if (!startTimestamp) startTimestamp = timestamp;
-                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-                const currentValue = Math.floor(progress * (end - start) + start);
-                element.textContent = currentValue;
-                if (progress < 1) {
-                    window.requestAnimationFrame(step);
-                }
-            };
-            window.requestAnimationFrame(step);
+<!-- ============================================================
+     SCRIPTS
+     ============================================================ -->
+<script>
+// ============ THEME ============
+(function () {
+  const saved = localStorage.getItem('grindly-theme') || '';
+  if (saved) document.body.className = saved;
+  const selector = document.getElementById('themeSelector');
+  if (selector) {
+    selector.value = saved;
+    selector.addEventListener('change', function () {
+      document.body.className = this.value;
+      localStorage.setItem('grindly-theme', this.value);
+    });
+  }
+})();
+
+// ============ SLIDESHOW (dots + arrows + swipe) ============
+(function () {
+  function initSlideshow(id) {
+    const root = document.getElementById(id);
+    if (!root) return;
+
+    const slides = Array.from(root.querySelectorAll('.slide'));
+    const dots = Array.from(root.querySelectorAll('.slideshow__dot'));
+    const prevBtn = root.querySelector('[data-slide-prev]');
+    const nextBtn = root.querySelector('[data-slide-next]');
+    if (!slides.length) return;
+
+    const DELAY = parseInt(root.dataset.autoplay || '6500', 10);
+
+    let current = 0;
+    let timer = null;
+
+    function go(n) {
+      current = ((n % slides.length) + slides.length) % slides.length;
+      slides.forEach((s, i) => s.classList.toggle('active', i === current));
+      dots.forEach((d, i) => d.classList.toggle('active', i === current));
+    }
+    function next() { go(current + 1); }
+    function prev() { go(current - 1); }
+    function start() { stop(); timer = setInterval(next, DELAY); }
+    function stop()  { if (timer) { clearInterval(timer); timer = null; } }
+    function kick()  { start(); }
+
+    if (nextBtn) nextBtn.addEventListener('click', function () { next(); kick(); });
+    if (prevBtn) prevBtn.addEventListener('click', function () { prev(); kick(); });
+    dots.forEach(function (d, i) {
+      d.addEventListener('click', function () { go(i); kick(); });
+    });
+
+    // --- Swipe gestures ---
+    let touchStartX = 0, touchStartY = 0, swiping = false;
+    root.addEventListener('touchstart', function (e) {
+      const t = e.changedTouches[0];
+      touchStartX = t.clientX;
+      touchStartY = t.clientY;
+      swiping = false;
+    }, { passive: true });
+
+    root.addEventListener('touchmove', function (e) {
+      if (swiping) return;
+      const t = e.changedTouches[0];
+      const dx = t.clientX - touchStartX;
+      const dy = t.clientY - touchStartY;
+      // Only engage if clearly horizontal
+      if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+        swiping = true;
+      }
+    }, { passive: true });
+
+    root.addEventListener('touchend', function (e) {
+      if (!swiping) return;
+      const t = e.changedTouches[0];
+      const dx = t.clientX - touchStartX;
+      if (Math.abs(dx) > 45) {
+        dx < 0 ? next() : prev();
+        kick();
+      }
+      swiping = false;
+    }, { passive: true });
+
+    // Pause on interaction / hidden tab
+    root.addEventListener('focusin', stop);
+    root.addEventListener('focusout', start);
+    document.addEventListener('visibilitychange', function () {
+      document.hidden ? stop() : start();
+    });
+
+    go(0);
+    start();
+  }
+
+  function boot() {
+    initSlideshow('studentSlideshow');
+    initSlideshow('teacherSlideshow');
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})();
+
+// ============ FOCUS TIMER DEMO ============
+(function () {
+  const widget = document.getElementById('demoTimer');
+  if (!widget) return;
+
+  const display = document.getElementById('timerDisplay');
+  const startBtn = document.getElementById('timerStartBtn');
+  const resetBtn = document.getElementById('timerResetBtn');
+  const soundPills = widget.querySelectorAll('.sound-pill');
+
+  const SESSION_SECONDS = 25 * 60;
+  const BASE_TITLE = 'Grindly · Modern Learning Ecosystem';
+
+  let remaining = SESSION_SECONDS;
+  let timer = null;
+  let running = false;
+  let currentSound = 'silent';
+  let audioCtx = null;
+  let soundNode = null;
+  let soundGain = null;
+
+  function fmt(s) {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return String(m).padStart(2, '0') + ':' + String(sec).padStart(2, '0');
+  }
+
+  function paint() {
+    display.textContent = fmt(remaining);
+    document.title = running ? fmt(remaining) + ' · Grindly' : BASE_TITLE;
+  }
+
+  function stopAudio() {
+    if (soundGain && audioCtx) {
+      try { soundGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.4); } catch (e) {}
+    }
+    if (soundNode && audioCtx) {
+      try { soundNode.stop(audioCtx.currentTime + 0.5); } catch (e) {}
+      soundNode = null;
+    }
+  }
+
+  function startAudio() {
+    stopAudio();
+    if (currentSound === 'silent') return;
+
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const ctx = audioCtx;
+      if (ctx.state === 'suspended') ctx.resume();
+
+      const bufferSize = 2 * ctx.sampleRate;
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+
+      if (currentSound === 'brown') {
+        let last = 0;
+        for (let i = 0; i < bufferSize; i++) {
+          const white = Math.random() * 2 - 1;
+          last = (last + 0.02 * white) / 1.02;
+          data[i] = last * 3.5;
         }
-        
-        // Start counters when page loads
-        function startCounters() {
-            animateNumber(document.getElementById('stat1'), 0, 52, 2000);
-            animateNumber(document.getElementById('stat2'), 0, 12, 2000);
-            animateNumber(document.getElementById('stat3'), 0, 5, 2000);
-            animateNumber(document.getElementById('stat4'), 0, 9, 2000);
-            animateNumber(document.getElementById('stat5'), 0, 1247, 2500);
-            animateNumber(document.getElementById('stat6'), 0, 214, 2000);
+      } else if (currentSound === 'rain') {
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * 0.35;
         }
-        
-        // ===== SLIDESHOW FUNCTIONALITY =====
-        let studentCurrentMobile = 0, teacherCurrentMobile = 0;
-        const studentSlidesMobile = document.querySelectorAll('#studentSlideshowMobile .slide');
-        const teacherSlidesMobile = document.querySelectorAll('#teacherSlideshowMobile .slide');
-        const studentDotsMobile = document.querySelectorAll('#studentDotsMobile .nav-dot');
-        const teacherDotsMobile = document.querySelectorAll('#teacherDotsMobile .nav-dot');
-
-        function showStudentSlideMobile(index) {
-            if (!studentSlidesMobile.length) return;
-            if (index < 0) index = studentSlidesMobile.length - 1;
-            if (index >= studentSlidesMobile.length) index = 0;
-            studentSlidesMobile.forEach(s => s.classList.remove('active'));
-            studentDotsMobile.forEach(d => d.classList.remove('active'));
-            studentSlidesMobile[index].classList.add('active');
-            if (studentDotsMobile[index]) studentDotsMobile[index].classList.add('active');
-            studentCurrentMobile = index;
+      } else if (currentSound === 'library') {
+        let last = 0;
+        for (let i = 0; i < bufferSize; i++) {
+          const white = Math.random() * 2 - 1;
+          last = (last + 0.008 * white) / 1.008;
+          data[i] = last * 5;
         }
+      }
 
-        function showTeacherSlideMobile(index) {
-            if (!teacherSlidesMobile.length) return;
-            if (index < 0) index = teacherSlidesMobile.length - 1;
-            if (index >= teacherSlidesMobile.length) index = 0;
-            teacherSlidesMobile.forEach(s => s.classList.remove('active'));
-            teacherDotsMobile.forEach(d => d.classList.remove('active'));
-            teacherSlidesMobile[index].classList.add('active');
-            if (teacherDotsMobile[index]) teacherDotsMobile[index].classList.add('active');
-            teacherCurrentMobile = index;
-        }
+      soundNode = ctx.createBufferSource();
+      soundNode.buffer = buffer;
+      soundNode.loop = true;
 
-        function changeStudentSlideMobile(d) { showStudentSlideMobile(studentCurrentMobile + d); }
-        function changeTeacherSlideMobile(d) { showTeacherSlideMobile(teacherCurrentMobile + d); }
-        function goToStudentSlideMobile(i) { showStudentSlideMobile(i); }
-        function goToTeacherSlideMobile(i) { showTeacherSlideMobile(i); }
+      soundGain = ctx.createGain();
+      soundGain.gain.value = 0;
+      soundGain.gain.linearRampToValueAtTime(0.16, ctx.currentTime + 0.6);
 
-        // Theme change
-        function changeTheme(theme) {
-            document.body.className = theme;
-            localStorage.setItem('theme', theme);
-        }
+      if (currentSound === 'rain') {
+        const hp = ctx.createBiquadFilter();
+        hp.type = 'highpass';
+        hp.frequency.value = 800;
+        soundNode.connect(hp);
+        hp.connect(soundGain);
+      } else if (currentSound === 'library') {
+        const lp = ctx.createBiquadFilter();
+        lp.type = 'lowpass';
+        lp.frequency.value = 1200;
+        soundNode.connect(lp);
+        lp.connect(soundGain);
+      } else {
+        soundNode.connect(soundGain);
+      }
 
-        // Load saved theme
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        document.body.className = savedTheme;
-        const themeSelect = document.getElementById('themeSelect');
-        if (themeSelect) themeSelect.value = savedTheme;
+      soundGain.connect(ctx.destination);
+      soundNode.start();
+    } catch (e) { /* silent fail — audio unsupported */ }
+  }
 
-        // Start counters on load
-        window.addEventListener('load', startCounters);
+  function tick() {
+    remaining -= 1;
+    if (remaining <= 0) {
+      remaining = 0;
+      paint();
+      finish();
+      return;
+    }
+    paint();
+  }
 
-        // Newsletter toast
-        document.querySelectorAll('.newsletter-form').forEach(form => {
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                const email = this.querySelector('.newsletter-input').value;
-                if (email) {
-                    const toast = document.createElement('div');
-                    toast.textContent = '🎉 Thanks for subscribing!';
-                    toast.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#d4a017;color:white;padding:12px 24px;border-radius:30px;font-size:0.8rem;z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,0.2);';
-                    document.body.appendChild(toast);
-                    setTimeout(() => toast.remove(), 3000);
-                    this.querySelector('.newsletter-input').value = '';
-                }
-            });
-        });
-    </script>
+  function start() {
+    if (running) return;
+    running = true;
+    widget.classList.add('running');
+    widget.classList.remove('done');
+    startBtn.innerHTML = '<i class="fas fa-pause"></i><span>Pause</span>';
+    startAudio();
+    timer = setInterval(tick, 1000);
+  }
+
+  function pause() {
+    if (!running) return;
+    running = false;
+    widget.classList.remove('running');
+    startBtn.innerHTML = '<i class="fas fa-play"></i><span>Resume</span>';
+    stopAudio();
+    clearInterval(timer); timer = null;
+    document.title = BASE_TITLE;
+  }
+
+  function reset() {
+    clearInterval(timer); timer = null;
+    running = false;
+    remaining = SESSION_SECONDS;
+    widget.classList.remove('running', 'done');
+    startBtn.innerHTML = '<i class="fas fa-play"></i><span>Start</span>';
+    stopAudio();
+    paint();
+  }
+
+  function finish() {
+    clearInterval(timer); timer = null;
+    running = false;
+    widget.classList.remove('running');
+    widget.classList.add('done');
+    stopAudio();
+    startBtn.innerHTML = '<i class="fas fa-check"></i><span>Done!</span>';
+    launchConfetti();
+    setTimeout(function () {
+      widget.classList.remove('done');
+      reset();
+    }, 4000);
+  }
+
+  function launchConfetti() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const rect = widget.getBoundingClientRect();
+    const colors = ['#ffaa33','#ff4714','#d61f00','#10b981','#3b82f6','#8b5cf6'];
+    for (let i = 0; i < 45; i++) {
+      const p = document.createElement('div');
+      const size = 6 + Math.random() * 8;
+      p.style.cssText =
+        'position:fixed;' +
+        'left:' + (rect.left + rect.width / 2) + 'px;' +
+        'top:' + (rect.top + rect.height / 2) + 'px;' +
+        'width:' + size + 'px;height:' + size + 'px;' +
+        'background:' + colors[i % colors.length] + ';' +
+        'border-radius:' + (Math.random() > .5 ? '50%' : '2px') + ';' +
+        'pointer-events:none;z-index:99999;' +
+        'transform:translate(-50%,-50%);' +
+        'transition:transform 1.4s cubic-bezier(.2,.8,.2,1),opacity 1.4s;';
+      document.body.appendChild(p);
+
+      const dx = (Math.random() - 0.5) * 400;
+      const dy = (Math.random() - 0.9) * 380;
+      requestAnimationFrame(function () {
+        p.style.transform = 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + dy + 'px)) rotate(' + (Math.random() * 720 - 360) + 'deg)';
+        p.style.opacity = '0';
+      });
+      setTimeout(function () { p.remove(); }, 1500);
+    }
+  }
+
+  startBtn.addEventListener('click', function () { running ? pause() : start(); });
+  resetBtn.addEventListener('click', reset);
+
+  soundPills.forEach(function (pill) {
+    pill.addEventListener('click', function () {
+      soundPills.forEach(function (p) {
+        p.classList.remove('active');
+        p.setAttribute('aria-checked', 'false');
+      });
+      pill.classList.add('active');
+      pill.setAttribute('aria-checked', 'true');
+      currentSound = pill.dataset.sound;
+      if (running) startAudio();
+    });
+  });
+
+  paint();
+
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden && !running) document.title = BASE_TITLE;
+  });
+})();
+
+// ============ LIVE "STUDYING NOW" COUNTER ============
+(function () {
+  const el = document.getElementById('studyingCount');
+  if (!el) return;
+  let count = 14;
+
+  function bump() {
+    const delta = Math.random() > 0.5 ? 1 : -1;
+    count = Math.max(8, Math.min(22, count + delta));
+    el.textContent = count;
+    setTimeout(bump, 4000 + Math.random() * 6000);
+  }
+  setTimeout(bump, 5000);
+})();
+
+// ============ COUNT-UP STATS ============
+(function () {
+  const els = document.querySelectorAll('[data-count]');
+  if (!els.length) return;
+
+  if (!('IntersectionObserver' in window)) {
+    els.forEach(function (el) {
+      el.textContent = el.dataset.count + (el.dataset.suffix || '');
+    });
+    return;
+  }
+
+  function animate(el) {
+    const target = parseInt(el.dataset.count, 10);
+    const suffix = el.dataset.suffix || '';
+    const duration = 1500;
+    const start = performance.now();
+
+    function frame(now) {
+      const t = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - t, 3);
+      const current = Math.round(target * eased);
+      el.textContent = (target > 999 ? current.toLocaleString() : current) + suffix;
+      if (t < 1) requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  const obs = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) {
+        animate(e.target);
+        obs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.4 });
+
+  els.forEach(function (el) { obs.observe(el); });
+})();
+
+// ============ NEWSLETTER ============
+(function () {
+  const form = document.getElementById('newsletterForm');
+  const msg = document.getElementById('newsletterMessage');
+  if (!form) return;
+
+  form.addEventListener('submit', function () {
+    msg.textContent = '🎉 Thanks for subscribing!';
+    setTimeout(function () {
+      form.reset();
+      msg.textContent = '';
+    }, 5000);
+  });
+})();
+
+// ============ STICKY CTA BAR ============
+(function () {
+  const bar = document.getElementById('ctaBar');
+  if (!bar) return;
+
+  let ticking = false;
+
+  function update() {
+    const show = window.scrollY > 520;
+    bar.classList.toggle('show', show);
+    ticking = false;
+  }
+
+  window.addEventListener('scroll', function () {
+    if (!ticking) {
+      requestAnimationFrame(update);
+      ticking = true;
+    }
+  }, { passive: true });
+
+  update();
+})();
+</script>
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-R3FJ3LMC39"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag() { dataLayer.push(arguments); }
+gtag('js', new Date());
+gtag('config', 'G-R3FJ3LMC39');
+</script>
+
 </body>
 </html>
