@@ -271,7 +271,8 @@ var firebaseConfig = {
    2 · Get class code
    Priority: URL ?class=XXXX → localStorage → prompt
    ============================================================ */
-function getClassCode() {
+
+  function getClassCode() {
   var params = new URLSearchParams(window.location.search);
   var fromUrl = params.get('class');
   if (fromUrl) {
@@ -621,46 +622,55 @@ setInterval(render, 5000); /* refresh derived values every 5s */
 <!-- ═══ Presentation Fix · correct paths + re-subscribe ═══ -->
 <script>
 (function () {
-  if (typeof db === 'undefined' || !db ||
-      typeof CLASS_CODE === 'undefined' || !CLASS_CODE ||
-      typeof refs === 'undefined' || typeof DATA === 'undefined') {
-    console.warn('[PresFix] Firebase not ready — skipping rewire.');
-    return;
+  var tries = 0, maxTries = 40;
+
+  function ready() {
+    return typeof db !== 'undefined' && db &&
+           typeof CLASS_CODE !== 'undefined' && CLASS_CODE &&
+           typeof refs !== 'undefined' &&
+           typeof DATA !== 'undefined';
   }
 
-  // Detach old listeners so we don't double-render
-  try {
-    Object.keys(refs).forEach(function (k) { refs[k].off(); });
-  } catch (e) {}
+  function rewire() {
+    if (!ready()) {
+      if (++tries > maxTries) {
+        console.warn('[PresFix] Gave up waiting for Firebase vars.');
+        return;
+      }
+      return setTimeout(rewire, 100);
+    }
 
-  console.log('[PresFix] Rewiring for class:', CLASS_CODE);
+    // Detach old listeners
+    try { Object.keys(refs).forEach(function (k) { refs[k].off(); }); } catch (e) {}
 
-  // Correct paths per your Firebase rules:
-  //   students / activity / checkins  →  classes/{CODE}/...
-  //   announcements / assignments / resources  →  {node}/{CODE}
-  //   challenges  →  flat list at root
-  refs.students      = db.ref('classes/' + CLASS_CODE + '/students');
-  refs.activity      = db.ref('classes/' + CLASS_CODE + '/activity');
-  refs.checkins      = db.ref('classes/' + CLASS_CODE + '/checkins');
-  refs.announcements = db.ref('announcements/' + CLASS_CODE);
-  refs.assignments   = db.ref('assignments/' + CLASS_CODE);
-  refs.resources     = db.ref('resources/' + CLASS_CODE);
-  refs.challenges    = db.ref('challenges');
+    console.log('[PresFix] Rewiring for class:', CLASS_CODE);
 
-  Object.keys(refs).forEach(function (k) {
-    refs[k].on('value', function (snap) {
-      var v = snap.val();
-      console.log('[PresFix] ' + k + ' →',
-        v ? (Array.isArray(v) ? v.length : Object.keys(v).length) + ' items' : 'EMPTY');
-      DATA[k] = v || {};
-      render();
-      markUpdated();
-    }, function (err) {
-      console.error('[PresFix] READ DENIED for ' + k + ':', err.message);
-      showBanner('Cannot read "' + k + '": ' + err.message);
+    refs.students      = db.ref('classes/' + CLASS_CODE + '/students');
+    refs.activity      = db.ref('classes/' + CLASS_CODE + '/activity');
+    refs.checkins      = db.ref('classes/' + CLASS_CODE + '/checkins');
+    refs.announcements = db.ref('announcements/' + CLASS_CODE);
+    refs.assignments   = db.ref('assignments/' + CLASS_CODE);
+    refs.resources     = db.ref('resources/' + CLASS_CODE);
+    refs.challenges    = db.ref('challenges');
+
+    Object.keys(refs).forEach(function (k) {
+      refs[k].on('value', function (snap) {
+        var v = snap.val();
+        console.log('[PresFix] ' + k + ' →',
+          v ? (Array.isArray(v) ? v.length : Object.keys(v).length) + ' items' : 'EMPTY');
+        DATA[k] = v || {};
+        render();
+        markUpdated();
+      }, function (err) {
+        console.error('[PresFix] READ DENIED for ' + k + ':', err.message);
+        showBanner('Cannot read "' + k + '": ' + err.message);
+      });
     });
-  });
+  }
+
+  rewire();
 })();
 </script>
+
 </body>
 </html>
