@@ -2370,10 +2370,13 @@
     var oc  = btn.getAttribute('onclick') || '';
     var txt = (btn.textContent || '').toLowerCase().trim();
 
-    /* Enter presentation */
+
+          /* Enter inline presentation — ONLY for sidebar nav-item, NOT for the header popup button */
     if (oc.indexOf('togglePresentationMode') !== -1 ||
-        (txt.indexOf('presentation mode') !== -1 && !document.body.classList.contains('presentation-mode'))) {
-      e.preventDefault();
+        (btn.classList.contains('nav-item') &&
+         txt.indexOf('presentation mode') !== -1 &&
+         !document.body.classList.contains('presentation-mode'))) {
+          
       e.stopImmediatePropagation();
       e.stopPropagation();
       showPresentation();
