@@ -3951,48 +3951,39 @@ body.focus-mode .portal-core {
 </script>
 
 <!-- ============================================================
-     MOBILE FIX · hide dashboard-classifier tab buttons at top
+     KILL THE DASHBOARD-CLASSIFIER TAB BAR — everywhere, forever
+     Targets: "My Dashboard", "All", "Study Progress",
+              "Tasks & Assignments", "Study Tools"
      ============================================================ -->
 <style>
-@media (max-width: 900px) {
-  /* CSS catch-all for the most likely classifier class names */
+  /* First line of defence — catches common class names instantly */
+  [data-killed-classifier],
   .dashboard-classifier,
   .classifier-tabs,
   .classifier-nav,
   .classifier-bar,
-  .classifier-btn,
   .dashboard-tabs,
-  .dashboard-tab,
   .dashboard-category-tabs,
   .dashboard-category-nav,
-  .dashboard-category-buttons,
-  .category-tabs,
-  .category-btn,
-  .filter-tabs,
-  .dashboard-top-tabs,
   .dashboard-filter-bar,
-  .top-classifier-buttons {
+  .category-tabs,
+  .filter-tabs {
     display: none !important;
   }
-
-  /* Safety: never hide sidebar, top-nav, or bottom nav */
+  /* Never hide anything in the sidebar / bottom nav / top nav */
   #sidebar .nav-item,
+  .sidebar .nav-item,
   .student-bottom-nav button,
   .top-nav .btn {
     display: revert !important;
   }
-}
 </style>
 
 <script>
-/* ============================================================
-   MOBILE FIX · actively remove the classifier buttons
-   Targets exact labels: "My Dashboard", "All",
-   "Study Progress", "Tasks & Assignments", "Study Tools"
-   ============================================================ */
 (function () {
   'use strict';
 
+  // The exact labels the classifier bar uses
   var LABELS = [
     'My Dashboard',
     'Study Progress',
@@ -4000,115 +3991,121 @@ body.focus-mode .portal-core {
     'Study Tools'
   ];
 
-  function isMobile() {
-    return window.innerWidth <= 900;
+  // Where NOT to look (so we don't nuke your real nav)
+  var SAFE_ZONES =
+    '#sidebar, .sidebar, .student-bottom-nav, .top-nav, ' +
+    '.focus-mode-panel, .focus-mode-panel *, #focusPersonaCard, ' +
+    '.tour-overlay, .tour-tooltip';
+
+  // "All" or "📊 All" or "— All —" but NOT "All tasks"
+  var ALL_ONLY = /^[^\p{L}]*All[^\p{L}]*$/u;
+
+  function looksLikeClassifierLabel(el) {
+    if (!el || el.nodeType !== 1) return false;
+    if (el.closest(SAFE_ZONES)) return false;
+    if (el.children.length > 4) return false;
+
+    var text = (el.textContent || '').replace(/\s+/g, ' ').trim();
+    if (text.length === 0 || text.length > 50) return false;
+
+    for (var i = 0; i < LABELS.length; i++) {
+      if (text.indexOf(LABELS[i]) !== -1) return true;
+    }
+    return ALL_ONLY.test(text);
   }
 
-  function hideClassifierButtons() {
-    if (!isMobile()) {
-      // Restore if user rotates to desktop
-      document.querySelectorAll('[data-mobile-hidden-classifier]').forEach(function (el) {
-        el.style.removeProperty('display');
-        el.removeAttribute('data-mobile-hidden-classifier');
-      });
-      return;
-    }
+  function nuke() {
+    var candidates = document.querySelectorAll(
+      'button, a, [role="tab"], .btn, .tab, .nav-item'
+    );
 
-    // 1) Find the anchor button ("My Dashboard") — most unique label
-    var all = document.querySelectorAll('button, .btn, .nav-item, .tab, [role="tab"], div, span, a');
+    // Collect all matching label elements
+    var hits = [];
+    candidates.forEach(function (el) {
+      if (looksLikeClassifierLabel(el)) hits.push(el);
+    });
 
-    for (var i = 0; i < all.length; i++) {
-      var el = all[i];
+    if (hits.length === 0) return;
 
-      // Skip things inside sidebar / bottom-nav / top-nav / focus panel
-      if (el.closest('#sidebar, .sidebar, .student-bottom-nav, .top-nav, .focus-mode-panel, #focusPersonaCard')) {
-        continue;
+    // Group matches by parent — a bar has 2+ label-buttons sharing a parent
+    var byParent = new Map();
+    hits.forEach(function (el) {
+      var p = el.parentElement;
+      if (!p) return;
+      if (!byParent.has(p)) byParent.set(p, []);
+      byParent.get(p).push(el);
+    });
+
+    // Pick the parent with the most matches — that's the tab bar
+    var bestParent = null;
+    var bestCount = 0;
+    byParent.forEach(function (children, parent) {
+      if (children.length > bestCount) {
+        bestCount = children.length;
+        bestParent = parent;
       }
+    });
 
-      // Only consider leaf-ish elements (no child with same-ish content)
-      var text = (el.textContent || '').replace(/\s+/g, ' ').trim();
+    // Never hide the main dashboard / main-content / body
+    if (bestParent && bestCount >= 2) {
+      var blocked =
+        bestParent === document.body ||
+        bestParent.tagName === 'MAIN' ||
+        bestParent.id === 'dashboard' ||
+        bestParent.id === 'mainContent' ||
+        bestParent.classList.contains('dashboard-content') ||
+        bestParent.classList.contains('main-content') ||
+        bestParent.classList.contains('dashboard-grid');
 
-      // Skip huge containers
-      if (text.length > 40) continue;
-
-      for (var j = 0; j < LABELS.length; j++) {
-        if (text === LABELS[j]) {
-          el.style.setProperty('display', 'none', 'important');
-          el.setAttribute('data-mobile-hidden-classifier', '1');
-
-          // If this element's parent only contains these tab buttons,
-          // hide the parent too (removes empty bar)
-          var parent = el.parentElement;
-          if (parent && parent !== document.body) {
-            var siblings = Array.from(parent.children);
-            var allHiddenOrTabs = siblings.every(function (sib) {
-              var st = (sib.textContent || '').replace(/\s+/g, ' ').trim();
-              return sib === el ||
-                     sib.hasAttribute('data-mobile-hidden-classifier') ||
-                     LABELS.indexOf(st) !== -1 ||
-                     st === 'All';
-            });
-            if (allHiddenOrTabs && siblings.length >= 3) {
-              parent.style.setProperty('display', 'none', 'important');
-              parent.setAttribute('data-mobile-hidden-classifier', '1');
-            }
-          }
-          break;
-        }
+      if (!blocked) {
+        bestParent.style.setProperty('display', 'none', 'important');
+        bestParent.setAttribute('data-killed-classifier', '1');
+        return;
       }
     }
 
-    // 2) Also nuke the short "All" button — but ONLY if it lives in a
-    //    bar that also contained one of the other labels (avoids killing
-    //    unrelated "All" text elsewhere)
-    var allBtns = document.querySelectorAll('button, .btn, .nav-item, .tab, [role="tab"]');
-    allBtns.forEach(function (el) {
-      if (el.closest('#sidebar, .sidebar, .student-bottom-nav, .top-nav, .focus-mode-panel')) return;
-      var t = (el.textContent || '').replace(/\s+/g, ' ').trim();
-      if (t === 'All') {
-        var parent = el.parentElement;
-        if (parent) {
-          var hasClassifierSibling = Array.from(parent.querySelectorAll('*')).some(function (c) {
-            return c.hasAttribute && c.hasAttribute('data-mobile-hidden-classifier');
-          });
-          if (hasClassifierSibling) {
-            el.style.setProperty('display', 'none', 'important');
-            el.setAttribute('data-mobile-hidden-classifier', '1');
-          }
-        }
-      }
+    // Fallback — hide each offending button individually
+    hits.forEach(function (el) {
+      el.style.setProperty('display', 'none', 'important');
+      el.setAttribute('data-killed-classifier', '1');
     });
   }
 
-  // Run on load
+  // Run repeatedly to survive late injection
+  function burst() {
+    nuke();
+    setTimeout(nuke, 50);
+    setTimeout(nuke, 200);
+    setTimeout(nuke, 600);
+    setTimeout(nuke, 1500);
+    setTimeout(nuke, 3000);
+  }
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', hideClassifierButtons);
+    document.addEventListener('DOMContentLoaded', burst);
   } else {
-    hideClassifierButtons();
+    burst();
   }
+  window.addEventListener('load', burst);
 
-  // Run again after dynamic injection (classifier script may add them late)
-  setTimeout(hideClassifierButtons, 300);
-  setTimeout(hideClassifierButtons, 900);
-  setTimeout(hideClassifierButtons, 1800);
-
-  // Re-run on resize / rotate
-  var resizeTimer;
-  window.addEventListener('resize', function () {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(hideClassifierButtons, 150);
-  });
-
-  // Observe DOM mutations in case classifier injects buttons asynchronously
-  var obs = new MutationObserver(function () {
-    clearTimeout(window.__classifierHideTimer);
-    window.__classifierHideTimer = setTimeout(hideClassifierButtons, 200);
-  });
+  // Catch every re-render from dashboard-classifier.js
   if (document.body) {
-    obs.observe(document.body, { childList: true, subtree: true });
+    new MutationObserver(function (mutations) {
+      for (var i = 0; i < mutations.length; i++) {
+        if (mutations[i].addedNodes && mutations[i].addedNodes.length) {
+          nuke();
+          return;
+        }
+      }
+    }).observe(document.body, { childList: true, subtree: true });
   }
+
+  // Slow safety net — catches anything the observer missed
+  setInterval(nuke, 1500);
 })();
 </script>
+
+
 </body>
 </html>
 
