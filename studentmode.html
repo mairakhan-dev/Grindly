@@ -2042,6 +2042,39 @@
 <script src="features studentmode/tour.js" defer></script>
 
 
+<style id="compact-mode-slim">
+:root {
+  --card-pad: 16px;
+  --section-gap: 16px;
+  --element-gap: 12px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+}
+.main-content { padding: 24px 16px 88px !important; }
+.content-card, .form-card, .assignment-card, .tool-item,
+.stat-card, .focus-card, .bottom-feature-card, .chart-card {
+  border-radius: 14px !important;
+}
+.content-header { padding: 12px 14px !important; }
+.content-body   { padding: 12px 14px !important; }
+.form-card      { padding: 14px !important; }
+.content-header h2, .form-card h2 { font-size: 1rem !important; }
+.btn { padding: 8px 14px !important; font-size: 0.8rem !important; }
+input, textarea, select { padding: 10px 12px !important; font-size: 0.85rem !important; }
+.stat-card { min-height: 68px !important; padding: 10px 12px !important; }
+.stat-number { font-size: 1.15rem !important; }
+.stat-label  { font-size: 0.6rem !important; }
+
+@media (min-width: 901px) {
+  .main-content { padding: 32px 32px 80px !important; }
+  .quick-stats  { grid-template-columns: repeat(4, 1fr) !important; }
+  .dashboard-grid { display: grid !important; grid-template-columns: repeat(12, 1fr) !important; }
+  .forms-section, .content-section { grid-column: span 6 !important; }
+  .bottom-features-grid { grid-template-columns: repeat(4, 1fr) !important; }
+  .tools-grid { grid-template-columns: repeat(2, 1fr) !important; }
+}
+</style>
+
 <!-- ============================================================
      GRINDLY · FOCUS PORTAL · theme-aware + mobile scroll fix
      ============================================================ -->
