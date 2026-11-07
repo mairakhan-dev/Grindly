@@ -16789,3 +16789,68 @@ function toggleSidebar() {
     if (!document.hidden) polish();
   });
 })();
+
+/* Grindly Teacher Mode — cleanup helper. Load with: <script src="teachermode-cleanup.js" defer></script> */
+(function () {
+  'use strict';
+  var HEADER_RE = /^[\s\S]{0,4}\s*(analytics|content management|teacher toolkit)\s*[▼▲▾▴⌄⌃]?\s*$/i;
+
+  function cleanup() {
+    var tabs = document.querySelectorAll('#tmTabs, .dashboard-button-bar');
+    tabs.forEach(function (n) { n.remove(); });
+
+    var all = document.querySelectorAll('div, span, h2, h3, h4, button, a, p, summary');
+    all.forEach(function (el) {
+      if (el.classList.contains('tm-hide')) return;
+      var t = (el.textContent || '').trim();
+      if (t.length > 32 || el.children.length > 3 || !HEADER_RE.test(t)) return;
+      el.classList.add('tm-hide');
+      var sib = el.nextElementSibling;
+      while (sib) {
+        sib.classList.add('tm-open');
+        sib.style.maxHeight = 'none';
+        sib.style.display = '';
+        sib = null;
+      }
+      if (el.parentElement) {
+        Array.prototype.forEach.call(el.parentElement.children, function (c) {
+          if (c !== el) { c.classList.add('tm-open'); c.style.maxHeight = 'none'; }
+        });
+      }
+    });
+  }
+
+  function wrapShowSection() {
+    var orig = window.showSection;
+    if (typeof orig !== 'function' || orig.__tmWrapped) return;
+    var wrapped = function () {
+      var r = orig.apply(this, arguments);
+      try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) { window.scrollTo(0, 0); }
+      return r;
+    };
+    wrapped.__tmWrapped = true;
+    window.showSection = wrapped;
+  }
+
+  var debounce;
+  function schedule() {
+    clearTimeout(debounce);
+    debounce = setTimeout(function () { cleanup(); wrapShowSection(); }, 120);
+  }
+
+  function init() {
+    cleanup(); wrapShowSection();
+    [300, 1000, 2000, 3500, 6000].forEach(function (ms) { setTimeout(schedule, ms); });
+    new MutationObserver(schedule).observe(document.body, { childList: true, subtree: true });
+    document.addEventListener('keydown', function (e) {
+      var tag = (e.target.tagName || '').toLowerCase();
+      if (e.key === '/' && tag !== 'input' && tag !== 'textarea' && tag !== 'select') {
+        var s = document.getElementById('studentSearch');
+        if (s) { e.preventDefault(); s.focus(); }
+      }
+    });
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();

@@ -485,8 +485,7 @@ button { font-family: inherit; }
    4. LAYOUT SHELL
    ========================================================================== */
 .app-layout {
-  min-height: 100vh;
-  min-height: 100dvh;
+  /* no min-height: it caused an extra scroll area under the mobile header */
   grid-template-columns: minmax(0, 1fr);
 }
 
@@ -1835,4 +1834,170 @@ body.presentation-mode .main-content { margin-left: 0; max-width: none; }
   body { background: #fff; color: #000; }
   .main-content { margin: 0; padding: 0; max-width: none; }
   .content-card, .form-card, .stat-card, .presentation-card { box-shadow: none; break-inside: avoid; border-color: #ccc; }
+}
+
+
+/* ==========================================================================
+   17. POLISH LAYER — section switching fix, cleaner/tighter UI, motion
+   ========================================================================== */
+
+/* 17.1 Section visibility: beat the injected !important rules */
+.dashboard-content { display: none !important; }
+.dashboard-content[style*="display: block"],
+#dashboard[style*="display: block"] { display: block !important; }
+#dashboard[style*="display: none"],
+.dashboard-content[style*="display: none"],
+.dashboard-content[style*="visibility: hidden"] { display: none !important; }
+
+/* 17.2 Remove horizontal tab bar (sidebar only) */
+.dashboard-button-bar, #tmTabs { display: none !important; }
+
+/* 17.3 Remove collapsible "▼" section headers, keep content open */
+.tm-hide,
+.sidebar-section > .section-header,
+.sidebar-section-header,
+.section-toggle,
+.collapsible-header,
+.section-arrow,
+.collapse-icon { display: none !important; }
+.section-content,
+.tm-open {
+  display: block !important;
+  max-height: none !important;
+  overflow: visible !important;
+  opacity: 1 !important;
+}
+.sidebar-section, .dashboard-section {
+  display: grid;
+  gap: var(--spacing-sm, .5rem);
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+/* 17.4 Tighter, cleaner layout */
+:root, body {
+  --spacing-md: .85rem;
+  --spacing-lg: 1.15rem;
+  --spacing-xl: 1.5rem;
+  --radius: 11px;
+  --radius-lg: 16px;
+}
+body { font-size: 14.5px; }
+.main-content { padding-bottom: 1.5rem; }
+.footer { margin-top: var(--spacing-md); margin-bottom: 0; }
+.pro-tip { display: none; }
+body.show-tips .pro-tip { display: block; }
+.dashboard-header { padding-block: .6rem; }
+.dashboard-header p, .dashboard-header .subtitle { display: none; }
+.content-header { padding: .75rem 1rem; }
+.content-body { padding: 1rem; }
+.card { padding: 1rem; }
+.stat-card { padding: .8rem 1rem; }
+.sidebar { padding: .9rem; }
+.nav-item { padding: .6rem .8rem; }
+
+@media (min-width: 1181px) {
+  #dashboard.dashboard-content[style*="display: block"] .dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: var(--spacing-lg);
+    align-items: start;
+  }
+  #dashboard .dashboard-grid > .forms { grid-column: span 5; }
+  #dashboard .dashboard-grid > .content { grid-column: span 7; }
+}
+@media (max-width: 1019px) {
+  .main-content { padding: var(--spacing-md) var(--spacing-md) 1.25rem; }
+}
+
+/* 17.5 Ambient background + theme cross-fade */
+body {
+  background-image:
+    radial-gradient(900px 500px at 8% -10%, color-mix(in srgb, var(--accent, #6366f1) 10%, transparent), transparent 60%),
+    radial-gradient(800px 500px at 100% 0%, color-mix(in srgb, var(--brand-2, #8b5cf6) 8%, transparent), transparent 60%);
+  background-attachment: fixed;
+}
+@media (max-width: 1019px) { body { background-attachment: scroll; } }
+.card, .sidebar, .nav-item, .stat-card, .content-header, .btn, input, select, textarea {
+  transition: background-color .35s ease, border-color .35s ease, color .35s ease,
+              box-shadow .25s ease, transform .25s ease;
+}
+
+/* 17.6 Motion */
+@keyframes sidebarIn { from { opacity: 0; transform: translateX(-14px); } to { opacity: 1; transform: none; } }
+@keyframes sectionIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes riseIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+@keyframes ringBreathe { 0%,100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent, #6366f1) 35%, transparent); } 50% { box-shadow: 0 0 0 10px transparent; } }
+@keyframes iconWiggle { 0%,100% { transform: rotate(0); } 30% { transform: rotate(-8deg) scale(1.08); } 60% { transform: rotate(6deg) scale(1.08); } }
+@keyframes shimmer { from { background-position: -200% 0; } to { background-position: 200% 0; } }
+@keyframes timerBar { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+
+.sidebar { animation: sidebarIn .45s cubic-bezier(.2,.8,.2,1) both; }
+.dashboard-content[style*="display: block"],
+#dashboard[style*="display: block"] { animation: sectionIn .4s cubic-bezier(.2,.8,.2,1) both; }
+
+:is(.dashboard-grid, .stats-grid, .content-body) > * { animation: riseIn .5s cubic-bezier(.2,.8,.2,1) both; }
+:is(.dashboard-grid, .stats-grid, .content-body) > :nth-child(1) { animation-delay: .03s; }
+:is(.dashboard-grid, .stats-grid, .content-body) > :nth-child(2) { animation-delay: .08s; }
+:is(.dashboard-grid, .stats-grid, .content-body) > :nth-child(3) { animation-delay: .13s; }
+:is(.dashboard-grid, .stats-grid, .content-body) > :nth-child(4) { animation-delay: .18s; }
+:is(.dashboard-grid, .stats-grid, .content-body) > :nth-child(5) { animation-delay: .23s; }
+:is(.dashboard-grid, .stats-grid, .content-body) > :nth-child(n+6) { animation-delay: .28s; }
+
+.card:hover, .stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px -12px color-mix(in srgb, var(--accent, #6366f1) 40%, transparent);
+}
+.stat-card:hover .stat-icon { animation: iconWiggle .6s ease; }
+
+.btn { position: relative; overflow: hidden; }
+.btn::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,.28) 50%, transparent 70%);
+  transform: translateX(-120%); transition: transform .6s ease; pointer-events: none;
+}
+.btn:hover::after { transform: translateX(120%); }
+.btn:active { transform: scale(.97); }
+
+.nav-item { position: relative; }
+.nav-item:hover { transform: translateX(3px); }
+.nav-item.active::before {
+  content: ""; position: absolute; left: 0; top: 18%; bottom: 18%; width: 3px;
+  border-radius: 3px; background: var(--accent, #6366f1);
+  animation: sectionIn .3s ease both;
+}
+.pulse-ring, .pulse-widget .ring { animation: ringBreathe 3s ease-in-out infinite; }
+
+input:focus, select:focus, textarea:focus {
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent, #6366f1) 25%, transparent);
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--card) 25%, color-mix(in srgb, var(--accent, #6366f1) 12%, var(--card)) 50%, var(--card) 75%);
+  background-size: 200% 100%; animation: shimmer 1.4s linear infinite; border-radius: var(--radius);
+}
+.toast { position: relative; overflow: hidden; }
+.toast::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px;
+  background: var(--accent, #6366f1); transform-origin: left; animation: timerBar 3s linear forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-delay: 0s !important;
+    transition-duration: .001ms !important;
+  }
+}
+
+/* 17.7 Mobile refinements */
+@media (max-width: 640px) {
+  .dashboard-header { padding-block: .45rem; }
+  .feedback-btn, .feedback-button {
+    width: 44px; height: 44px; padding: 0; border-radius: 50%;
+    font-size: 0; display: grid; place-items: center;
+  }
+  .feedback-btn::before, .feedback-button::before { content: "💬"; font-size: 1.15rem; }
 }
