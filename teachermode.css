@@ -11165,3 +11165,298 @@ body.premium {
 }
 .pro-tip::before,
 .pro-tip::after { display: none !important; }
+
+
+/* ============================================================
+   FINAL COMPACTION · sidebar + cards + gaps
+   Overrides every block above. Nothing else needed.
+   ============================================================ */
+
+/* ── 1 · Narrower sidebar ── */
+:root {
+  --sidebar-width: 250px !important;
+  --card-pad: 20px !important;
+  --section-gap: 20px !important;
+  --element-gap: 14px !important;
+}
+
+@media (min-width: 1021px) {
+  .sidebar {
+    width: 250px !important;
+    max-width: 250px !important;
+    padding: 24px 16px !important;
+  }
+  .main-content {
+    margin-left: 250px !important;
+    padding: 24px 24px 40px 24px !important;
+    display: block !important;
+    width: auto !important;
+    max-width: none !important;
+  }
+  .main-content > * {
+    width: 100% !important;
+    max-width: 1240px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    box-sizing: border-box !important;
+  }
+}
+
+/* ── 2 · Tighter card padding + smaller radii ── */
+.content-card,
+.form-card,
+.assignment-card {
+  border-radius: 14px !important;
+}
+.content-header {
+  padding: 14px 18px !important;
+  gap: 10px !important;
+}
+.content-header h2,
+.form-card h2 {
+  font-size: 1.05rem !important;
+  white-space: normal !important;
+}
+.content-body {
+  padding: 16px 18px !important;
+  max-height: none !important;
+}
+.form-card {
+  padding: 18px !important;
+}
+.form-card > * + * {
+  margin-top: 12px !important;
+}
+.form-group {
+  margin-bottom: 12px !important;
+}
+input, textarea, select {
+  padding: 10px 12px !important;
+  min-height: 42px !important;
+  font-size: 14px !important;
+}
+textarea {
+  min-height: 80px !important;
+}
+.btn-submit {
+  padding: 12px 18px !important;
+  min-height: 44px !important;
+  font-size: 0.875rem !important;
+  margin-top: 10px !important;
+}
+
+/* ── 3 · Smaller stat cards (quick-stats row) ── */
+.quick-stats {
+  gap: 10px !important;
+  margin-bottom: 18px !important;
+}
+.stat-card {
+  padding: 12px 14px !important;
+  min-height: 70px !important;
+  gap: 12px !important;
+  border-radius: 12px !important;
+}
+.stat-icon {
+  width: 40px !important;
+  height: 40px !important;
+  font-size: 1.1rem !important;
+  border-radius: 10px !important;
+}
+.stat-number {
+  font-size: 1.35rem !important;
+  margin-bottom: 2px !important;
+}
+.stat-label {
+  font-size: 0.625rem !important;
+  letter-spacing: 0.08em !important;
+}
+
+/* ── 4 · Smaller pulse widget ── */
+.pulse-widget {
+  padding: 20px !important;
+  gap: 24px !important;
+  margin-bottom: 18px !important;
+  border-radius: 16px !important;
+}
+.pulse-ring-wrapper {
+  width: 130px !important;
+  height: 130px !important;
+}
+.pulse-ring-number {
+  font-size: 2.2rem !important;
+}
+.pulse-info h2 {
+  font-size: 1.15rem !important;
+  margin-bottom: 4px !important;
+}
+.pulse-desc {
+  font-size: 0.8125rem !important;
+  margin-bottom: 10px !important;
+}
+.pulse-metrics {
+  gap: 8px !important;
+  margin-bottom: 10px !important;
+}
+.pulse-metric {
+  padding: 8px 10px !important;
+}
+.pulse-metric-value {
+  font-size: 1.15rem !important;
+}
+.pulse-metric-label {
+  font-size: 0.5625rem !important;
+}
+.pulse-history {
+  height: 24px !important;
+}
+
+/* ── 5 · Smaller class-code card ── */
+.class-code-display {
+  padding: 20px !important;
+  margin: 0 !important;
+  border-radius: 14px !important;
+}
+.class-code-display h2 {
+  font-size: 1.05rem !important;
+  margin-bottom: 4px !important;
+}
+.class-code-display .code {
+  font-size: 1.75rem !important;
+  letter-spacing: 0.2em !important;
+  margin: 12px 0 !important;
+}
+
+/* ── 6 · Tighter Toolkit ── */
+.content-card:has([onclick="renderTeacherToolkit()"]) .content-body {
+  padding: 12px !important;
+}
+.content-card:has([onclick="renderTeacherToolkit()"]) .content-body > div {
+  gap: 8px !important;
+}
+.content-card:has([onclick="renderTeacherToolkit()"]) .content-body .form-card {
+  padding: 12px !important;
+  border-radius: 10px !important;
+}
+.content-card:has([onclick="renderTeacherToolkit()"]) .content-body .form-card h3 {
+  font-size: 0.75rem !important;
+  margin-bottom: 6px !important;
+}
+.content-card:has([onclick="renderTeacherToolkit()"]) .content-body .form-card .btn {
+  padding: 6px 10px !important;
+  font-size: 0.6875rem !important;
+  min-height: 32px !important;
+  width: 100%;
+}
+
+/* ── 7 · Tighter section gaps everywhere ── */
+#dashboard > * + *,
+.dashboard-content > * + * {
+  margin-top: 18px !important;
+}
+
+/* ── 8 · Tighter student cards ── */
+.student-item {
+  padding: 12px !important;
+  border-radius: 12px !important;
+}
+.student-info h4 {
+  font-size: 0.9375rem !important;
+  margin-bottom: 3px !important;
+}
+.stat-pill {
+  padding: 8px 4px !important;
+}
+.stat-pill-value {
+  font-size: 0.875rem !important;
+}
+.stat-pill-label {
+  font-size: 0.5rem !important;
+}
+
+/* ── 9 · Smaller pro-tips ── */
+.pro-tip {
+  padding: 12px 14px !important;
+  font-size: 0.8125rem !important;
+  margin: 12px 0 !important;
+  transform: none !important;
+  box-shadow: 0 1px 4px rgba(60, 42, 15, 0.06) !important;
+  border-radius: 10px !important;
+}
+.pro-tip::before,
+.pro-tip::after {
+  display: none !important;
+}
+.pro-tip strong {
+  font-size: 0.6875rem !important;
+  margin-bottom: 4px !important;
+}
+
+/* ── 10 · Smaller sidebar internal padding ── */
+.sidebar-header {
+  padding-bottom: 14px !important;
+}
+.sidebar > * + * {
+  margin-top: 14px !important;
+}
+.sidebar .nav-item {
+  padding: 9px 12px !important;
+  font-size: 0.875rem !important;
+  min-height: 38px !important;
+}
+.sidebar-stats {
+  padding: 12px 14px !important;
+}
+.sidebar-stats h3 {
+  font-size: 0.65rem !important;
+  margin-bottom: 8px !important;
+}
+.stat-row {
+  padding: 6px 0 !important;
+  font-size: 0.8125rem !important;
+}
+.teacher-emoji {
+  font-size: 2rem !important;
+  margin-bottom: 6px !important;
+}
+.sidebar h2 {
+  font-size: 1.1rem !important;
+}
+.sidebar-subtitle {
+  font-size: 0.75rem !important;
+}
+
+/* ── 11 · Mobile: even tighter ── */
+@media (max-width: 768px) {
+  .main-content {
+    padding: 12px 12px 60px !important;
+  }
+  .quick-stats {
+    gap: 8px !important;
+  }
+  .stat-card {
+    padding: 10px !important;
+    min-height: 60px !important;
+  }
+  .stat-icon {
+    width: 34px !important;
+    height: 34px !important;
+    font-size: 0.95rem !important;
+  }
+  .stat-number {
+    font-size: 1.1rem !important;
+  }
+  .content-header {
+    padding: 12px 14px !important;
+  }
+  .content-body {
+    padding: 12px 14px !important;
+  }
+  .form-card {
+    padding: 14px !important;
+  }
+  .pulse-widget {
+    padding: 14px !important;
+  }
+}
