@@ -2001,3 +2001,342 @@ input:focus, select:focus, textarea:focus {
   }
   .feedback-btn::before, .feedback-button::before { content: "💬"; font-size: 1.15rem; }
 }
+
+/* ==========================================================================
+   ⚡ FINAL FIX + GLOW-UP
+   (append at the very end of teachermode.css)
+   ========================================================================== */
+
+/* ---------------------------------------------------------------------------
+   1) SECTION VISIBILITY — bulletproof
+   Handles: inline display:block / display:block (no space) / flex / grid,
+   `hidden` attribute, aria-hidden, .active / .show / .is-active, :target
+   --------------------------------------------------------------------------- */
+
+/* show anything the JS thinks is "active" in any common way */
+.dashboard-content[style*="display: block"],
+.dashboard-content[style*="display:block"],
+.dashboard-content[style*="display: flex"],
+.dashboard-content[style*="display:flex"],
+.dashboard-content[style*="display: grid"],
+.dashboard-content[style*="display:grid"],
+.dashboard-content.active,
+.dashboard-content.show,
+.dashboard-content.is-active,
+.dashboard-content.is-visible,
+.dashboard-content:target,
+#dashboard.active,
+#dashboard.show,
+#dashboard.is-active {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  animation: sectionIn .45s cubic-bezier(.2,.8,.2,1) both;
+}
+
+/* preserve flex / grid if JS uses those display values */
+.dashboard-content[style*="display: flex"],
+.dashboard-content[style*="display:flex"] { display: flex !important; }
+.dashboard-content[style*="display: grid"],
+.dashboard-content[style*="display:grid"] { display: grid !important; }
+
+/* show sections that are NOT explicitly hidden (fixes `el.hidden = false`
+   and `el.style.display = ''` style toggles) */
+.dashboard-content:not([hidden]):not([aria-hidden="true"]):not([style*="display: none"]):not([style*="display:none"]),
+#dashboard:not([hidden]):not([aria-hidden="true"]):not([style*="display: none"]):not([style*="display:none"]) {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* HIDE — always wins (declared last) */
+.dashboard-content[hidden],
+.dashboard-content[aria-hidden="true"],
+.dashboard-content[style*="display: none"],
+.dashboard-content[style*="display:none"],
+#dashboard[hidden],
+#dashboard[style*="display: none"],
+#dashboard[style*="display:none"] {
+  display: none !important;
+}
+
+/* ---------------------------------------------------------------------------
+   2) AMBIENT DRIFT BACKGROUND
+   --------------------------------------------------------------------------- */
+body::after {
+  content: '';
+  position: fixed;
+  inset: -10%;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(700px 500px at 12% 8%,
+      color-mix(in srgb, var(--accent) 8%, transparent), transparent 60%),
+    radial-gradient(800px 600px at 88% 92%,
+      color-mix(in srgb, var(--brand-2) 7%, transparent), transparent 60%);
+  animation: ambientDrift 24s ease-in-out infinite alternate;
+}
+@keyframes ambientDrift {
+  0%   { transform: translate3d(0,0,0) scale(1); }
+  50%  { transform: translate3d(-2%, 2%, 0) scale(1.06); }
+  100% { transform: translate3d(2%, -1%, 0) scale(1.1); }
+}
+.app-layout, .main-content, .sidebar { position: relative; z-index: 1; }
+
+/* ---------------------------------------------------------------------------
+   3) GLASS CARDS + HOVER LIFT + ACCENT HAIRLINE
+   --------------------------------------------------------------------------- */
+.content-card,
+.form-card,
+.stat-card,
+.challenge-card,
+.assignment-card,
+.presentation-card,
+.streak-chain-container,
+.pulse-widget {
+  position: relative;
+  background: color-mix(in srgb, var(--card) 88%, transparent) !important;
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  border: 1px solid color-mix(in srgb, var(--border) 70%, var(--accent) 12%) !important;
+  transition: transform .3s cubic-bezier(.2,.8,.2,1),
+              box-shadow .3s ease,
+              border-color .3s ease,
+              background-color .35s ease;
+}
+
+.content-card::before,
+.form-card::before,
+.stat-card::before,
+.challenge-card::before,
+.presentation-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 12%; right: 12%;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent,
+    color-mix(in srgb, var(--accent) 70%, transparent),
+    transparent);
+  opacity: 0;
+  transition: opacity .4s ease, left .4s ease, right .4s ease;
+  pointer-events: none;
+}
+.content-card:hover::before,
+.form-card:hover::before,
+.stat-card:hover::before,
+.challenge-card:hover::before,
+.presentation-card:hover::before {
+  opacity: 1;
+  left: 0; right: 0;
+}
+
+.content-card:hover,
+.form-card:hover,
+.stat-card:hover,
+.challenge-card:hover,
+.assignment-card:hover,
+.presentation-card:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border)) !important;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--accent) 14%, transparent),
+    0 24px 48px -24px color-mix(in srgb, var(--accent) 32%, transparent),
+    var(--shadow-md) !important;
+}
+
+/* ---------------------------------------------------------------------------
+   4) NUMBER + ICON GLOW
+   --------------------------------------------------------------------------- */
+.stat-number,
+.pulse-ring-number,
+.pres-snapshot-value,
+.pres-checkin-value,
+.class-score {
+  background: linear-gradient(135deg,
+    var(--text) 0%,
+    color-mix(in srgb, var(--accent) 85%, var(--text)) 55%,
+    var(--brand-2) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+.stat-icon {
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--accent) 18%, var(--card)),
+    color-mix(in srgb, var(--brand-2) 18%, var(--card)));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent);
+  transition: transform .4s cubic-bezier(.2,.8,.2,1), box-shadow .4s ease;
+}
+.stat-card:hover .stat-icon {
+  transform: rotate(-6deg) scale(1.1);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent),
+    0 0 20px -4px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+/* ---------------------------------------------------------------------------
+   5) BUTTONS — gradient sweep + glow
+   --------------------------------------------------------------------------- */
+.btn-primary,
+.btn-submit,
+.btn-challenge:hover,
+.feedback-btn {
+  background-image: var(--gradient-primary) !important;
+  background-size: 160% 100% !important;
+  background-position: 0% 50% !important;
+  transition: background-position .6s ease, transform .2s ease,
+              box-shadow .3s ease, filter .2s ease !important;
+  box-shadow:
+    0 6px 18px -8px color-mix(in srgb, var(--accent) 55%, transparent),
+    inset 0 1px 0 rgba(255,255,255,.18) !important;
+}
+.btn-primary:hover,
+.btn-submit:hover,
+.feedback-btn:hover {
+  background-position: 100% 50% !important;
+  box-shadow:
+    0 12px 28px -10px color-mix(in srgb, var(--accent) 70%, transparent),
+    inset 0 1px 0 rgba(255,255,255,.25) !important;
+  transform: translateY(-2px);
+}
+.btn-primary:active,
+.btn-submit:active { transform: scale(.98); }
+
+/* focus rings that feel alive */
+:where(input, textarea, select):focus,
+.btn:focus-visible,
+.nav-item:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent),
+    0 0 20px -6px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+/* ---------------------------------------------------------------------------
+   6) SIDEBAR NAV — active glow bar
+   --------------------------------------------------------------------------- */
+.nav-item.active {
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--accent) 18%, transparent),
+    color-mix(in srgb, var(--brand-2) 10%, transparent)) !important;
+  color: var(--accent) !important;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+.nav-item.active::before {
+  background: var(--gradient-primary) !important;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 60%, transparent);
+  width: 4px;
+}
+
+/* ---------------------------------------------------------------------------
+   7) HEADER GRADIENT TEXT
+   --------------------------------------------------------------------------- */
+.content-header h2,
+.dashboard-header h1,
+.sidebar-header h2 {
+  background: linear-gradient(135deg,
+    var(--text) 20%,
+    color-mix(in srgb, var(--accent) 75%, var(--text)) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ---------------------------------------------------------------------------
+   8) STAGGERED CARD ENTRANCE
+   --------------------------------------------------------------------------- */
+@keyframes cardRise {
+  from { opacity: 0; transform: translateY(14px) scale(.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+:is(.dashboard-grid, .students-card, .assignment-grid, .challenge-cards,
+    .items-list, .activity-list, .quick-stats) > * {
+  animation: cardRise .5s cubic-bezier(.2,.8,.2,1) both;
+}
+:is(.dashboard-grid, .students-card, .assignment-grid, .challenge-cards,
+    .items-list, .activity-list, .quick-stats) > :nth-child(1) { animation-delay: .02s; }
+:is(.dashboard-grid, .students-card, .assignment-grid, .challenge-cards,
+    .items-list, .activity-list, .quick-stats) > :nth-child(2) { animation-delay: .06s; }
+:is(.dashboard-grid, .students-card, .assignment-grid, .challenge-cards,
+    .items-list, .activity-list, .quick-stats) > :nth-child(3) { animation-delay: .10s; }
+:is(.dashboard-grid, .students-card, .assignment-grid, .challenge-cards,
+    .items-list, .activity-list, .quick-stats) > :nth-child(4) { animation-delay: .14s; }
+:is(.dashboard-grid, .students-card, .assignment-grid, .challenge-cards,
+    .items-list, .activity-list, .quick-stats) > :nth-child(5) { animation-delay: .18s; }
+:is(.dashboard-grid, .students-card, .assignment-grid, .challenge-cards,
+    .items-list, .activity-list, .quick-stats) > :nth-child(n+6) { animation-delay: .22s; }
+
+/* ---------------------------------------------------------------------------
+   9) SCROLLBAR POLISH
+   --------------------------------------------------------------------------- */
+::-webkit-scrollbar { width: 12px; height: 12px; }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--accent) 45%, var(--border-strong)),
+    color-mix(in srgb, var(--brand-2) 45%, var(--border-strong)));
+  border-radius: var(--radius-pill);
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, var(--accent), var(--brand-2));
+  background-clip: padding-box;
+  border: 3px solid transparent;
+}
+
+/* ---------------------------------------------------------------------------
+   10) PULSE WIDGET — deeper glow
+   --------------------------------------------------------------------------- */
+.pulse-ring-progress {
+  filter: drop-shadow(0 0 12px color-mix(in srgb, var(--pulse-glow) 60%, transparent));
+}
+.pulse-widget {
+  background:
+    radial-gradient(80% 120% at 0% 0%,
+      color-mix(in srgb, var(--pulse-glow) 16%, transparent),
+      transparent 65%),
+    color-mix(in srgb, var(--card) 88%, transparent) !important;
+}
+
+/* ---------------------------------------------------------------------------
+   11) EMPTY STATES — friendly float
+   --------------------------------------------------------------------------- */
+.empty-state {
+  background: color-mix(in srgb, var(--bg-soft) 60%, transparent);
+  border: 1px dashed color-mix(in srgb, var(--border-strong) 80%, var(--accent) 20%);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl) var(--spacing-lg);
+}
+.empty-state-icon {
+  font-size: 3rem;
+  filter: drop-shadow(0 6px 12px color-mix(in srgb, var(--accent) 30%, transparent));
+  animation: iconFloat 3.2s ease-in-out infinite;
+}
+@keyframes iconFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+
+/* ---------------------------------------------------------------------------
+   12) MOBILE + REDUCED MOTION
+   --------------------------------------------------------------------------- */
+@media (max-width: 640px) {
+  body::after { animation: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body::after,
+  .empty-state-icon,
+  :is(.dashboard-grid, .students-card, .assignment-grid, .challenge-cards,
+      .items-list, .activity-list, .quick-stats) > * {
+    animation: none !important;
+  }
+  .content-card:hover,
+  .form-card:hover,
+  .stat-card:hover,
+  .challenge-card:hover { transform: none !important; }
+}
