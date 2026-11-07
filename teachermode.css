@@ -3559,3 +3559,9 @@ body.presentation-mode #presentation { display: block !important; }
   .content-card, .form-card, .student-item, .item,
   .pulse-widget, .challenge-card { border: 1px solid #ddd; box-shadow: none; break-inside: avoid; }
 }
+
+/* Hide the top horizontal tab bar */
+.dashboard-button-bar,
+#tmTabs {
+  display: none !important;
+}
