@@ -2363,7 +2363,85 @@ function openPresentationMode() {
     });
   });
 })();
+
+
+(function () {
+  const validThemes = [
+    'light',
+    'dark',
+    'ocean',
+    'forest',
+    'sunset',
+    'purple',
+    'aurora',
+    'obsidian',
+    'celestial'
+  ];
+
+  function safeTheme(theme) {
+    return validThemes.includes(theme) ? theme : 'light';
+  }
+
+  function applyTeacherTheme(theme) {
+    const selected = safeTheme(theme);
+    document.body.classList.remove(...validThemes);
+    document.body.classList.add(selected);
+
+    const selector = document.querySelector('.theme-selector');
+    if (selector) selector.value = selected;
+
+    localStorage.setItem('teacherTheme', selected);
+  }
+
+  function ensureOnlyOneTeacherSection(sectionId) {
+    const target = sectionId || 'dashboard';
+
+    document.querySelectorAll('.dashboard-content').forEach((section) => {
+      const show = (section.id === target);
+      section.style.display = show ? 'block' : 'none';
+      section.style.visibility = show ? 'visible' : 'hidden';
+      section.style.opacity = show ? '1' : '0';
+    });
+
+    document.querySelectorAll('.nav-item').forEach((item) => {
+      const text = item.textContent || '';
+      const active = text.toLowerCase().includes(target.toLowerCase());
+      item.classList.toggle('active', active);
+    });
+
+    document.querySelectorAll('.dashboard-section-btn').forEach((btn) => {
+      const isActive = (btn.dataset.section === target);
+      btn.classList.toggle('active', isActive);
+    });
+  }
+
+  const originalShowSection = window.showSection;
+
+  window.showSection = function (sectionId) {
+    ensureOnlyOneTeacherSection(sectionId);
+
+    if (typeof originalShowSection === 'function') {
+      try {
+        originalShowSection.call(window, sectionId);
+      } catch (e) {
+        // ignore; we already handled the visibility state
+      }
+    }
+  };
+
+  window.handleThemeSelection = function (value) {
+    applyTeacherTheme(value);
+  };
+
+  document.addEventListener('DOMContentLoaded', function () {
+    const saved = localStorage.getItem('teacherTheme');
+    applyTeacherTheme(saved || 'light');
+    ensureOnlyOneTeacherSection('dashboard');
+  });
+})();
+
 </script>
+
 
 </body>
 </html>

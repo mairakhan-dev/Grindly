@@ -86,3 +86,89 @@ body.celestial { color-scheme: dark; }
     padding-bottom: 20px;
   }
 }
+
+/* ============================================================
+   Teacher Mode: keep only the active dashboard visible,
+   stop the extra scroll, and force clean theme switching
+   ============================================================ */
+
+html, body {
+  overflow-x: hidden;
+  overflow-y: auto;
+  min-height: 100%;
+}
+
+body {
+  min-height: 100vh;
+  height: auto;
+}
+
+.app-layout {
+  min-height: 100vh;
+  height: auto;
+}
+
+.main-content {
+  min-height: 0;
+  height: auto;
+  overflow: visible;
+  padding-bottom: 24px;
+}
+
+/* Only show dashboard by default */
+.dashboard-grid > .dashboard-content {
+  display: none !important;
+}
+
+.dashboard-grid > #dashboard {
+  display: block !important;
+}
+
+/* Hide any locked-theme requirement block if it exists */
+#themePreviewTitle,
+#themePreviewRequirement,
+.theme-preview-overlay,
+#themePreviewOverlay,
+.locked-theme,
+.locked-theme-banner,
+.theme-lock-block {
+  display: none !important;
+}
+
+/* Keep Teacher Mode theme classes stable */
+body.light,
+body.dark,
+body.ocean,
+body.forest,
+body.sunset,
+body.purple,
+body.aurora,
+body.obsidian,
+body.celestial {
+  color-scheme: var(--theme-scheme, light);
+}
+
+/* Force consistent theme behavior */
+body.light { --theme-scheme: light; }
+body.dark,
+body.purple,
+body.rainbow,
+body.premium,
+body.aurora,
+body.obsidian,
+body.celestial { --theme-scheme: dark; }
+body.ocean { --theme-scheme: light; }
+body.forest { --theme-scheme: light; }
+body.sunset { --theme-scheme: light; }
+
+/* Prevent the page from stretching when content is short */
+.sidebar {
+  overscroll-behavior: contain;
+}
+
+@media (max-width: 1080px) {
+  .main-content {
+    min-height: 0;
+    padding-bottom: 20px;
+  }
+}
