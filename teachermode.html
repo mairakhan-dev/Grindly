@@ -2251,7 +2251,119 @@ function openPresentationMode() {
 
 </script>
 
+<script>
+(function () {
+  const validThemes = ['light', 'dark', 'ocean', 'forest', 'sunset', 'purple', 'aurora', 'obsidian', 'celestial'];
 
+  function sanitizeTheme(theme) {
+    return validThemes.includes(theme) ? theme : 'light';
+  }
+
+  function applyTeacherTheme(theme) {
+    const safeTheme = sanitizeTheme(theme);
+    document.body.classList.remove(...validThemes);
+    document.body.classList.add(safeTheme);
+    localStorage.setItem('teacherTheme', safeTheme);
+
+    const selector = document.querySelector('.theme-selector');
+    if (selector) selector.value = safeTheme;
+  }
+
+  function setTeacherModeVisible(sectionId) {
+    const desired = sectionId || 'dashboard';
+    const sections = document.querySelectorAll('.dashboard-content');
+
+    sections.forEach((section) => {
+      const shouldShow = (section.id === desired);
+      section.style.display = shouldShow ? 'block' : 'none';
+      section.style.visibility = shouldShow ? 'visible' : 'hidden';
+      section.style.opacity = shouldShow ? '1' : '0';
+    });
+
+    document.querySelectorAll('.nav-item').forEach((item) => {
+      const onclick = item.getAttribute('onclick') || '';
+      const active = onclick.includes(`showSection('${desired}')`) || onclick.includes(`showSection("${desired}")`);
+      item.classList.toggle('active', active);
+    });
+
+    document.querySelectorAll('.dashboard-section-btn').forEach((btn) => {
+      const section = btn.getAttribute('data-section');
+      btn.classList.toggle('active', section === desired);
+    });
+  }
+
+  const originalShowSection = window.showSection;
+
+  window.showSection = function (sectionId) {
+    setTeacherModeVisible(sectionId);
+
+    if (typeof originalShowSection === 'function') {
+      try {
+        originalShowSection.call(window, sectionId);
+      } catch (e) {
+        // ignore; we already handled visibility
+      }
+    }
+  };
+
+  window.handleThemeSelection = function (theme) {
+    applyTeacherTheme(theme);
+  };
+
+  const style = document.createElement('style');
+  style.textContent = `
+    html, body {
+      overflow-x: hidden;
+      overflow-y: auto !important;
+      min-height: 100%;
+    }
+
+    body {
+      height: auto !important;
+    }
+
+    .main-content {
+      min-height: auto !important;
+      height: auto !important;
+      overflow: visible !important;
+    }
+
+    .dashboard-content {
+      display: none !important;
+    }
+
+    #dashboard {
+      display: block !important;
+    }
+
+    .app-layout {
+      min-height: auto !important;
+    }
+
+    .sidebar {
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+  `;
+  document.head.appendChild(style);
+
+  document.addEventListener('DOMContentLoaded', function () {
+    const savedTheme = localStorage.getItem('teacherTheme');
+    applyTeacherTheme(savedTheme || 'light');
+
+    // Make Teacher Mode open on the dashboard only
+    setTeacherModeVisible('dashboard');
+
+    // If there are inline display values from older markup, force them clean
+    document.querySelectorAll('.dashboard-content').forEach((section) => {
+      if (section.id !== 'dashboard') {
+        section.style.display = 'none';
+        section.style.visibility = 'hidden';
+      }
+    });
+  });
+})();
+</script>
 
 </body>
 </html>
