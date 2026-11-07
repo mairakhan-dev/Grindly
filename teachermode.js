@@ -16538,3 +16538,190 @@ function toggleSidebar() {
     escapeStacking();
   }
 })();
+
+/* ============================================================
+   SECURE STUDY TIMER — TEACHER SIDE
+   - Reads studySessions/{classCode}/{studentId}/{sessionId}
+   - Cross-checks device fingerprints across students
+   - Flags statistical outliers and hours discrepancies
+   - "Recalculate from Sessions" button rewrites student totals
+   - Auto-injects warning badges on student cards
+   ============================================================ */
+(function () {
+  'use strict';
+  if (window.__secureStudyTimerTeacher) return;
+  window.__secureStudyTimerTeacher = true;
+
+  function getDb() {
+    try { return (typeof database !== 'undefined' && database) ? database : null; } catch { return null; }
+  }
+  function getClassCode() {
+    try { return (typeof currentClassCode !== 'undefined' && currentClassCode) || null; } catch { return null; }
+  }
+
+  async function fetchSessions(classCode) {
+    const db = getDb();
+    if (!db || !classCode) return null;
+    try {
+      const snap = await db.ref(`studySessions/${classCode}`).once('value');
+      return snap.exists() ? snap.val() : {};
+    } catch { return {}; }
+  }
+
+  function computeTotals(sessionsByStudent) {
+    const out = {};
+    Object.entries(sessionsByStudent || {}).forEach(([sid, sSessions]) => {
+      let totalMs = 0, count = 0, lastEndedAt = 0;
+      const devices = new Set();
+      Object.values(sSessions || {}).forEach(s => {
+        if (!s || s.status !== 'completed') return;
+        const d = Number(s.durationMs) || 0;
+        if (d <= 0) return;
+        totalMs += d; count += 1;
+        if (s.deviceId) devices.add(s.deviceId);
+        const e = Number(s.endedAt) || 0;
+        if (e > lastEndedAt) lastEndedAt = e;
+      });
+      out[sid] = {
+        totalMs,
+        totalHours: +(totalMs / 3600000).toFixed(2),
+        sessions: count, devices, lastEndedAt,
+        avgSessionMs: count ? Math.round(totalMs / count) : 0
+      };
+    });
+    return out;
+  }
+
+  function detectSharedDevices(totals) {
+    const d2s = {};
+    Object.entries(totals).forEach(([sid, t]) => t.devices.forEach(d => {
+      (d2s[d] = d2s[d] || []).push(sid);
+    }));
+    const flagged = {};
+    Object.values(d2s).forEach(ids => {
+      if (ids.length > 1) ids.forEach(sid => {
+        flagged[sid] = (flagged[sid] || []).concat(ids.filter(x => x !== sid));
+      });
+    });
+    return flagged;
+  }
+
+  function detectOutliers(students, totals) {
+    const arr = students.filter(s => !s.isTeacher).map(s => totals[s.id]?.totalHours || 0);
+    if (arr.length < 3) return new Set();
+    const mean = arr.reduce((a, b) => a + b, 0) / arr.length;
+    const variance = arr.reduce((sum, h) => sum + Math.pow(h - mean, 2), 0) / arr.length;
+    const sd = Math.sqrt(variance);
+    const cut = mean + 2 * sd;
+    const out = new Set();
+    students.filter(s => !s.isTeacher).forEach(s => {
+      const h = totals[s.id]?.totalHours || 0;
+      if (h > cut && h > 2) out.add(s.id);
+    });
+    return out;
+  }
+
+  async function recalculateClassHours() {
+    const cc = getClassCode();
+    if (!cc) { if (typeof showNotification === 'function') showNotification('Select a class first.', 'warning'); return; }
+    if (!confirm('Recalculate all student hours from raw session logs?\nThis overwrites totalMinutes with server-verified values.')) return;
+
+    const db = getDb(); if (!db) return;
+    const totals = computeTotals(await fetchSessions(cc));
+    let n = 0;
+    for (const [sid, t] of Object.entries(totals)) {
+      try {
+        await db.ref(`classes/${cc}/students/${sid}`).update({
+          totalMinutes: Math.round(t.totalMs / 60000),
+          totalStudyHours: t.totalHours.toFixed(1),
+          points: Math.floor(t.totalHours * 100),
+          lastVerifiedAt: Date.now()
+        });
+        n += 1;
+      } catch (e) { console.warn('Failed to update', sid, e); }
+    }
+    if (typeof showNotification === 'function')
+      showNotification(`✅ Recalculated ${n} students from session logs.`, 'success');
+    if (typeof refreshStudents === 'function') { try { refreshStudents(); } catch {} }
+  }
+
+  async function injectWarnings() {
+    const cc = getClassCode(); if (!cc) return;
+    const sessionsByStudent = await fetchSessions(cc);
+    if (!sessionsByStudent) return;
+    const totals = computeTotals(sessionsByStudent);
+    const shared = detectSharedDevices(totals);
+    const stList = (typeof students !== 'undefined' && Array.isArray(students)) ? students : [];
+    const outliers = detectOutliers(stList, totals);
+
+    document.querySelectorAll('.student-item').forEach(card => {
+      let sid = card.dataset.studentId;
+      if (!sid) {
+        const m = (card.querySelector('.student-id')?.textContent || '').match(/ID:\s*([a-zA-Z0-9_]+)/);
+        if (m) { sid = m[1]; card.dataset.studentId = sid; }
+      }
+      if (!sid && stList.length) {
+        const name = (card.querySelector('h4')?.textContent || '').replace('👨‍🏫','').trim();
+        const match = stList.find(s => s.name === name);
+        if (match) sid = match.id;
+      }
+      if (!sid || !totals[sid]) return;
+
+      card.querySelectorAll('.secure-timer-warn').forEach(e => e.remove());
+      const t = totals[sid];
+      const flags = [];
+      if (shared[sid]) flags.push(`⚠️ Shares device with ${shared[sid].length} other student(s)`);
+      if (outliers.has(sid)) flags.push(`⚠️ Statistically above class average (${t.totalHours}h)`);
+
+      const shownHours = parseFloat(
+        (card.querySelector('.stat-pill-value')?.textContent || '0').replace('h','')
+      ) || 0;
+      if (t.totalHours > 0 && Math.abs(shownHours - t.totalHours) > 1.5)
+        flags.push(`⚠️ Logged ${shownHours}h vs session-verified ${t.totalHours}h`);
+
+      if (flags.length) {
+        const warn = document.createElement('div');
+        warn.className = 'secure-timer-warn';
+        warn.style.cssText = `margin-top:8px;padding:8px 10px;background:rgba(245,158,11,.12);
+          border-left:3px solid #f59e0b;border-radius:6px;font-size:.72rem;color:#92400e;line-height:1.4;`;
+        warn.innerHTML = flags.map(f => `<div>${f}</div>`).join('');
+        card.appendChild(warn);
+      }
+    });
+  }
+
+  function addRecalcButton() {
+    const header = document.querySelector('#students .content-header');
+    if (!header || document.getElementById('recalcHoursBtn')) return;
+    const btn = document.createElement('button');
+    btn.id = 'recalcHoursBtn';
+    btn.className = 'btn btn-warning';
+    btn.textContent = '🔒 Recalculate from Sessions';
+    btn.title = 'Overwrite totals with server-verified session data';
+    btn.style.marginLeft = '8px';
+    btn.addEventListener('click', recalculateClassHours);
+    header.appendChild(btn);
+  }
+
+  // Wrap renderStudents to re-inject badges after every refresh
+  const origRender = (typeof window.renderStudents === 'function') ? window.renderStudents : null;
+  if (origRender) {
+    window.renderStudents = function () {
+      const r = origRender.apply(this, arguments);
+      setTimeout(injectWarnings, 300);
+      return r;
+    };
+  }
+
+  function init() {
+    setTimeout(() => {
+      addRecalcButton();
+      injectWarnings();
+    }, 3000);
+    setInterval(injectWarnings, 30000);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+
+  window.SecureStudyAudit = { recalculateClassHours, injectWarnings };
+})();

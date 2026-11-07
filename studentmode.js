@@ -3235,125 +3235,50 @@ async function saveStudyDataToFirebase() {
     }
 }
 
-async function addStudyHours() {
-    const input = document.getElementById('hoursInput');
-    if (!input) {
-        showNotification("Study hours input not found", "error");
-        return;
-    }
-    
-    const hours = parseFloat(input.value);
-    
-    if (!hours || hours <= 0) {
-        showNotification("Please enter valid study hours (minimum 0.25)", "error");
-        return;
-    }
-    
-    const addButton = event.target;
-    const originalText = addButton.innerHTML;
-    
-    addButton.innerHTML = '⏳ Saving...';
-    addButton.disabled = true;
-    
-    const baseHours = hours;
-    const streakBonus = (studyData.streak || 0) > 7 ? 0.2 : (studyData.streak || 0) > 3 ? 0.1 : 0;
-    const bonusHours = baseHours * streakBonus;
-    const totalHours = baseHours + bonusHours;
-    
-    studyData.totalMinutes = (studyData.totalMinutes || 0) + totalHours * 60;
-    studyData.totalStudyHours = (studyData.totalMinutes / 60).toFixed(1);
+// STUDENT SIDE
+let studyTimer = {
+    startedAt: null,
+    isRunning: false,
+    intervalId: null,
+    sessionId: null
+};
 
-    await logLiveActivity('timer_started', {
-        duration: Math.round(totalHours * 60)
-    });
-    
-    if (!studyData.studySessions) studyData.studySessions = [];
-    studyData.studySessions.push({
-        date: new Date().toISOString(),
-        hours: totalHours,
-        baseHours: baseHours,
-        bonusHours: bonusHours,
-        streak: studyData.streak || 0
-    });
-    
-    // Update daily stats
-    const todayKey = getTodayKey();
-    if (!studyData.dailyStats) studyData.dailyStats = [];
-    const todayStats = studyData.dailyStats.find(s => s.date === todayKey);
-    const focusScore = calculateFocusScore();
-    const consistencyScore = calculateConsistencyScore();
-    
-    if (todayStats) {
-        todayStats.sessions = (todayStats.sessions || 0) + 1;
-        todayStats.hours = (todayStats.hours || 0) + totalHours;
-        todayStats.focusScore = focusScore;
-        todayStats.consistencyScore = consistencyScore;
-    } else {
-        studyData.dailyStats.unshift({
-            date: todayKey,
-            sessions: 1,
-            hours: totalHours,
-            focusScore: focusScore,
-            consistencyScore: consistencyScore
-        });
-        
-        if (!studyData.focusScores) studyData.focusScores = [];
-        studyData.focusScores.unshift({
-            date: todayKey,
-            score: focusScore
-        });
-        
-        if (!studyData.consistencyScores) studyData.consistencyScores = [];
-        studyData.consistencyScores.unshift({
-            date: todayKey,
-            score: consistencyScore
-        });
-        
-        // Keep only last 30 days
-        if (studyData.dailyStats.length > 30) {
-            studyData.dailyStats = studyData.dailyStats.slice(0, 30);
-        }
-        if (studyData.focusScores.length > 30) {
-            studyData.focusScores = studyData.focusScores.slice(0, 30);
-        }
-        if (studyData.consistencyScores.length > 30) {
-            studyData.consistencyScores = studyData.consistencyScores.slice(0, 30);
-        }
-    }
-    
-    persistData();
-    await maybeCreditReferral();
-    updateUI();
-    updateSidebarStats();
-    updateAllStatistics();
-    input.value = "";
-    
-    updateSyncStatus("Syncing to all classes...", "syncing");
-    await saveStudyDataToFirebase();
-    
-    setTimeout(() => {
-        addButton.innerHTML = originalText;
-        addButton.disabled = false;
-    }, 1000);
-    
-    let message = `⏰ Added ${baseHours.toFixed(1)} study hours!`;
-    if (bonusHours > 0) {
-        message += ` (+${bonusHours.toFixed(1)} streak bonus)`;
-    }
-    message += ` Total: ${studyData.totalStudyHours} hours`;
-    message += ` | Streak: ${studyData.streak || 0} days 🔥`;
-    
-    showNotification(message, "success");
-    
-    if (currentSection === 'statistics') {
-        updateCharts();
-    }
-    
-    setTimeout(() => {
-        updateSyncStatus("Saved to all classes!", "success");
-    }, 1500);
-    updateDailyGoalUI();
+function startStudyTimer() {
+    if (studyTimer.isRunning) return;
 
+    studyTimer.isRunning = true;
+    studyTimer.startedAt = firebase.database.ServerValue.TIMESTAMP;
+
+    // Create a pending session on the server
+    const sessionRef = database.ref(`studySessions/${currentClassCode}/${currentUserId}`).push();
+    studyTimer.sessionId = sessionRef.key;
+
+    sessionRef.set({
+        studentName: currentUserName,
+        startedAt: firebase.database.ServerValue.TIMESTAMP,
+        status: 'running',
+        deviceId: getDeviceId()  // see #4 below
+    });
+
+    // Update UI every second
+    studyTimer.intervalId = setInterval(tickStudyTimer, 1000);
+}
+
+function stopStudyTimer() {
+    if (!studyTimer.isRunning) return;
+
+    clearInterval(studyTimer.intervalId);
+    studyTimer.isRunning = false;
+
+    const sessionRef = database.ref(
+        `studySessions/${currentClassCode}/${currentUserId}/${studyTimer.sessionId}`
+    );
+
+    // Client sends "stop" — server computes the actual duration
+    sessionRef.update({
+        endedAt: firebase.database.ServerValue.TIMESTAMP,
+        status: 'stopped'
+    });
 }
 
 // ========== TASK MANAGEMENT WITH PRIORITIES ==========
@@ -3776,70 +3701,7 @@ function hideAssignmentForm() {
     if (form) form.style.display = 'none';
 }
 
-// ========== UPDATED STATISTICS SECTION ==========
-async function markStudySession() {
-    const today = new Date().toDateString();
-    
-    const hours = parseFloat(prompt("How many hours did you study? (e.g., 2.5)", "1"));
-    
-    if (isNaN(hours) || hours <= 0) {
-        showNotification("Please enter a valid number of hours", "error");
-        return;
-    }
-    
-    const focusScore = Math.min(100, Math.floor(Math.random() * 30) + 70);
-    const consistencyScore = calculateConsistencyScore();
-    
-    // Initialize arrays if they don't exist
-    if (!studyData.studySessions) studyData.studySessions = [];
-    if (!studyData.dailyStats) studyData.dailyStats = [];
-    
-    // Update study sessions
-    studyData.studySessions.unshift({
-        date: new Date().toISOString(),
-        hours: hours,
-        baseHours: hours,
-        bonusHours: 0,
-        streak: studyData.streak || 0
-    });
-    
-    // Update daily stats
-    const todayStats = studyData.dailyStats.find(s => s.date === today);
-    if (todayStats) {
-        todayStats.sessions = (todayStats.sessions || 0) + 1;
-        todayStats.hours = (todayStats.hours || 0) + hours;
-        todayStats.focusScore = focusScore;
-        todayStats.consistencyScore = consistencyScore;
-    } else {
-        studyData.dailyStats.unshift({
-            date: today,
-            sessions: 1,
-            hours: hours,
-            focusScore: focusScore,
-            consistencyScore: consistencyScore
-        });
-        
-        if (studyData.dailyStats.length > 30) {
-            studyData.dailyStats = studyData.dailyStats.slice(0, 30);
-        }
-    }
-    
-    // Update total hours
-    studyData.totalMinutes = (studyData.totalMinutes || 0) + hours * 60;
-    studyData.totalStudyHours = (studyData.totalMinutes / 60).toFixed(1);
 
-    await logLiveActivity('timer_started', {
-        duration: Math.round(hours * 60)
-    });
-    
-    persistData();
-    await maybeCreditReferral();
-    updateCharts();
-    updateAllStatistics();
-    updateDailyGoalUI();
-
-    showNotification(`Study session recorded! ${hours} hours studied.`, "success");
-}
 
 function calculateConsistencyScore() {
     if (!studyData.dailyStats || studyData.dailyStats.length === 0) return 100;
@@ -8345,4 +8207,444 @@ document.addEventListener('DOMContentLoaded', () => {
       if (ov) ov.classList.remove('active');
     }
   });
+})();
+
+/* ============================================================
+   SECURE STUDY TIMER v1 — STUDENT MODE
+   Drop-in replacement for manual hour entry.
+   - Start/Stop timer (server-verified timestamps)
+   - Tab-visibility aware (hidden time doesn't count)
+   - 60s heartbeat (truncates if tab closed)
+   - Daily cap 12h, session cap 4h, minimum 5 min
+   - Writes to studySessions/{classCode}/{studentId}/{sessionId}
+   - On stop: updates totalMinutes & studyData (backwards compat)
+   - Patches markStudyToday() so streak clicks stop granting free hours
+   ============================================================ */
+(function () {
+  'use strict';
+  if (window.__secureStudyTimer) return;
+  window.__secureStudyTimer = true;
+
+  const DEVICE_KEY       = 'grindly_device_id';
+  const TIMER_KEY        = 'grindly_timer_state';
+  const PENDING_KEY      = 'grindly_pending_sessions';
+  const DISMISS_KEY      = 'grindly_timer_dismissed';
+  const MAX_SESSION_MS   = 4 * 60 * 60 * 1000;
+  const MAX_DAILY_MS     = 12 * 60 * 60 * 1000;
+  const MIN_SESSION_MS   = 5 * 60 * 1000;
+  const HEARTBEAT_MS     = 60 * 1000;
+  const HIDDEN_GRACE_MS  = 2 * 60 * 1000;
+  const TICK_MS          = 1000;
+
+  // ---- Helpers ----
+  function getDeviceId() {
+    let id = localStorage.getItem(DEVICE_KEY);
+    if (!id) {
+      id = 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+      localStorage.setItem(DEVICE_KEY, id);
+    }
+    return id;
+  }
+  function getDb()       { try { return (typeof database !== 'undefined' && database) ? database : null; } catch { return null; } }
+  function getUid()      { try { return (typeof currentUserId !== 'undefined' && currentUserId) || localStorage.getItem('studentUserId') || null; } catch { return null; } }
+  function getClassCode(){ try { return (typeof currentClassCode !== 'undefined' && currentClassCode) || null; } catch { return null; } }
+  function getUserName() { try { return (typeof currentUserName !== 'undefined' && currentUserName) || 'Student'; } catch { return 'Student'; } }
+  function fmt(ms) {
+    const s = Math.max(0, Math.floor(ms / 1000));
+    const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), ss = s % 60;
+    return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+  }
+
+  // ---- State ----
+  const state = {
+    isRunning: false, startedAt: 0, sessionId: null,
+    hiddenAccumMs: 0, hiddenSince: 0,
+    intervalId: null, heartbeatId: null, maxReachedNotified: false
+  };
+
+  function saveState() {
+    try {
+      localStorage.setItem(TIMER_KEY, JSON.stringify({
+        isRunning: state.isRunning, startedAt: state.startedAt,
+        sessionId: state.sessionId, hiddenAccumMs: state.hiddenAccumMs
+      }));
+    } catch {}
+  }
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(TIMER_KEY);
+      if (!raw) return false;
+      const s = JSON.parse(raw);
+      if (s.isRunning && (Date.now() - s.startedAt) > MAX_SESSION_MS) {
+        localStorage.removeItem(TIMER_KEY); return false;
+      }
+      if (s.isRunning && s.sessionId) {
+        state.isRunning = true; state.startedAt = s.startedAt;
+        state.sessionId = s.sessionId; state.hiddenAccumMs = s.hiddenAccumMs || 0;
+        return true;
+      }
+    } catch {}
+    return false;
+  }
+  function queueOffline(session) {
+    try {
+      const list = JSON.parse(localStorage.getItem(PENDING_KEY) || '[]');
+      list.push(session);
+      localStorage.setItem(PENDING_KEY, JSON.stringify(list));
+    } catch {}
+  }
+  async function flushOfflineQueue() {
+    const db = getDb(), uid = getUid(), cls = getClassCode();
+    if (!db || !uid || !cls) return;
+    let list = [];
+    try { list = JSON.parse(localStorage.getItem(PENDING_KEY) || '[]'); } catch {}
+    if (!list.length) return;
+    const remaining = [];
+    for (const s of list) {
+      try { await db.ref(`studySessions/${cls}/${uid}/${s.sessionId}`).set(s); }
+      catch { remaining.push(s); }
+    }
+    try {
+      if (remaining.length) localStorage.setItem(PENDING_KEY, JSON.stringify(remaining));
+      else localStorage.removeItem(PENDING_KEY);
+    } catch {}
+  }
+
+  // ---- UI ----
+  function buildUI() {
+    if (document.getElementById('secureStudyTimer')) return;
+    if (localStorage.getItem(DISMISS_KEY) === 'true') return;
+
+    const wrap = document.createElement('div');
+    wrap.id = 'secureStudyTimer';
+    wrap.style.cssText = `
+      position: fixed; bottom: 220px; right: 20px; z-index: 9997;
+      background: linear-gradient(135deg, #ffaa33, #ff4714);
+      color: #fff; border-radius: 16px; padding: 12px 14px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.28);
+      font-family: 'Inter', system-ui, sans-serif;
+      display: flex; flex-direction: column; gap: 8px;
+      min-width: 178px; user-select: none;
+    `;
+    wrap.innerHTML = `
+      <button id="secureTimerClose" title="Hide timer"
+        style="position:absolute; top:4px; right:6px; background:none; border:none;
+               color:rgba(255,255,255,.7); font-size:16px; cursor:pointer; padding:0; line-height:1;">×</button>
+      <div style="font-size:10px; opacity:.9; letter-spacing:.08em; text-transform:uppercase; font-weight:700;">
+        Study Timer
+      </div>
+      <div id="secureTimerClock" style="font-family:'JetBrains Mono',monospace; font-size:22px; font-weight:800; letter-spacing:.06em;">
+        00:00:00
+      </div>
+      <div id="secureTimerStatus" style="font-size:11px; opacity:.85;">Ready</div>
+      <button id="secureTimerBtn" style="background:rgba(255,255,255,.95); color:#d61f00;
+        border:none; border-radius:10px; padding:9px 12px; font-weight:800; cursor:pointer; font-size:13px;">
+        ▶ Start
+      </button>
+    `;
+    document.body.appendChild(wrap);
+    document.getElementById('secureTimerBtn').addEventListener('click', toggleTimer);
+    document.getElementById('secureTimerClose').addEventListener('click', () => {
+      wrap.style.display = 'none';
+      localStorage.setItem(DISMISS_KEY, 'true');
+    });
+  }
+
+  function updateUI() {
+    const clock  = document.getElementById('secureTimerClock');
+    const status = document.getElementById('secureTimerStatus');
+    const btn    = document.getElementById('secureTimerBtn');
+    if (!clock || !btn) return;
+
+    if (state.isRunning) {
+      clock.textContent = fmt(getElapsedMs());
+      const hiddenNow = state.hiddenSince ? (Date.now() - state.hiddenSince) : 0;
+      status.textContent = hiddenNow > HIDDEN_GRACE_MS ? '⏸ Tab hidden — paused'
+        : (document.hidden ? '⏸ Hidden (grace)' : '● Studying…');
+      btn.textContent = '⏹ Stop';
+    } else {
+      clock.textContent = fmt(0);
+      status.textContent = 'Ready';
+      btn.textContent = '▶ Start';
+    }
+  }
+
+  function getElapsedMs() {
+    if (!state.isRunning) return 0;
+    let ms = Date.now() - state.startedAt - state.hiddenAccumMs;
+    if (state.hiddenSince && (Date.now() - state.hiddenSince) > HIDDEN_GRACE_MS) {
+      ms -= (Date.now() - state.hiddenSince - HIDDEN_GRACE_MS);
+    }
+    return Math.max(0, Math.min(ms, MAX_SESSION_MS));
+  }
+
+  async function getTodayTotalMs() {
+    const cls = getClassCode(), uid = getUid(), db = getDb();
+    if (db && cls && uid) {
+      try {
+        const snap = await db.ref(`studySessions/${cls}/${uid}`).once('value');
+        if (snap.exists()) {
+          const startOfDay = new Date(); startOfDay.setHours(0,0,0,0);
+          let total = 0;
+          snap.forEach(c => {
+            const s = c.val();
+            if (s && s.durationMs && s.endedAt && s.endedAt >= startOfDay.getTime()) total += s.durationMs;
+          });
+          return total;
+        }
+      } catch {}
+    }
+    try {
+      const todayKey = new Date().toDateString();
+      const st = (typeof studyData !== 'undefined' && studyData?.dailyStats || [])
+        .find(x => x.date === todayKey);
+      return st ? (st.hours || 0) * 3600000 : 0;
+    } catch { return 0; }
+  }
+
+  // ---- Start / Stop ----
+  function toggleTimer() { state.isRunning ? stopTimer() : startTimer(); }
+
+  async function startTimer() {
+    const db = getDb(), uid = getUid(), cls = getClassCode();
+    if (!uid || !cls) {
+      if (typeof showNotification === 'function')
+        showNotification('Join a class first to start the study timer.', 'warning');
+      return;
+    }
+    const dailyMs = await getTodayTotalMs();
+    if (dailyMs >= MAX_DAILY_MS) {
+      if (typeof showNotification === 'function')
+        showNotification('Daily study cap (12h) reached. Try again tomorrow.', 'warning');
+      return;
+    }
+
+    state.isRunning = true;
+    state.startedAt = Date.now();
+    state.sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+    state.hiddenAccumMs = 0; state.hiddenSince = 0; state.maxReachedNotified = false;
+    saveState(); updateUI();
+
+    if (db) {
+      try {
+        await db.ref(`studySessions/${cls}/${uid}/${state.sessionId}`).set({
+          studentName: getUserName(), studentId: uid,
+          deviceId: getDeviceId(), userAgent: navigator.userAgent.slice(0, 200),
+          startedAt: firebase.database.ServerValue.TIMESTAMP,
+          status: 'running'
+        });
+      } catch {}
+    }
+
+    if (state.intervalId) clearInterval(state.intervalId);
+    state.intervalId = setInterval(() => {
+      updateUI();
+      if (getElapsedMs() >= MAX_SESSION_MS && !state.maxReachedNotified) {
+        state.maxReachedNotified = true;
+        if (typeof showNotification === 'function')
+          showNotification('4-hour session cap reached. Stopping timer.', 'warning');
+        stopTimer();
+      }
+    }, TICK_MS);
+
+    if (state.heartbeatId) clearInterval(state.heartbeatId);
+    state.heartbeatId = setInterval(sendHeartbeat, HEARTBEAT_MS);
+  }
+
+  async function sendHeartbeat() {
+    const db = getDb(), uid = getUid(), cls = getClassCode();
+    if (!db || !uid || !cls || !state.sessionId) return;
+    try {
+      await db.ref(`studySessions/${cls}/${uid}/${state.sessionId}/lastPing`)
+        .set(firebase.database.ServerValue.TIMESTAMP);
+    } catch {}
+  }
+
+  async function stopTimer() {
+    if (!state.isRunning) return;
+    const elapsedMs = getElapsedMs();
+    const uid = getUid(), cls = getClassCode(), db = getDb();
+
+    state.isRunning = false;
+    if (state.intervalId)  { clearInterval(state.intervalId);  state.intervalId = null; }
+    if (state.heartbeatId) { clearInterval(state.heartbeatId); state.heartbeatId = null; }
+    updateUI();
+    localStorage.removeItem(TIMER_KEY);
+
+    if (elapsedMs < MIN_SESSION_MS) {
+      if (db && uid && cls && state.sessionId)
+        db.ref(`studySessions/${cls}/${uid}/${state.sessionId}`).remove().catch(() => {});
+      if (typeof showNotification === 'function')
+        showNotification(`Session too short (${fmt(elapsedMs)}). Minimum 5 minutes.`, 'info');
+      state.sessionId = null;
+      return;
+    }
+
+    const record = {
+      studentName: getUserName(), studentId: uid,
+      deviceId: getDeviceId(), userAgent: navigator.userAgent.slice(0, 200),
+      durationMs: elapsedMs, durationHrs: +(elapsedMs / 3600000).toFixed(3),
+      endedAt: Date.now(), status: 'completed'
+    };
+
+    if (db && uid && cls && state.sessionId) {
+      try {
+        await db.ref(`studySessions/${cls}/${uid}/${state.sessionId}`).update({
+          ...record,
+          endedAt: firebase.database.ServerValue.TIMESTAMP
+        });
+      } catch {
+        record.sessionId = state.sessionId;
+        record.startedAt = state.startedAt;
+        queueOffline(record);
+      }
+    } else if (uid && cls) {
+      record.sessionId = state.sessionId || ('sess_' + Date.now());
+      record.startedAt = state.startedAt;
+      queueOffline(record);
+    }
+
+    // Backwards-compat: update local studyData + Firebase student summary
+    const addedMin = elapsedMs / 60000;
+    try {
+      if (typeof studyData !== 'undefined' && studyData) {
+        studyData.totalMinutes = (studyData.totalMinutes || 0) + addedMin;
+        studyData.totalStudyHours = (studyData.totalMinutes / 60).toFixed(1);
+
+        if (!studyData.studySessions) studyData.studySessions = [];
+        studyData.studySessions.push({
+          date: new Date().toISOString(),
+          hours: elapsedMs / 3600000, baseHours: elapsedMs / 3600000,
+          bonusHours: 0, streak: studyData.streak || 0,
+          source: 'secure_timer'
+        });
+
+        const todayKey = new Date().toDateString();
+        if (!studyData.dailyStats) studyData.dailyStats = [];
+        const today = studyData.dailyStats.find(x => x.date === todayKey);
+        if (today) {
+          today.sessions = (today.sessions || 0) + 1;
+          today.hours = (today.hours || 0) + elapsedMs / 3600000;
+        } else {
+          studyData.dailyStats.unshift({
+            date: todayKey, sessions: 1, hours: elapsedMs / 3600000,
+            focusScore: 0, consistencyScore: 0
+          });
+        }
+
+        if (typeof persistData === 'function') persistData();
+        if (typeof updateUI === 'function') updateUI();
+        if (typeof updateSidebarStats === 'function') updateSidebarStats();
+        if (typeof updateAllStatistics === 'function') updateAllStatistics();
+        if (typeof saveStudyDataToFirebase === 'function')
+          saveStudyDataToFirebase().catch(() => {});
+      }
+    } catch (e) { console.warn('[timer] studyData update failed:', e); }
+
+    if (typeof showNotification === 'function')
+      showNotification(`✅ Session logged: ${fmt(elapsedMs)}`, 'success');
+    if (typeof logLiveActivity === 'function')
+      logLiveActivity('timer_completed', {
+        duration: Math.round(elapsedMs / 60000), source: 'secure_timer'
+      }).catch(() => {});
+
+    state.sessionId = null;
+    flushOfflineQueue().catch(() => {});
+  }
+
+  // ---- Tab visibility ----
+  document.addEventListener('visibilitychange', () => {
+    if (!state.isRunning) return;
+    if (document.hidden) state.hiddenSince = Date.now();
+    else if (state.hiddenSince) {
+      const hiddenFor = Date.now() - state.hiddenSince;
+      if (hiddenFor > HIDDEN_GRACE_MS) state.hiddenAccumMs += (hiddenFor - HIDDEN_GRACE_MS);
+      state.hiddenSince = 0;
+    }
+    updateUI(); saveState();
+  });
+
+  // ---- Resume on reload ----
+  function resumeIfNeeded() {
+    if (!loadState()) { updateUI(); return; }
+    const db = getDb(), uid = getUid(), cls = getClassCode();
+    if (db && uid && cls && state.sessionId) {
+      db.ref(`studySessions/${cls}/${uid}/${state.sessionId}`).once('value').then(snap => {
+        if (!snap.exists()) {
+          state.isRunning = false; localStorage.removeItem(TIMER_KEY); updateUI(); return;
+        }
+        if (state.intervalId) clearInterval(state.intervalId);
+        state.intervalId = setInterval(() => {
+          updateUI();
+          if (getElapsedMs() >= MAX_SESSION_MS) stopTimer();
+        }, TICK_MS);
+        if (state.heartbeatId) clearInterval(state.heartbeatId);
+        state.heartbeatId = setInterval(sendHeartbeat, HEARTBEAT_MS);
+        updateUI();
+        if (typeof showNotification === 'function')
+          showNotification('Study timer resumed from last session.', 'info');
+      }).catch(() => {});
+    }
+  }
+
+  // ---- Hide old manual-entry UI (they deleted the backing functions) ----
+  function hideOldUI() {
+    document.querySelectorAll('.content-card').forEach(card => {
+      const h2 = card.querySelector('h2');
+      if (h2 && h2.textContent.includes('Add Study Hours')) card.style.display = 'none';
+    });
+    document.querySelectorAll('.btn-success').forEach(btn => {
+      if (btn.textContent && btn.textContent.includes('Mark Study Session')) btn.style.display = 'none';
+    });
+  }
+
+  // ---- Patch markStudyToday so streak click no longer grants 1 free hour ----
+  function patchStreakButton() {
+    if (window.__markStudyTodayPatched) return;
+    let tries = 0;
+    const iv = setInterval(() => {
+      tries++;
+      if (typeof window.markStudyToday !== 'function' || tries > 30) { clearInterval(iv); return; }
+      window.__markStudyTodayPatched = true;
+      const original = window.markStudyToday;
+      window.markStudyToday = async function () {
+        const preMinutes = (typeof studyData !== 'undefined' && studyData?.totalMinutes) || 0;
+        const preSessionCount = (typeof studyData !== 'undefined' && studyData?.studySessions?.length) || 0;
+        const preDailyStatsJSON = JSON.stringify(
+          (typeof studyData !== 'undefined' && studyData?.dailyStats) || []
+        );
+        await original.apply(this, arguments);
+        if (typeof studyData !== 'undefined' && studyData) {
+          studyData.totalMinutes = preMinutes;
+          studyData.totalStudyHours = (preMinutes / 60).toFixed(1);
+          if (studyData.studySessions && studyData.studySessions.length > preSessionCount)
+            studyData.studySessions.splice(preSessionCount);
+          try { studyData.dailyStats = JSON.parse(preDailyStatsJSON); } catch {}
+          if (typeof persistData === 'function') persistData();
+          if (typeof updateUI === 'function') updateUI();
+          if (typeof updateAllStatistics === 'function') updateAllStatistics();
+          if (typeof saveStudyDataToFirebase === 'function')
+            saveStudyDataToFirebase().catch(() => {});
+        }
+      };
+      clearInterval(iv);
+      console.log('[secure timer] markStudyToday patched: no more free hours.');
+    }, 500);
+  }
+
+  function init() {
+    buildUI();
+    setTimeout(() => {
+      resumeIfNeeded();
+      flushOfflineQueue().catch(() => {});
+      hideOldUI();
+      patchStreakButton();
+    }, 1500);
+    setTimeout(hideOldUI, 4000); // run again after stats renders
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+
+  window.SecureStudyTimer = { start: startTimer, stop: stopTimer, isRunning: () => state.isRunning, getElapsedMs };
 })();
