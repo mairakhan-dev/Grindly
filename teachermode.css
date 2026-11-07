@@ -2340,3 +2340,126 @@ body::after {
   .stat-card:hover,
   .challenge-card:hover { transform: none !important; }
 }
+
+/* ==========================================================================
+   🔧 ALIGNMENT FIX — sidebar & content start at the same Y
+   ========================================================================== */
+
+/* ---------------------------------------------------------------------------
+   1) Nuke the mobile header on desktop — nothing above the layout may
+   push the content down. Catches inline `display:flex`, class toggles,
+   JS auto-inserted styles, etc.
+   --------------------------------------------------------------------------- */
+@media (min-width: 1021px) {
+  .mobile-header,
+  body > .mobile-header,
+  .app-layout > .mobile-header {
+    display: none !important;
+    visibility: hidden !important;
+    position: static !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    max-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    overflow: hidden !important;
+  }
+
+  /* If anything (mobile-header, stray banner, inline JS) is above .app-layout,
+     force the layout to start at the viewport top. */
+  body { padding-top: 0 !important; }
+  .app-layout {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+
+  /* -----------------------------------------------------------------------
+     2) Match the top offset — sidebar's panel already touches top: 0, so
+     the content's first visible card should start at the *same* pixel row
+     as the sidebar's first visible item (the teacher badge).
+     ----------------------------------------------------------------------- */
+  .sidebar {
+    padding-top: var(--spacing-lg) !important;
+  }
+  .main-content {
+    padding-top: var(--spacing-lg) !important;
+  }
+
+  /* The dashboard header has its own internal padding (0.6rem from the
+     polish layer) which pushes the h1 *inside* it further down. Reduce it
+     so the title's top edge visually lines up with the emoji in the sidebar. */
+  .dashboard-header {
+    margin-top: 0 !important;
+    padding-top: 0.55rem !important;
+  }
+
+  /* -----------------------------------------------------------------------
+     3) Section-switching sometimes leaves inline `padding`/`margin` on the
+     section wrapper. Kill those so every tab renders at the same offset.
+     ----------------------------------------------------------------------- */
+  .dashboard-content {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+  .dashboard-content > :first-child {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+
+  /* If the section is empty for a beat (JS hasn't rendered yet), don't
+     collapse the layout — keep the column height stable. */
+  .dashboard-content[style*="display: block"]:empty,
+  .dashboard-content.active:empty {
+    min-height: 200px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   4) On mobile, the sticky header is *supposed* to be there — but the
+   sidebar drawer must sit below it (not on top of it), so opening the
+   menu doesn't hide the "Grindly" bar.
+   --------------------------------------------------------------------------- */
+@media (max-width: 1020px) {
+  .sidebar {
+    top: calc(var(--mobile-header-h) + var(--safe-top)) !important;
+    height: calc(100dvh - var(--mobile-header-h) - var(--safe-top)) !important;
+    bottom: auto !important;
+    padding-top: var(--spacing-lg) !important;
+  }
+  .sidebar-backdrop {
+    top: calc(var(--mobile-header-h) + var(--safe-top)) !important;
+  }
+  .main-content {
+    padding-top: var(--spacing-lg) !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   5) Visual glue — give the top of the content column a soft top accent so
+   the eye reads it as "starting at the same place" as the sidebar.
+   --------------------------------------------------------------------------- */
+@media (min-width: 1021px) {
+  .main-content::before {
+    content: '';
+    display: block;
+    height: 0;
+    margin: 0;
+  }
+  .main-content > .dashboard-header:first-child,
+  .main-content > .dashboard-content:first-child > .dashboard-header:first-child {
+    /* subtle top highlight so the first card reads as the header's anchor */
+    box-shadow: var(--shadow-sm), inset 0 1px 0 color-mix(in srgb, var(--accent) 22%, transparent);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   6) Re-verify section visibility (this also re-hides hidden sections after
+   our alignment overrides, so `display:none` still wins).
+   --------------------------------------------------------------------------- */
+.dashboard-content[hidden],
+.dashboard-content[aria-hidden="true"],
+.dashboard-content[style*="display: none"],
+.dashboard-content[style*="display:none"] {
+  display: none !important;
+}
