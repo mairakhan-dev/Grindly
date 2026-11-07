@@ -16854,3 +16854,41 @@ function toggleSidebar() {
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
 })();
+
+(function nukeDesktopSpacer() {
+  const mq = window.matchMedia('(min-width: 1021px)');
+
+  function clean() {
+    if (!mq.matches) return;
+
+    // 1. mobile header — remove entirely on desktop
+    document.querySelectorAll('.mobile-header').forEach(el => el.remove());
+
+    // 2. anything directly above .main-content that isn't the sidebar
+    const main = document.querySelector('.main-content');
+    if (main) {
+      let node = main.previousElementSibling;
+      while (node) {
+        const tag = node.tagName;
+        const isSidebar = node.classList?.contains('sidebar');
+        const isBackdrop = node.classList?.contains('sidebar-backdrop');
+        if (!isSidebar && !isBackdrop && node.getBoundingClientRect().height > 0) {
+          node.style.cssText += ';display:none!important;height:0!important;margin:0!important;padding:0!important;';
+        }
+        node = node.previousElementSibling;
+      }
+    }
+
+    // 3. body / html padding that could offset everything
+    document.body.style.paddingTop = '0';
+    document.documentElement.style.paddingTop = '0';
+  }
+
+  clean();
+  mq.addEventListener('change', clean);
+
+  // also run after any section switch — tap the sidebar buttons once this is loaded
+  document.querySelectorAll('.nav-item, [data-section], .dashboard-section-btn').forEach(btn => {
+    btn.addEventListener('click', () => setTimeout(clean, 0));
+  });
+})();
