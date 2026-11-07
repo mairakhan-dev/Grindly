@@ -2247,6 +2247,33 @@ function openPresentationMode() {
   var url = 'features teachermode/presentation.html?class=' + encodeURIComponent(code);
   window.open(url, 'presentation', 'width=1600,height=900,menubar=no,toolbar=no');
 }
+
+
+</script>
+
+<script>
+(function () {
+  var HEADINGS_TO_HIDE = ['Content Management', 'Teacher Toolkit'];
+
+  function sweep() {
+    document.querySelectorAll('.content-header h2, .form-card h2, .content-header h3').forEach(function (h) {
+      var text = (h.textContent || '').trim();
+      if (HEADINGS_TO_HIDE.some(function (w) { return text.indexOf(w) !== -1; })) {
+        h.style.setProperty('display', 'none', 'important');
+      }
+    });
+    document.querySelectorAll(
+      '.collapse-icon, [class*="collapse"], .content-header > span:not([class])'
+    ).forEach(function (i) {
+      i.style.setProperty('display', 'none', 'important');
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', sweep);
+  document.addEventListener('click', function () { setTimeout(sweep, 50); });
+  setTimeout(sweep, 500);
+  setTimeout(sweep, 2000);
+})();
 </script>
 
 </body>
