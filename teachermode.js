@@ -16726,3 +16726,66 @@ function toggleSidebar() {
   window.SecureStudyAudit = { recalculateClassHours, injectWarnings };
 })();
 
+/* ============================================================
+   HEADER PARITY — gradient text + time-of-day greeting
+   Runs across late renders (sidebar reorganizer etc.).
+   ============================================================ */
+(function () {
+  'use strict';
+  if (window.__teacherHeaderParity) return;
+  window.__teacherHeaderParity = true;
+
+  function greetingForNow() {
+    const h = new Date().getHours();
+    if (h >= 5  && h < 12) return '☀️ Good morning';
+    if (h >= 12 && h < 18) return '🌤️ Good afternoon';
+    if (h >= 18 && h < 22) return '🌆 Good evening';
+    return '🌙 Working late';
+  }
+
+  function polish() {
+    const header = document.getElementById('tmHeaderFinal');
+    if (!header) return;
+    const h1 = header.querySelector('h1');
+    if (!h1) return;
+
+    // Gradient text like student mode
+    h1.style.setProperty('font-size', '1.5rem', 'important');
+    h1.style.setProperty('letter-spacing', '-0.02em', 'important');
+    h1.style.setProperty('line-height', '1.15', 'important');
+    h1.style.setProperty('background',
+      'linear-gradient(135deg, #ffaa33 0%, #ff4714 50%, #d61f00 100%)', 'important');
+    h1.style.setProperty('-webkit-background-clip', 'text', 'important');
+    h1.style.setProperty('background-clip', 'text', 'important');
+    h1.style.setProperty('-webkit-text-fill-color', 'transparent', 'important');
+    h1.style.setProperty('color', 'transparent', 'important');
+
+    // Inject greeting above h1 (student-style)
+    let greeting = document.getElementById('teacherGreeting');
+    if (!greeting) {
+      greeting = document.createElement('div');
+      greeting.id = 'teacherGreeting';
+      greeting.style.cssText =
+        'font-size:0.78rem;font-weight:500;color:var(--text-muted);' +
+        'letter-spacing:0.02em;line-height:1.2;margin:0 0 6px 0;padding:0;';
+      h1.parentNode.insertBefore(greeting, h1);
+    }
+    greeting.textContent = greetingForNow();
+  }
+
+  function boot() {
+    polish();
+    [200, 800, 2000, 4000, 6000].forEach(t => setTimeout(polish, t));
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+
+  // Refresh greeting when tab regains focus (hour may have changed)
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) polish();
+  });
+})();

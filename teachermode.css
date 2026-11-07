@@ -11010,3 +11010,158 @@ body.premium {
   }
 }
 
+/* ============================================================
+   STUDENT-MODE PARITY PASS
+   - Caps content width so cards match student-mode proportions
+   - Stacks cards vertically (removes the 2x2 sub-grid)
+   - Restores hover personality (translateY lift)
+   - Softer radii to match student feel
+   ============================================================ */
+
+/* ---------- 1 · CAP + CENTER CONTENT ---------- */
+@media (min-width: 1021px) {
+  .main-content {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  body:not(.presentation-mode) .main-content > * {
+    width: 100% !important;
+    max-width: 1180px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    box-sizing: border-box !important;
+  }
+  body.presentation-mode .main-content > * {
+    max-width: 100% !important;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1020px) {
+  .main-content {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  .main-content > * {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+}
+
+/* ---------- 2 · VERTICAL STACKING (matches student mode) ---------- */
+@media (min-width: 769px) {
+  .dashboard-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 16px !important;
+    align-items: start !important;
+  }
+  .forms-section,
+  .content-section {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 14px !important;
+    grid-column: span 1 !important;
+    width: 100% !important;
+    max-width: none !important;
+  }
+  .forms-section > .class-code-display,
+  .forms-section > .form-card,
+  .content-section > .content-card {
+    display: block !important;
+    grid-column: auto !important;
+    order: initial !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+  }
+  .forms-section > .pro-tip { display: none !important; }
+  .content-section > :nth-child(3),
+  .content-section > :nth-child(4) { display: none !important; }
+}
+@media (max-width: 768px) {
+  .dashboard-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+}
+
+/* ---------- 3 · HOVER PERSONALITY (student-mode lift) ---------- */
+.content-card:hover,
+.form-card:hover,
+.assignment-card:hover {
+  transform: translateY(-3px) !important;
+  border-color: var(--ember) !important;
+}
+.stat-card:hover {
+  transform: translateY(-3px) !important;
+  border-color: var(--ember) !important;
+}
+
+/* ---------- 4 · SOFTER RADII — match student feel ---------- */
+.content-card,
+.form-card,
+.assignment-card {
+  border-radius: 14px !important;
+}
+.stat-card   { border-radius: 12px !important; }
+.pulse-widget { border-radius: 16px !important; }
+
+/* ---------- 5 · RESTORE GRADIENT DOT ON CARD HEADERS ---------- */
+.content-header h2::before,
+.form-card h2::before {
+  width: 6px !important;
+  height: 6px !important;
+  box-shadow: 0 0 10px var(--ember-glow) !important;
+}
+
+/* ---------- 6 · STAT CARDS — match student proportions ---------- */
+@media (min-width: 901px) {
+  .stat-card {
+    padding: 10px 13px !important;
+    min-height: 66px !important;
+    gap: 10px !important;
+  }
+  .stat-icon {
+    width: 38px !important;
+    height: 38px !important;
+    font-size: 1.05rem !important;
+    border-radius: 10px !important;
+  }
+  .stat-number {
+    font-size: 1.25rem !important;
+    letter-spacing: -0.02em !important;
+  }
+  .stat-label {
+    font-size: 0.6rem !important;
+    letter-spacing: 0.08em !important;
+  }
+}
+
+/* ---------- 7 · PULSE WIDGET — quieter hero ---------- */
+@media (min-width: 1021px) {
+  .pulse-widget {
+    padding: 20px 24px !important;
+    gap: 24px !important;
+  }
+  .pulse-ring-wrapper {
+    width: 120px !important;
+    height: 120px !important;
+  }
+  .pulse-ring-number { font-size: 2.2rem !important; }
+  .pulse-info h2     { font-size: 1.15rem !important; }
+}
+
+/* ---------- 8 · PRO-TIPS — flatter, quieter (like compacted student) ---------- */
+.pro-tip {
+  transform: none !important;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.06),
+    0 4px 12px rgba(60, 42, 15, 0.06) !important;
+}
+.pro-tip::before,
+.pro-tip::after { display: none !important; }
