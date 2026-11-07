@@ -1,0 +1,275 @@
+/* Teacher dashboard visual refresh: calmer surfaces, tighter spacing, clearer hierarchy. */
+:root {
+  --sidebar-width: 248px;
+  --teacher-surface-shadow: 0 1px 3px rgba(24, 32, 48, 0.05), 0 8px 24px rgba(24, 32, 48, 0.04);
+}
+
+/* Replace the notebook-paper effect with a quiet, theme-aware canvas. */
+body::before,
+body::after {
+  display: none !important;
+}
+
+.main-content {
+  padding: 32px 36px 56px;
+}
+
+.main-content > * {
+  max-width: 1280px;
+}
+
+.sidebar {
+  padding: 22px 18px;
+  box-shadow: 1px 0 12px rgba(24, 32, 48, 0.04);
+}
+
+.sidebar > * + * {
+  margin-top: 20px;
+}
+
+.sidebar-header {
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.teacher-emoji {
+  font-size: 2rem;
+  margin-bottom: 10px;
+  animation: none;
+}
+
+.sidebar h2 {
+  font-size: 1.15rem;
+}
+
+.nav-item {
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 0.875rem;
+}
+
+.nav-item:hover {
+  transform: none;
+}
+
+.nav-item.active {
+  background: var(--accent-light);
+  color: var(--accent-dark);
+  border-color: var(--border);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.dashboard-header {
+  margin-bottom: 28px;
+}
+
+.dashboard-header h1 {
+  font-size: clamp(1.7rem, 2.5vw, 2.15rem);
+  margin-bottom: 10px;
+  background: none;
+  color: var(--text);
+  -webkit-text-fill-color: currentColor;
+}
+
+.time-greeting {
+  font-size: 0.875rem;
+  margin-bottom: 6px;
+}
+
+.dashboard-subtitle {
+  font-size: 0.95rem;
+  margin-bottom: 22px;
+  line-height: 1.5;
+}
+
+.controls-bar {
+  gap: 10px;
+  padding: 12px;
+  border-radius: 14px;
+  box-shadow: none;
+}
+
+.controls-bar .search-bar input {
+  padding: 10px 12px;
+  border-width: 1px;
+  border-radius: 10px;
+}
+
+.dashboard-button-bar {
+  gap: 4px;
+  margin-bottom: 24px;
+  padding: 4px;
+  background: var(--card);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(24, 32, 48, 0.04);
+}
+
+.dashboard-section-btn {
+  padding: 8px 12px;
+  min-height: 36px;
+  border-radius: 9px;
+}
+
+.dashboard-section-btn.active {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: none;
+}
+
+.dashboard-grid {
+  gap: 24px;
+}
+
+.forms-section,
+.content-section {
+  gap: 20px;
+}
+
+.quick-stats {
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  padding: 16px;
+  min-height: 94px;
+  border-radius: 14px;
+  box-shadow: none;
+}
+
+.stat-number {
+  font-size: 1.65rem;
+}
+
+.stat-label {
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+}
+
+.content-card,
+.form-card,
+.assignment-card {
+  border-radius: 16px;
+  background-image: none;
+  box-shadow: var(--teacher-surface-shadow);
+}
+
+.content-card:hover,
+.form-card:hover,
+.assignment-card:hover {
+  border-color: var(--border);
+  box-shadow: var(--teacher-surface-shadow);
+  transform: none;
+}
+
+.content-header {
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+}
+
+.content-body {
+  padding: 22px;
+  max-height: none;
+}
+
+.form-card {
+  padding: 22px;
+}
+
+.pro-tip {
+  padding: 18px 20px;
+  margin: 18px 0;
+  border-radius: 12px;
+  transform: none;
+  box-shadow: var(--teacher-surface-shadow);
+}
+
+/* Tighten excessive gaps between dashboard sections. */
+#inClassView > * + *,
+#inClassView .content-card + .content-card,
+#inClassView .content-card + .pro-tip,
+#inClassView .pro-tip + .content-card {
+  margin-top: 24px !important;
+}
+
+#classroom.dashboard-content > * + * {
+  margin-top: 24px;
+}
+
+#teacherAnnouncements > * + *,
+#teacherResources > * + *,
+#teacherPolls > * + * {
+  margin-top: 16px !important;
+}
+
+@media (max-width: 900px) {
+  .main-content {
+    padding: calc(var(--header-height) + 24px) 24px 40px;
+  }
+
+  .dashboard-header {
+    margin-bottom: 22px;
+  }
+
+  .dashboard-grid {
+    gap: 20px;
+  }
+
+  .quick-stats {
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: calc(var(--header-height) + 18px) 16px 32px;
+  }
+
+  .dashboard-header h1 {
+    font-size: 1.6rem;
+  }
+
+  .dashboard-subtitle {
+    font-size: 0.875rem;
+    margin-bottom: 16px;
+  }
+
+  .controls-bar {
+    padding: 10px;
+  }
+
+  .dashboard-button-bar {
+    margin-bottom: 18px;
+  }
+
+  .content-header {
+    padding: 16px;
+  }
+
+  .content-body,
+  .form-card {
+    padding: 16px;
+  }
+
+  #inClassView > * + *,
+  #inClassView .content-card + .content-card,
+  #inClassView .content-card + .pro-tip,
+  #inClassView .pro-tip + .content-card,
+  #classroom.dashboard-content > * + * {
+    margin-top: 18px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .teacher-emoji,
+  .content-card,
+  .form-card,
+  .assignment-card,
+  .nav-item,
+  .dashboard-section-btn {
+    animation: none !important;
+    transition: none !important;
+  }
+}
