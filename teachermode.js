@@ -16793,109 +16793,6 @@ function toggleSidebar() {
 /* Grindly Teacher Mode — cleanup helper. Load with: <script src="teachermode-cleanup.js" defer></script> */
 (function () {
   'use strict';
-  var HEADER_RE = /^[\s\S]{0,4}\s*(analytics|content management|teacher toolkit)\s*[▼▲▾▴⌄⌃]?\s*$/i;
-
-  function cleanup() {
-    var tabs = document.querySelectorAll('#tmTabs, .dashboard-button-bar');
-    tabs.forEach(function (n) { n.remove(); });
-
-    var all = document.querySelectorAll('div, span, h2, h3, h4, button, a, p, summary');
-    all.forEach(function (el) {
-      if (el.classList.contains('tm-hide')) return;
-      var t = (el.textContent || '').trim();
-      if (t.length > 32 || el.children.length > 3 || !HEADER_RE.test(t)) return;
-      el.classList.add('tm-hide');
-      var sib = el.nextElementSibling;
-      while (sib) {
-        sib.classList.add('tm-open');
-        sib.style.maxHeight = 'none';
-        sib.style.display = '';
-        sib = null;
-      }
-      if (el.parentElement) {
-        Array.prototype.forEach.call(el.parentElement.children, function (c) {
-          if (c !== el) { c.classList.add('tm-open'); c.style.maxHeight = 'none'; }
-        });
-      }
-    });
-  }
-
-  function wrapShowSection() {
-    var orig = window.showSection;
-    if (typeof orig !== 'function' || orig.__tmWrapped) return;
-    var wrapped = function () {
-      var r = orig.apply(this, arguments);
-      try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) { window.scrollTo(0, 0); }
-      return r;
-    };
-    wrapped.__tmWrapped = true;
-    window.showSection = wrapped;
-  }
-
-  var debounce;
-  function schedule() {
-    clearTimeout(debounce);
-    debounce = setTimeout(function () { cleanup(); wrapShowSection(); }, 120);
-  }
-
-  function init() {
-    cleanup(); wrapShowSection();
-    [300, 1000, 2000, 3500, 6000].forEach(function (ms) { setTimeout(schedule, ms); });
-    new MutationObserver(schedule).observe(document.body, { childList: true, subtree: true });
-    document.addEventListener('keydown', function (e) {
-      var tag = (e.target.tagName || '').toLowerCase();
-      if (e.key === '/' && tag !== 'input' && tag !== 'textarea' && tag !== 'select') {
-        var s = document.getElementById('studentSearch');
-        if (s) { e.preventDefault(); s.focus(); }
-      }
-    });
-  }
-
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
-  else init();
-})();
-
-(function nukeDesktopSpacer() {
-  const mq = window.matchMedia('(min-width: 1021px)');
-
-  function clean() {
-    if (!mq.matches) return;
-
-    // 1. mobile header — remove entirely on desktop
-    document.querySelectorAll('.mobile-header').forEach(el => el.remove());
-
-    // 2. anything directly above .main-content that isn't the sidebar
-    const main = document.querySelector('.main-content');
-    if (main) {
-      let node = main.previousElementSibling;
-      while (node) {
-        const tag = node.tagName;
-        const isSidebar = node.classList?.contains('sidebar');
-        const isBackdrop = node.classList?.contains('sidebar-backdrop');
-        if (!isSidebar && !isBackdrop && node.getBoundingClientRect().height > 0) {
-          node.style.cssText += ';display:none!important;height:0!important;margin:0!important;padding:0!important;';
-        }
-        node = node.previousElementSibling;
-      }
-    }
-
-    // 3. body / html padding that could offset everything
-    document.body.style.paddingTop = '0';
-    document.documentElement.style.paddingTop = '0';
-  }
-
-  clean();
-  mq.addEventListener('change', clean);
-
-  // also run after any section switch — tap the sidebar buttons once this is loaded
-  document.querySelectorAll('.nav-item, [data-section], .dashboard-section-btn').forEach(btn => {
-    btn.addEventListener('click', () => setTimeout(clean, 0));
-  });
-})();
-
-/* Grindly Teacher Mode — cleanup helper. Load with: <script src="teachermode-cleanup.js" defer></script> */
-(function () {
-  'use strict';
   /* Give the header the ids the app's JS expects (showMemoryWall etc. crash without them) */
   function fixHeaderIds() {
     var hdr = document.querySelector('.dashboard-header');
@@ -16906,10 +16803,36 @@ function toggleSidebar() {
   }
   fixHeaderIds();
 
+
+  /* Mobile drawer helpers: close button, Esc, swipe-left, close on nav tap */
+  function drawerSetup() {
+    var sb = document.querySelector('.sidebar');
+    if (!sb || sb.__tmDrawer) return;
+    sb.__tmDrawer = true;
+    var bd = document.getElementById('sidebarBackdrop');
+    if (sb.parentElement !== document.body) document.body.appendChild(sb);
+    if (bd && bd.parentElement !== document.body) document.body.appendChild(bd);
+    var x = document.createElement('button');
+    x.className = 'sidebar-close'; x.type = 'button'; x.setAttribute('aria-label', 'Close menu'); x.textContent = '✕';
+    x.addEventListener('click', function () { if (window.closeSidebar) window.closeSidebar(); });
+    sb.insertBefore(x, sb.firstChild);
+    sb.addEventListener('click', function (e) {
+      if (window.innerWidth <= 1020 && e.target.closest('.nav-item') && window.closeSidebar) window.closeSidebar();
+    });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && window.closeSidebar) window.closeSidebar(); });
+    var sx = null;
+    sb.addEventListener('touchstart', function (e) { sx = e.touches[0].clientX; }, { passive: true });
+    sb.addEventListener('touchend', function (e) {
+      if (sx !== null && sx - e.changedTouches[0].clientX > 60 && window.closeSidebar) window.closeSidebar();
+      sx = null;
+    }, { passive: true });
+  }
+
   var HEADER_RE = /^[\s\S]{0,4}\s*(analytics|content management|teacher toolkit)\s*[▼▲▾▴⌄⌃]?\s*$/i;
 
   function cleanup() {
     fixHeaderIds();
+    drawerSetup();
     var tabs = document.querySelectorAll('#tmTabs, .dashboard-button-bar');
     tabs.forEach(function (n) { n.remove(); });
 
