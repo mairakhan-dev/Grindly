@@ -16828,11 +16828,134 @@ function toggleSidebar() {
     }, { passive: true });
   }
 
+
+  /* ---------- AI assistant (chatbot) upgrade ---------- */
+  var TCB_KEY = 'tcbState';
+  var tcb = { min: false, pinned: false, muted: false, open: { stats: true, actions: false, history: false }, hist: [], unread: 0 };
+  try { var saved = JSON.parse(localStorage.getItem(TCB_KEY) || 'null'); if (saved) { tcb.min = !!saved.min; tcb.pinned = !!saved.pinned; tcb.muted = !!saved.muted; tcb.open = Object.assign(tcb.open, saved.open || {}); } } catch (e) {}
+  function tcbSave() { try { localStorage.setItem(TCB_KEY, JSON.stringify({ min: tcb.min, pinned: tcb.pinned, muted: tcb.muted, open: tcb.open })); } catch (e) {} }
+
+  var ACTIONS = [
+    ['👥', 'Students', function () { window.showSection && window.showSection('students'); }],
+    ['📢', 'Announce', function () { window.showSection && window.showSection('announcements'); }],
+    ['📚', 'Assign', function () { window.showSection && window.showSection('assignments'); }],
+    ['📝', 'Memories', function () { window.showSection && window.showSection('memoryWall'); }],
+    ['🔄', 'Refresh', function () { typeof window.refreshStudents === 'function' && window.refreshStudents(); }],
+    ['📺', 'Present', function () { typeof window.openPresentationMode === 'function' && window.openPresentationMode(); }]
+  ];
+
+  function mkSection(key, title, inner) {
+    var s = document.createElement('div');
+    s.className = 'tcb-sec' + (tcb.open[key] ? ' open' : '');
+    var h = document.createElement('button');
+    h.type = 'button'; h.className = 'tcb-sec-h';
+    h.innerHTML = '<span>' + title + '</span><i>▾</i>';
+    h.addEventListener('click', function () {
+      s.classList.toggle('open'); tcb.open[key] = s.classList.contains('open'); tcbSave();
+    });
+    var b = document.createElement('div'); b.className = 'tcb-sec-b';
+    var w = document.createElement('div'); w.className = 'tcb-in';
+    w.appendChild(inner); b.appendChild(w);
+    s.appendChild(h); s.appendChild(b);
+    return s;
+  }
+
+  function renderHist(ul) {
+    ul.innerHTML = '';
+    if (!tcb.hist.length) { ul.innerHTML = '<li class="tcb-empty">No insights yet</li>'; return; }
+    tcb.hist.slice().reverse().forEach(function (h) {
+      var li = document.createElement('li');
+      li.innerHTML = '<time>' + h.t + '</time>';
+      li.appendChild(document.createTextNode(h.m));
+      ul.appendChild(li);
+    });
+  }
+
+  function chatbotUpgrade() {
+    var bubble = document.getElementById('teacherChatbotBubble');
+    var btn = document.getElementById('teacherChatbotBtn');
+    if (!bubble || !btn || bubble.__tcb) return;
+    bubble.__tcb = true;
+    var header = bubble.querySelector('.bubble-header');
+    var msg = bubble.querySelector('.bubble-message');
+    var stats = bubble.querySelector('.bubble-stats');
+    if (!header || !msg || !stats) return;
+
+    /* controls: pin / collapse / close(mute) */
+    var ctr = document.createElement('div'); ctr.className = 'tcb-ctrls';
+    var bPin = document.createElement('button'); bPin.type = 'button'; bPin.title = 'Keep open'; bPin.textContent = '📌';
+    var bMin = document.createElement('button'); bMin.type = 'button'; bMin.title = 'Collapse / expand'; bMin.innerHTML = '<span class="tcb-chev">▾</span>';
+    var bX = document.createElement('button'); bX.type = 'button'; bX.title = 'Hide (mute auto-popups)'; bX.textContent = '✕';
+    ctr.appendChild(bPin); ctr.appendChild(bMin); ctr.appendChild(bX);
+    header.appendChild(ctr);
+
+    function applyState() {
+      bubble.classList.toggle('tcb-min', tcb.min);
+      bPin.classList.toggle('on', tcb.pinned);
+      bX.title = tcb.muted ? 'Auto-popups muted' : 'Hide (mute auto-popups)';
+    }
+    bPin.addEventListener('click', function () { tcb.pinned = !tcb.pinned; applyState(); tcbSave(); });
+    bMin.addEventListener('click', function () { tcb.min = !tcb.min; applyState(); tcbSave(); });
+    header.addEventListener('dblclick', function () { tcb.min = !tcb.min; applyState(); tcbSave(); });
+    bX.addEventListener('click', function () { tcb.muted = true; tcb.pinned = false; applyState(); bubble.classList.remove('show'); tcbSave(); });
+
+    /* sections: stats (existing node moved), quick actions, history */
+    var statsSec = mkSection('stats', '📊 Class stats', stats);
+    var act = document.createElement('div'); act.className = 'tcb-actions';
+    ACTIONS.forEach(function (a) {
+      var b = document.createElement('button'); b.type = 'button';
+      b.innerHTML = '<span>' + a[0] + '</span>' + a[1];
+      b.addEventListener('click', function () { a[2](); if (window.innerWidth <= 1020) bubble.classList.remove('show'); });
+      act.appendChild(b);
+    });
+    var hist = document.createElement('ul'); hist.className = 'tcb-hist'; renderHist(hist);
+    bubble.appendChild(statsSec);
+    bubble.appendChild(mkSection('actions', '⚡ Quick actions', act));
+    bubble.appendChild(mkSection('history', '🕘 Recent insights', hist));
+    applyState();
+
+    /* history + unread badge on every new message */
+    var last = '';
+    new MutationObserver(function () {
+      var m = (msg.textContent || '').trim();
+      if (!m || m === last || /^analy[sz]ing/i.test(m)) return;
+      last = m;
+      var d = new Date();
+      tcb.hist.push({ m: m, t: ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2) });
+      if (tcb.hist.length > 8) tcb.hist.shift();
+      renderHist(hist);
+      if (tcb.muted) { tcb.unread++; btn.dataset.unread = tcb.unread; btn.classList.add('tcb-has-unread'); }
+    }).observe(msg, { childList: true, characterData: true, subtree: true });
+
+    /* keep-open logic: pinned / hovered stays; muted stays hidden */
+    var held = false;
+    bubble.addEventListener('mouseenter', function () { held = true; });
+    bubble.addEventListener('mouseleave', function () { held = false; });
+    new MutationObserver(function () {
+      var shown = bubble.classList.contains('show');
+      if (!shown && !tcb.muted && (tcb.pinned || held)) bubble.classList.add('show');
+      else if (shown && tcb.muted) bubble.classList.remove('show');
+    }).observe(bubble, { attributes: true, attributeFilter: ['class'] });
+
+    /* clicking the mascot un-mutes and clears the badge */
+    btn.addEventListener('click', function () {
+      tcb.muted = false; tcb.unread = 0; btn.classList.remove('tcb-has-unread'); tcbSave(); applyState();
+      bubble.classList.add('show');
+    }, true);
+
+    /* Esc / click outside hides an unpinned bubble */
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !tcb.pinned) bubble.classList.remove('show'); });
+    document.addEventListener('click', function (e) {
+      if (!tcb.pinned && bubble.classList.contains('show') && !e.target.closest('.teacher-chatbot-fab')) bubble.classList.remove('show');
+    });
+  }
+
   var HEADER_RE = /^[\s\S]{0,4}\s*(analytics|content management|teacher toolkit)\s*[▼▲▾▴⌄⌃]?\s*$/i;
 
   function cleanup() {
     fixHeaderIds();
     drawerSetup();
+    chatbotUpgrade();
     var tabs = document.querySelectorAll('#tmTabs, .dashboard-button-bar');
     tabs.forEach(function (n) { n.remove(); });
 
