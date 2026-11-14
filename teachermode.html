@@ -2442,9 +2442,9 @@ function openPresentationMode() {
 
 </script>
 
-<style id="memory-wall-v4-styles">
+<style id="memory-wall-v5-styles">
 /* ============================================================
-   MEMORY WALL v4 — full whiteboard toolkit
+   MEMORY WALL v5 — Figma-like, fully inline
    ============================================================ */
 
 .whiteboard-controls { display: none !important; }
@@ -2458,25 +2458,33 @@ function openPresentationMode() {
 .mw-header-tabs {
   display: flex; gap: 3px; padding: 3px; background: var(--ink-2, #faf5e8);
   border: 1px solid var(--border); border-radius: 10px; overflow-x: auto;
-  flex: 1 1 auto; min-width: 0; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  flex: 1 1 auto; min-width: 0; scrollbar-width: none;
 }
 .mw-header-tabs::-webkit-scrollbar { display: none; }
 .mw-tab {
   padding: 5px 10px; border: none; border-radius: 7px; background: transparent;
   color: var(--text-muted); font-family: var(--font-ui, system-ui, sans-serif);
   font-size: 0.72rem; font-weight: 700; cursor: pointer; white-space: nowrap;
-  transition: background 0.15s, color 0.15s; display: flex; align-items: center;
-  gap: 5px; flex-shrink: 0;
+  display: flex; align-items: center; gap: 5px; flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
 }
 .mw-tab:hover { background: var(--card); color: var(--text); }
 .mw-tab.active {
   background: var(--gradient-flame, linear-gradient(135deg, #ffaa33 0%, #ff4714 50%, #d61f00 100%));
   color: #fff; box-shadow: 0 2px 8px rgba(255, 71, 20, 0.28);
 }
+.mw-tab.drop-target { box-shadow: 0 0 0 3px var(--ember, #ff4714); }
+.mw-tab-count {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 16px; height: 15px; padding: 0 5px; border-radius: 999px;
+  background: rgba(0,0,0,0.08); font-size: 0.58rem; font-weight: 700;
+  font-family: var(--font-mono, monospace);
+}
+.mw-tab.active .mw-tab-count { background: rgba(255,255,255,0.28); color: #fff; }
 .mw-tab-del {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 15px; height: 15px; border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3); font-size: 11px; line-height: 1; opacity: 0.8;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3); font-size: 10px; line-height: 1; opacity: 0.85;
 }
 .mw-tab-del:hover { background: #ef4444; color: #fff; opacity: 1; }
 
@@ -2491,16 +2499,14 @@ function openPresentationMode() {
   color: #fff; border-color: transparent;
 }
 
-/* ---------- TOOLS ROW (search + color filter + actions) ---------- */
+/* ---------- TOOLS ROW (search + undo/redo + export only) ---------- */
 .mw-tools-row {
   display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
   padding: 6px 10px; margin: 0 8px 6px;
   background: var(--ink-2, #faf5e8); border: 1px solid var(--border);
   border-radius: 10px;
 }
-.mw-search-wrap {
-  position: relative; flex: 1 1 160px; min-width: 0;
-}
+.mw-search-wrap { position: relative; flex: 1 1 180px; min-width: 0; }
 .mw-search-input {
   width: 100%; padding: 6px 10px 6px 28px; border: 1px solid var(--border);
   border-radius: 7px; background: var(--card); color: var(--text);
@@ -2511,23 +2517,6 @@ function openPresentationMode() {
   content: '🔍'; position: absolute; left: 8px; top: 50%;
   transform: translateY(-50%); font-size: 0.72rem; pointer-events: none;
 }
-.mw-color-chips { display: flex; gap: 4px; align-items: center; }
-.mw-color-chip {
-  width: 20px; height: 20px; border-radius: 50%; border: 2px solid transparent;
-  cursor: pointer; padding: 0; transition: transform 0.12s, border-color 0.12s;
-  flex-shrink: 0;
-}
-.mw-color-chip:hover { transform: scale(1.15); }
-.mw-color-chip.active { border-color: var(--ember, #ff4714); transform: scale(1.15); }
-.mw-color-chip-all {
-  width: 24px; height: 24px; border-radius: 50%; background: var(--card);
-  border: 1px solid var(--border); color: var(--text-muted); font-size: 0.6rem;
-  font-weight: 700; cursor: pointer; padding: 0; flex-shrink: 0;
-}
-.mw-color-chip-all.active {
-  background: var(--gradient-flame, linear-gradient(135deg, #ffaa33 0%, #ff4714 50%, #d61f00 100%));
-  color: #fff; border-color: transparent;
-}
 .mw-tool-btn {
   padding: 6px 10px; border: 1px solid var(--border); border-radius: 7px;
   background: var(--card); color: var(--text); cursor: pointer;
@@ -2537,6 +2526,7 @@ function openPresentationMode() {
 .mw-tool-btn:hover { background: var(--ink-2); border-color: var(--ember, #ff4714); color: var(--ember, #ff4714); }
 .mw-tool-btn:disabled { opacity: 0.35; cursor: default; }
 .mw-tool-btn:disabled:hover { background: var(--card); border-color: var(--border); color: var(--text); }
+.mw-tool-btn.active { background: var(--ember, #ff4714); color: #fff; border-color: transparent; }
 
 /* ---------- ZOOM INLINE ---------- */
 .mw-zoom-inline {
@@ -2552,20 +2542,21 @@ function openPresentationMode() {
 }
 .mw-zoom-inline button:hover { background: var(--card); }
 .mw-zoom-inline button.mw-extra { font-size: 0.75rem; width: 26px; }
+.mw-zoom-inline button.active { background: var(--ember, #ff4714); color: #fff; }
 .mw-zoom-inline .mw-zoom-pct {
   font-family: var(--font-mono, monospace); font-size: 0.6rem; font-weight: 700;
   color: var(--text-muted); min-width: 36px; text-align: center; padding: 0 2px;
   user-select: none;
 }
 
-/* Sync indicator */
+/* ---------- SYNC + SAVE INDICATORS ---------- */
 .mw-sync-indicator {
   display: inline-flex; align-items: center; gap: 4px;
   padding: 3px 8px; border-radius: 999px;
   background: rgba(16, 185, 129, 0.12); color: #059669;
   font-family: var(--font-mono, monospace); font-size: 0.62rem;
   font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
-  flex-shrink: 0; margin-left: 4px;
+  flex-shrink: 0;
 }
 .mw-sync-indicator.offline { background: rgba(245, 158, 11, 0.14); color: #b45309; }
 .mw-sync-indicator::before {
@@ -2573,6 +2564,15 @@ function openPresentationMode() {
   background: currentColor; animation: mw-sync-blink 1.8s ease-in-out infinite;
 }
 @keyframes mw-sync-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+.mw-save-status {
+  font-family: var(--font-mono, monospace); font-size: 0.62rem; font-weight: 600;
+  color: var(--text-muted); padding: 3px 8px; border-radius: 999px;
+  background: rgba(0,0,0,0.04); flex-shrink: 0;
+  transition: background 0.3s, color 0.3s;
+}
+.mw-save-status.saving { color: #b45309; background: rgba(245,158,11,0.12); }
+.mw-save-status.saved  { color: #059669; background: rgba(16,185,129,0.12); }
+.mw-save-status.error  { color: #ef4444; background: rgba(239,68,68,0.12); }
 
 /* ---------- SELECTION ---------- */
 .sticky-note.selected,
@@ -2584,83 +2584,52 @@ function openPresentationMode() {
     0 0 0 6px color-mix(in srgb, var(--ember, #ff4714) 25%, transparent),
     0 12px 32px rgba(60, 42, 15, 0.28) !important;
 }
+.sticky-note.selected-multi,
+.student-sticky-note.selected-multi {
+  outline: 3px dashed var(--info, #3b82f6);
+  outline-offset: 4px;
+  z-index: 101 !important;
+  box-shadow:
+    0 0 0 6px color-mix(in srgb, var(--info, #3b82f6) 22%, transparent),
+    0 8px 24px rgba(60, 42, 15, 0.22) !important;
+}
 
 /* Resize + rotate handles */
 .nwh {
-  position: absolute;
-  background: var(--ember, #ff4714);
-  border: 2px solid #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  z-index: 200;
-  user-select: none;
-  touch-action: none;
+  position: absolute; background: var(--ember, #ff4714);
+  border: 2px solid #fff; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  z-index: 200; user-select: none; touch-action: none;
 }
 .nwh-rotate {
-  top: -34px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  cursor: grab;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  color: #fff;
-  font-weight: 700;
+  top: -34px; left: 50%; transform: translateX(-50%);
+  width: 20px; height: 20px; border-radius: 50%; cursor: grab;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; color: #fff; font-weight: 700;
 }
 .nwh-rotate::after {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 2px;
-  height: 14px;
+  content: ''; position: absolute; top: 100%; left: 50%;
+  transform: translateX(-50%); width: 2px; height: 14px;
   background: var(--ember, #ff4714);
 }
 .nwh-rotate:active { cursor: grabbing; }
 .nwh-resize {
-  bottom: -8px;
-  right: -8px;
-  width: 18px;
-  height: 18px;
-  border-radius: 4px;
-  cursor: nwse-resize;
+  bottom: -8px; right: -8px; width: 18px; height: 18px;
+  border-radius: 4px; cursor: nwse-resize;
 }
 .nwh-locked {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: var(--warning, #f59e0b);
-  color: #fff;
-  font-size: 11px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid #fff;
-  z-index: 200;
-  cursor: pointer;
+  position: absolute; top: -8px; right: -8px; width: 20px; height: 20px;
+  border-radius: 50%; background: var(--warning, #f59e0b); color: #fff;
+  font-size: 11px; display: flex; align-items: center; justify-content: center;
+  border: 2px solid #fff; z-index: 200; cursor: pointer;
 }
-
-/* Pinned note indicator */
 .sticky-note[data-pinned="true"]::before,
 .student-sticky-note[data-pinned="true"]::before {
-  content: '📌';
-  position: absolute;
-  top: -10px;
-  left: -10px;
-  font-size: 16px;
-  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3));
-  z-index: 5;
-  pointer-events: none;
+  content: '📌'; position: absolute; top: -10px; left: -10px;
+  font-size: 16px; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3));
+  z-index: 5; pointer-events: none;
 }
 
-/* Highlight search matches */
+/* Search highlight */
 .sticky-note.search-hit,
 .student-sticky-note.search-hit {
   outline: 3px dashed var(--info, #3b82f6);
@@ -2673,24 +2642,31 @@ function openPresentationMode() {
 }
 .sticky-note.search-dim,
 .student-sticky-note.search-dim {
-  opacity: 0.25;
+  opacity: 0.22;
   pointer-events: none;
 }
 
-/* ---------- MINIMAP ---------- */
+/* ---------- MINIMAP (fixed) ---------- */
 .mw-minimap {
-  position: absolute; bottom: 10px; left: 10px;
-  width: 140px; height: 90px; z-index: 25;
-  background: rgba(255, 255, 255, 0.94);
-  border: 1px solid var(--border); border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(60, 42, 15, 0.14);
-  overflow: hidden; display: none;
+  position: absolute !important;
+  bottom: 10px !important;
+  left: 10px !important;
+  width: 140px !important;
+  height: 90px !important;
+  z-index: 40 !important;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(60, 42, 15, 0.18);
+  overflow: hidden;
+  display: block !important;
+  pointer-events: none;
 }
-.mw-minimap.visible { display: block; }
+.mw-minimap.hidden { display: none !important; }
 .mw-minimap-dots { position: absolute; inset: 4px; }
 .mw-minimap-dot {
-  position: absolute; width: 4px; height: 4px; border-radius: 1px;
-  transform: translate(-50%, -50%); pointer-events: none;
+  position: absolute; width: 5px; height: 5px; border-radius: 1px;
+  transform: translate(-50%, -50%);
 }
 .mw-minimap-viewport {
   position: absolute; border: 1.5px solid var(--ember, #ff4714);
@@ -2698,12 +2674,12 @@ function openPresentationMode() {
   border-radius: 2px;
 }
 
-/* ---------- FLOATING ZOOM ---------- */
+/* ---------- FLOATING ZOOM (mobile) ---------- */
 .mw-zoom-float {
   position: absolute; bottom: 10px; right: 10px; z-index: 25;
   display: none; padding: 3px;
   background: color-mix(in srgb, var(--card) 94%, transparent);
-  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
   border: 1px solid var(--border); border-radius: 10px;
   box-shadow: 0 4px 16px rgba(60, 42, 15, 0.14); gap: 2px;
 }
@@ -2726,50 +2702,52 @@ function openPresentationMode() {
   flex: 1 !important; height: auto !important;
 }
 
-/* ---------- ADD MEMORY PAGE: board picker + position picker ---------- */
-.mw-board-picker { margin-bottom: 16px; }
-.mw-board-picker > label {
+/* ---------- ADD MEMORY HELPERS (board picker + position) ---------- */
+.mw-add-helpers {
+  background: var(--ink-2, #faf5e8);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+.mw-add-helpers > * + * { margin-top: 14px; }
+.mw-board-picker > label,
+.mw-pos-picker > label {
   display: block; margin-bottom: 6px; font-weight: 600;
-  font-size: 0.85rem; color: var(--text);
+  font-size: 0.82rem; color: var(--text);
 }
 .mw-board-select {
   width: 100%; padding: 10px 12px; border: 2px solid var(--border);
-  border-radius: 10px; background: var(--ink-2, #faf5e8); color: var(--text);
+  border-radius: 10px; background: var(--card); color: var(--text);
   font-size: 0.9rem; font-weight: 600; font-family: inherit; cursor: pointer;
 }
 .mw-board-select:focus { outline: none; border-color: var(--ember, #ff4714); }
-
-.mw-pos-picker { margin-bottom: 18px; }
-.mw-pos-picker > label {
-  display: block; margin-bottom: 8px; font-weight: 600;
-  font-size: 0.85rem; color: var(--text);
-}
 .mw-pos-map {
-  position: relative; height: 180px; border: 2px solid var(--border);
-  border-radius: 12px; background-color: var(--bg);
+  position: relative; height: 140px; border: 2px solid var(--border);
+  border-radius: 10px; background-color: var(--bg);
   background-image:
     linear-gradient(90deg, rgba(60,42,15,0.06) 1px, transparent 1px),
     linear-gradient(rgba(60,42,15,0.06) 1px, transparent 1px);
-  background-size: 24px 24px; overflow: hidden; cursor: crosshair;
+  background-size: 20px 20px; overflow: hidden; cursor: crosshair;
   user-select: none; touch-action: manipulation;
 }
 .mw-pos-map::before {
-  content: 'Click to choose position'; position: absolute; top: 8px; left: 12px;
-  font-size: 0.7rem; color: var(--text-muted); pointer-events: none;
-  font-weight: 600; opacity: 0.7;
+  content: 'Click to place'; position: absolute; top: 6px; left: 10px;
+  font-size: 0.65rem; color: var(--text-muted); pointer-events: none;
+  font-weight: 600; opacity: 0.75;
 }
 .mw-pos-marker {
-  position: absolute; width: 22px; height: 22px; border-radius: 50%;
+  position: absolute; width: 20px; height: 20px; border-radius: 50%;
   background: var(--ember, #ff4714); border: 3px solid #fff;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
   transform: translate(-50%, -50%); pointer-events: none;
   transition: left 0.12s ease, top 0.12s ease; z-index: 2;
 }
 .mw-pos-label {
-  position: absolute; bottom: 8px; right: 10px;
-  font-family: var(--font-mono, monospace); font-size: 0.7rem; font-weight: 700;
+  position: absolute; bottom: 6px; right: 8px;
+  font-family: var(--font-mono, monospace); font-size: 0.65rem; font-weight: 700;
   color: var(--text-muted); background: rgba(255, 255, 255, 0.94);
-  padding: 3px 10px; border-radius: 6px;
+  padding: 2px 8px; border-radius: 5px;
   box-shadow: 0 1px 4px rgba(0,0,0,0.08);
 }
 
@@ -2778,7 +2756,7 @@ function openPresentationMode() {
   position: fixed; z-index: 10000;
   background: var(--card); border: 1px solid var(--border);
   border-radius: 10px; box-shadow: 0 8px 32px rgba(0,0,0,0.18);
-  padding: 4px; min-width: 160px;
+  padding: 4px; min-width: 180px; max-height: 70vh; overflow-y: auto;
   font-family: var(--font-ui, system-ui, sans-serif);
 }
 .mw-ctx-item {
@@ -2790,6 +2768,10 @@ function openPresentationMode() {
 .mw-ctx-item:hover { background: var(--ink-2); color: var(--ember, #ff4714); }
 .mw-ctx-item.mw-ctx-danger:hover { background: rgba(239, 68, 68, 0.12); color: #ef4444; }
 .mw-ctx-sep { height: 1px; background: var(--border); margin: 3px 4px; }
+.mw-ctx-subheader {
+  padding: 4px 12px; font-size: 0.62rem; font-weight: 700;
+  color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;
+}
 
 /* ---------- SHORTCUTS MODAL ---------- */
 .mw-shortcuts-overlay {
@@ -2806,7 +2788,7 @@ function openPresentationMode() {
   font-family: var(--font-display, system-ui, sans-serif);
   font-size: 1.15rem; margin-bottom: 16px; color: var(--text);
 }
-.mw-shortcuts-grid { display: grid; gap: 8px; }
+.mw-shortcuts-grid { display: grid; gap: 6px; }
 .mw-shortcut-row {
   display: flex; justify-content: space-between; align-items: center;
   padding: 6px 0; border-bottom: 1px dashed var(--border); font-size: 0.85rem;
@@ -2815,8 +2797,8 @@ function openPresentationMode() {
 .mw-shortcut-key {
   display: inline-block; padding: 2px 8px; border-radius: 4px;
   background: var(--ink-2); border: 1px solid var(--border);
-  font-family: var(--font-mono, monospace); font-size: 0.75rem; font-weight: 700;
-  color: var(--text); min-width: 22px; text-align: center;
+  font-family: var(--font-mono, monospace); font-size: 0.72rem; font-weight: 700;
+  color: var(--text);
 }
 .mw-shortcut-close {
   margin-top: 18px; width: 100%; padding: 10px;
@@ -2825,49 +2807,67 @@ function openPresentationMode() {
   cursor: pointer; font-family: inherit;
 }
 
+/* ---------- EMPTY STATE ---------- */
+.mw-empty-hint {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center; color: var(--text-muted);
+  font-family: var(--font-ui, system-ui, sans-serif);
+  pointer-events: none; z-index: 1;
+  padding: 20px;
+}
+.mw-empty-hint .mw-empty-icon {
+  font-size: 2.5rem; margin-bottom: 8px; opacity: 0.6;
+}
+.mw-empty-hint .mw-empty-title {
+  font-weight: 700; font-size: 1rem; color: var(--text);
+  margin-bottom: 4px;
+}
+.mw-empty-hint .mw-empty-desc { font-size: 0.82rem; line-height: 1.4; }
+
 @media (max-width: 900px) {
   .mw-header-controls { order: 3; flex-basis: 100%; justify-content: flex-start; margin: 8px 0 0 0; }
   .mw-zoom-float { display: flex; }
-  .mw-minimap { width: 100px; height: 65px; bottom: 8px; left: 8px; }
-  .mw-minimap.visible { display: none; }
+  .mw-minimap { width: 100px !important; height: 65px !important; }
   .mw-tools-row { padding: 4px 8px; margin: 0 0 4px; }
   .mw-search-wrap { flex-basis: 100%; }
 }
 </style>
 
-<script id="memory-wall-v4-script">
+<script id="memory-wall-v5-script">
 (function () {
   'use strict';
   if (window.__memoryWallUpgrade) return;
   window.__memoryWallUpgrade = true;
 
   var LOG = function () { var a = [].slice.call(arguments); a.unshift('[MW]'); console.log.apply(console, a); };
-  LOG('v4 script loaded');
+  LOG('v5 script loaded');
 
   var ZOOM_MIN = 0.4, ZOOM_MAX = 3.0, ZOOM_STEP = 0.2;
   var LS_SPACE_KEY = 'mw_current_space_';
   var LS_SPACES_KEY = 'mw_spaces_';
   var MAX_UNDO = 30;
-  var COLOR_PALETTE = ['#FFEB3B', '#C8E6C9', '#BBDEFB', '#E1BEE7', '#FFCCBC', '#FFF9C4', '#F8BBD0', '#B2DFDB'];
 
   var isTeacher = !!document.querySelector('.teacher-emoji')
     || window.location.href.indexOf('teachermode') !== -1;
   var WB_ID      = isTeacher ? 'memoryWhiteboard' : 'studentMemoryWhiteboard';
   var NOTES_ID   = isTeacher ? 'stickyNotesContainer' : 'studentStickyNotesContainer';
   var SECTION_ID = isTeacher ? 'memoryWall' : 'studentMemoryWall';
+  var ADD_PAGE_ID = isTeacher ? 'addMemoryPage' : 'studentAddMemoryPage';
 
   var currentSpaceId = 'main';
   var pendingSpaceId = 'main';
   var currentZoom = 1, currentPanX = 0, currentPanY = 0;
   var spacesList = [{ id: 'main', name: 'Main Board', createdAt: 0 }];
   var controlsBuilt = false;
+  var addHelpersInjected = false;
   var notesRef = null, spaceMetaRef = null;
   var pendingPosition = { x: 40, y: 40 };
-  var selectedNoteId = null;
+  var selectedNoteIds = [];
   var lastSpaceMetaSignature = '';
   var undoStack = [], redoStack = [];
-  var searchQuery = '', colorFilter = '';
-  var shortcutsShown = false;
+  var searchQuery = '';
+  var minimapVisible = true;
 
   function getClassCode() { return (typeof currentClassCode !== 'undefined' && currentClassCode) || null; }
   function getDatabase() { return (typeof database !== 'undefined' && database) || null; }
@@ -2908,6 +2908,22 @@ function openPresentationMode() {
   function getWbRect() {
     var wb = document.getElementById(WB_ID);
     return wb ? wb.getBoundingClientRect() : { left:0, top:0, width:1, height:1 };
+  }
+
+  // ============================================================
+  // SAVE STATUS
+  // ============================================================
+  var saveTimer = null;
+  function setSaveStatus(state, text) {
+    var el = document.querySelector('.mw-save-status');
+    if (!el) return;
+    el.classList.remove('saving', 'saved', 'error');
+    if (state) el.classList.add(state);
+    el.textContent = text || (state === 'saving' ? 'Saving…' : state === 'saved' ? 'Saved' : state === 'error' ? 'Error' : 'Idle');
+    if (state === 'saving') {
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(function () { setSaveStatus('saved'); }, 900);
+    }
   }
 
   // ============================================================
@@ -2959,9 +2975,6 @@ function openPresentationMode() {
     document.querySelectorAll('.mw-zoom-pct').forEach(function (el) { el.textContent = pct; });
   }
 
-  // ============================================================
-  // CANVAS WRAPPER
-  // ============================================================
   function ensureCanvasWrapper(wb) {
     var existing = wb.querySelector('.wb-canvas');
     if (existing) return existing;
@@ -2978,7 +2991,7 @@ function openPresentationMode() {
   }
 
   // ============================================================
-  // SYNC INDICATOR
+  // INDICATORS
   // ============================================================
   function updateSyncIndicator() {
     var el = document.querySelector('.mw-sync-indicator');
@@ -2987,18 +3000,26 @@ function openPresentationMode() {
     el.textContent = online ? 'Synced' : 'Local';
     el.classList.toggle('offline', !online);
   }
-  function ensureSyncIndicator(header) {
-    if (header.querySelector('.mw-sync-indicator')) return;
-    var el = document.createElement('span');
-    el.className = 'mw-sync-indicator';
-    el.textContent = 'Synced';
+
+  function ensureIndicators(header) {
     var ctrl = header.querySelector('.mw-header-controls');
-    if (ctrl) ctrl.appendChild(el);
+    if (!ctrl) return;
+    if (!ctrl.querySelector('.mw-sync-indicator')) {
+      var sync = document.createElement('span');
+      sync.className = 'mw-sync-indicator';
+      ctrl.appendChild(sync);
+    }
+    if (!ctrl.querySelector('.mw-save-status')) {
+      var save = document.createElement('span');
+      save.className = 'mw-save-status';
+      save.textContent = 'Idle';
+      ctrl.appendChild(save);
+    }
     updateSyncIndicator();
   }
 
   // ============================================================
-  // BUILD HEADER CONTROLS + TOOLS ROW
+  // BUILD HEADER CONTROLS
   // ============================================================
   function buildControls() {
     if (controlsBuilt) return;
@@ -3029,11 +3050,13 @@ function openPresentationMode() {
       '<span class="mw-zoom-pct">100%</span>' +
       '<button data-act="in" title="Zoom in">+</button>' +
       '<button data-act="fit" class="mw-extra" title="Zoom to fit">\u2317</button>' +
+      '<button data-act="mini" class="mw-extra active" title="Toggle minimap">\u25A6</button>' +
       '<button data-act="full" class="mw-extra" title="Fullscreen">\u26F6</button>' +
       '<button data-act="reset" title="Reset view">\u2302</button>';
     zoom.querySelector('[data-act="out"]').onclick   = function () { setZoom(currentZoom - ZOOM_STEP); };
     zoom.querySelector('[data-act="in"]').onclick    = function () { setZoom(currentZoom + ZOOM_STEP); };
     zoom.querySelector('[data-act="fit"]').onclick   = zoomToFit;
+    zoom.querySelector('[data-act="mini"]').onclick  = function () { toggleMinimap(this); };
     zoom.querySelector('[data-act="full"]').onclick  = toggleFullscreen;
     zoom.querySelector('[data-act="reset"]').onclick = resetView;
     wrap.appendChild(zoom);
@@ -3042,51 +3065,30 @@ function openPresentationMode() {
     if (addMemoryBtn) header.insertBefore(wrap, addMemoryBtn);
     else header.appendChild(wrap);
 
-    ensureSyncIndicator(header);
+    ensureIndicators(header);
 
-    // ---------- TOOLS ROW (search + colors + export + undo/redo) ----------
+    // Tools row: search + undo/redo + export (NO color filter)
     var tools = document.createElement('div');
     tools.className = 'mw-tools-row';
     tools.innerHTML =
       '<div class="mw-search-wrap">' +
         '<input type="text" class="mw-search-input" placeholder="Search notes…" id="mwSearchInput">' +
       '</div>' +
-      '<div class="mw-color-chips" id="mwColorChips">' +
-        '<button class="mw-color-chip-all active" data-color="" title="Show all">ALL</button>' +
-        COLOR_PALETTE.map(function (c) {
-          return '<button class="mw-color-chip" data-color="' + c + '" style="background:' + c + ';" title="Filter ' + c + '"></button>';
-        }).join('') +
-      '</div>' +
       '<button class="mw-tool-btn" id="mwUndoBtn" title="Undo (Ctrl+Z)">\u21B6</button>' +
       '<button class="mw-tool-btn" id="mwRedoBtn" title="Redo (Ctrl+Y)">\u21B7</button>' +
       '<button class="mw-tool-btn" id="mwExportBtn" title="Download as PNG">\uD83D\uDCF7</button>';
-
-    // Insert tools row after the header (as second child of content-card)
     header.parentNode.insertBefore(tools, header.nextSibling);
 
-    // Wire up search
     var searchInput = document.getElementById('mwSearchInput');
     searchInput.addEventListener('input', function () {
       searchQuery = searchInput.value.toLowerCase().trim();
       applyFilters();
     });
-
-    // Wire up color chips
-    document.getElementById('mwColorChips').addEventListener('click', function (e) {
-      var chip = e.target.closest('[data-color]');
-      if (!chip) return;
-      colorFilter = chip.getAttribute('data-color');
-      document.querySelectorAll('.mw-color-chip, .mw-color-chip-all').forEach(function (c) { c.classList.remove('active'); });
-      chip.classList.add('active');
-      applyFilters();
-    });
-
-    // Wire up undo/redo/export
     document.getElementById('mwUndoBtn').onclick = undo;
     document.getElementById('mwRedoBtn').onclick = redo;
     document.getElementById('mwExportBtn').onclick = exportPNG;
 
-    // ---------- MOBILE FLOATING ZOOM ----------
+    // Floating zoom (mobile)
     var float = document.createElement('div');
     float.className = 'mw-zoom-float';
     float.innerHTML =
@@ -3100,9 +3102,9 @@ function openPresentationMode() {
     float.querySelector('[data-act="reset"]').onclick = resetView;
     wb.appendChild(float);
 
-    // ---------- MINIMAP ----------
+    // Minimap
     var minimap = document.createElement('div');
-    minimap.className = 'mw-minimap visible';
+    minimap.className = 'mw-minimap';
     minimap.innerHTML = '<div class="mw-minimap-dots"></div><div class="mw-minimap-viewport"></div>';
     wb.appendChild(minimap);
 
@@ -3117,9 +3119,18 @@ function openPresentationMode() {
     updateZoomLabels();
     updateSyncIndicator();
     updateUndoRedoButtons();
+    setSaveStatus(null, 'Idle');
+    updateMinimap();  // ← CRITICAL FIX
 
     controlsBuilt = true;
-    LOG('controls built');
+    LOG('controls built ✓');
+  }
+
+  function toggleMinimap(btn) {
+    minimapVisible = !minimapVisible;
+    var m = document.querySelector('.mw-minimap');
+    if (m) m.classList.toggle('hidden', !minimapVisible);
+    if (btn) btn.classList.toggle('active', minimapVisible);
   }
 
   function toggleFullscreen() {
@@ -3132,10 +3143,11 @@ function openPresentationMode() {
     } else {
       if (document.fullscreenElement) document.exitFullscreen().catch(function () {});
     }
+    setTimeout(updateMinimap, 100);
   }
 
   // ============================================================
-  // FILTERS (search + color)
+  // SEARCH FILTER
   // ============================================================
   function applyFilters() {
     var notes = getNotesArray();
@@ -3143,16 +3155,11 @@ function openPresentationMode() {
       var el = document.getElementById('note-' + n.id) || document.getElementById('student-note-' + n.id);
       if (!el) return;
       el.classList.remove('search-hit', 'search-dim');
-      var matchSearch = !searchQuery || (n.text || '').toLowerCase().indexOf(searchQuery) !== -1
+      if (!searchQuery) return;
+      var match = (n.text || '').toLowerCase().indexOf(searchQuery) !== -1
         || (n.author || '').toLowerCase().indexOf(searchQuery) !== -1;
-      var matchColor = !colorFilter || (n.color || '') === colorFilter;
-      if (searchQuery && !matchSearch) {
-        el.classList.add('search-dim');
-      } else if (colorFilter && !matchColor) {
-        el.classList.add('search-dim');
-      } else if (searchQuery && matchSearch) {
-        el.classList.add('search-hit');
-      }
+      if (match) el.classList.add('search-hit');
+      else el.classList.add('search-dim');
     });
   }
 
@@ -3166,13 +3173,13 @@ function openPresentationMode() {
     updateUndoRedoButtons();
   }
   function undo() {
-    if (undoStack.length === 0) return;
+    if (!undoStack.length) return;
     redoStack.push(JSON.stringify(getNotesArray()));
     applySnapshot(undoStack.pop());
     updateUndoRedoButtons();
   }
   function redo() {
-    if (redoStack.length === 0) return;
+    if (!redoStack.length) return;
     undoStack.push(JSON.stringify(getNotesArray()));
     applySnapshot(redoStack.pop());
     updateUndoRedoButtons();
@@ -3181,16 +3188,17 @@ function openPresentationMode() {
     try {
       var arr = JSON.parse(json);
       setNotesArray(arr);
-      var db = getDatabase(), cc = getClassCode(), path = getNotesPath(currentSpaceId);
-      if (db && cc && path) {
+      var db = getDatabase(), path = getNotesPath(currentSpaceId);
+      if (db && path) {
         var obj = {};
         arr.forEach(function (n) { obj[n.id] = n; });
         db.ref(path).set(obj).catch(function () {});
       } else {
-        window.saveMemoryWallToLocalStorage();
+        localStorage.setItem(notesLsKey(currentSpaceId), JSON.stringify(arr));
       }
       renderCurrentNotes();
-    } catch (e) { LOG('snapshot apply failed:', e); }
+      setSaveStatus('saved');
+    } catch (e) { LOG('snapshot failed:', e); }
   }
   function updateUndoRedoButtons() {
     var u = document.getElementById('mwUndoBtn');
@@ -3204,7 +3212,7 @@ function openPresentationMode() {
   // ============================================================
   function exportPNG() {
     if (typeof html2canvas !== 'function') {
-      alert('PNG export is unavailable — html2canvas library not loaded.');
+      alert('PNG export library not loaded.');
       return;
     }
     var wb = document.getElementById(WB_ID);
@@ -3220,7 +3228,7 @@ function openPresentationMode() {
         currentPanX = sx; currentPanY = sy; currentZoom = sz;
         applyTransform(false);
         var a = document.createElement('a');
-        a.download = 'memory-board-' + currentSpaceId + '-' + Date.now() + '.png';
+        a.download = 'board-' + currentSpaceId + '-' + Date.now() + '.png';
         a.href = c.toDataURL('image/png');
         a.click();
       }).catch(function (e) {
@@ -3240,15 +3248,16 @@ function openPresentationMode() {
     if (!dots || !viewport) return;
     var notes = getNotesArray();
     dots.innerHTML = notes.map(function (n) {
-      var color = (n.color || '#FFEB3B');
+      var color = n.color || '#FFEB3B';
       var x = Math.max(0, Math.min(98, Number(n.x) || 0));
       var y = Math.max(0, Math.min(98, Number(n.y) || 0));
       return '<div class="mw-minimap-dot" style="left:' + x + '%;top:' + y + '%;background:' + color + ';"></div>';
     }).join('');
+    var r = getWbRect();
     var vw = Math.min(100, 100 / currentZoom);
     var vh = Math.min(100, 100 / currentZoom);
-    var vx = Math.max(0, Math.min(100 - vw, -currentPanX / (getWbRect().width || 1) * 100 / currentZoom));
-    var vy = Math.max(0, Math.min(100 - vh, -currentPanY / (getWbRect().height || 1) * 100 / currentZoom));
+    var vx = Math.max(0, Math.min(100 - vw, -currentPanX / (r.width || 1) * 100 / currentZoom));
+    var vy = Math.max(0, Math.min(100 - vh, -currentPanY / (r.height || 1) * 100 / currentZoom));
     viewport.style.left = vx + '%';
     viewport.style.top = vy + '%';
     viewport.style.width = vw + '%';
@@ -3256,19 +3265,35 @@ function openPresentationMode() {
   }
 
   // ============================================================
-  // SPACES (tabs + switching)
+  // TABS (with note count)
   // ============================================================
+  function getSpaceNoteCount(spaceId) {
+    if (spaceId === currentSpaceId) return getNotesArray().length;
+    var db = getDatabase();
+    if (!db || getIsDemo()) {
+      try {
+        var raw = localStorage.getItem(notesLsKey(spaceId));
+        return raw ? Object.keys(JSON.parse(raw)).length : 0;
+      } catch (e) { return 0; }
+    }
+    return null; // remote count not loaded — show blank
+  }
+
   function renderTabs() {
     var wb = document.getElementById(WB_ID);
     var card = wb ? wb.closest('.content-card') : null;
     var tabs = card ? card.querySelector('.mw-header-tabs') : null;
     if (!tabs) return;
+
     tabs.innerHTML = spacesList.map(function (s) {
+      var count = getSpaceNoteCount(s.id);
       return '<button class="mw-tab' + (s.id === currentSpaceId ? ' active' : '') + '" data-space="' + esc(s.id) + '">' +
         '<span>' + esc(s.name) + '</span>' +
+        (count !== null ? '<span class="mw-tab-count">' + count + '</span>' : '') +
         (s.id !== 'main' ? '<span class="mw-tab-del" data-del="' + esc(s.id) + '" title="Delete">\u00D7</span>' : '') +
         '</button>';
     }).join('');
+
     Array.from(tabs.querySelectorAll('.mw-tab')).forEach(function (tab) {
       tab.onclick = function (e) {
         var delId = e.target.getAttribute('data-del');
@@ -3281,9 +3306,49 @@ function openPresentationMode() {
         var sid = tab.getAttribute('data-space');
         if (sid) renameSpace(sid);
       };
+      tab.oncontextmenu = function (e) {
+        e.preventDefault();
+        var sid = tab.getAttribute('data-space');
+        if (sid) showTabContextMenu(e.clientX, e.clientY, sid);
+      };
     });
   }
 
+  function showTabContextMenu(x, y, spaceId) {
+    hideContextMenu();
+    var space = spacesList.find(function (s) { return s.id === spaceId; });
+    if (!space) return;
+    var menu = document.createElement('div');
+    menu.className = 'mw-ctx-menu';
+    menu.style.left = x + 'px';
+    menu.style.top = y + 'px';
+    var isMain = spaceId === 'main';
+    menu.innerHTML =
+      '<div class="mw-ctx-subheader">' + esc(space.name) + '</div>' +
+      '<button class="mw-ctx-item" data-act="rename">✏️ Rename</button>' +
+      '<button class="mw-ctx-item" data-act="duplicate">📋 Duplicate board</button>' +
+      (isMain ? '' : '<button class="mw-ctx-item mw-ctx-danger" data-act="delete">🗑️ Delete board</button>');
+
+    document.body.appendChild(menu);
+    menu.onclick = function (e) {
+      var btn = e.target.closest('[data-act]');
+      if (!btn) return;
+      var act = btn.getAttribute('data-act');
+      hideContextMenu();
+      if (act === 'rename') renameSpace(spaceId);
+      else if (act === 'duplicate') duplicateSpace(spaceId);
+      else if (act === 'delete') deleteSpace(spaceId);
+    };
+    setTimeout(function () {
+      document.addEventListener('mousedown', function oh(e) {
+        if (!e.target.closest('.mw-ctx-menu')) { hideContextMenu(); document.removeEventListener('mousedown', oh); }
+      });
+    }, 10);
+  }
+
+  // ============================================================
+  // SPACES
+  // ============================================================
   function loadSpacesFromLocal() {
     try {
       var saved = localStorage.getItem(spacesLsKey());
@@ -3375,6 +3440,47 @@ function openPresentationMode() {
     if (db && p && !getIsDemo()) { try { await db.ref(p).update({ spaces: spacesList }); } catch (e) {} }
     renderTabs();
   }
+  async function duplicateSpace(sid) {
+    var space = spacesList.find(function (s) { return s.id === sid; });
+    if (!space) return;
+    var newName = prompt('Name for duplicate:', space.name + ' copy');
+    if (!newName || !newName.trim()) return;
+    var newSpace = {
+      id: 'sp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+      name: newName.trim().slice(0, 40), createdAt: Date.now()
+    };
+    spacesList.push(newSpace);
+    saveSpacesToLocal();
+
+    var db = getDatabase(), cc = getClassCode();
+    if (db && cc && !getIsDemo()) {
+      try {
+        await db.ref(getSpaceMetaPath()).update({ spaces: spacesList });
+        // Copy notes
+        var srcPath = sid === 'main'
+          ? 'memoryWall/' + cc + '/notes'
+          : 'memoryWall/' + cc + '/spaces/' + sid + '/notes';
+        var dstPath = 'memoryWall/' + cc + '/spaces/' + newSpace.id + '/notes';
+        var snap = await db.ref(srcPath).once('value');
+        if (snap.exists()) {
+          var copyObj = {};
+          snap.forEach(function (child) {
+            var n = Object.assign({}, child.val());
+            var newId = 'note_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            copyObj[newId] = n;
+          });
+          await db.ref(dstPath).set(copyObj);
+        }
+      } catch (e) { LOG('duplicate failed:', e); }
+    } else {
+      // Local copy
+      var raw = localStorage.getItem(notesLsKey(sid));
+      if (raw) localStorage.setItem(notesLsKey(newSpace.id), raw);
+    }
+    renderTabs();
+    switchSpace(newSpace.id);
+    setSaveStatus('saved');
+  }
   async function deleteSpace(sid) {
     if (sid === 'main') return;
     if (!confirm('Delete this space and all its notes?')) return;
@@ -3394,7 +3500,70 @@ function openPresentationMode() {
   }
 
   // ============================================================
-  // NOTES LOAD + RENDER
+  // MOVE NOTES TO ANOTHER BOARD
+  // ============================================================
+  async function moveNotesToBoard(noteIds, targetSpaceId) {
+    if (!noteIds.length || !targetSpaceId || targetSpaceId === currentSpaceId) return;
+    pushUndo();
+    setSaveStatus('saving');
+
+    var arr = getNotesArray().slice();
+    var toMove = arr.filter(function (n) { return noteIds.indexOf(n.id) !== -1; });
+    var remaining = arr.filter(function (n) { return noteIds.indexOf(n.id) === -1; });
+
+    var db = getDatabase(), cc = getClassCode();
+    if (db && cc && !getIsDemo()) {
+      var targetPath = targetSpaceId === 'main'
+        ? 'memoryWall/' + cc + '/notes'
+        : 'memoryWall/' + cc + '/spaces/' + targetSpaceId + '/notes';
+      var currentPath = getNotesPath(currentSpaceId);
+      try {
+        // Write to target
+        for (var i = 0; i < toMove.length; i++) {
+          var n = Object.assign({}, toMove[i], { spaceId: targetSpaceId });
+          await db.ref(targetPath + '/' + n.id).set(n);
+        }
+        // Remove from current
+        for (var j = 0; j < toMove.length; j++) {
+          await db.ref(currentPath + '/' + toMove[j].id).remove();
+        }
+        setNotesArray(remaining);
+        renderCurrentNotes();
+        renderTabs();
+        deselectAll();
+        setSaveStatus('saved');
+        if (window.showNotification) {
+          var targetName = spacesList.find(function (s) { return s.id === targetSpaceId; });
+          window.showNotification('Moved ' + toMove.length + ' note(s) to ' + (targetName ? targetName.name : 'board'), 'success');
+        }
+      } catch (e) {
+        LOG('move failed:', e);
+        setSaveStatus('error');
+      }
+    } else {
+      // Local
+      var raw = localStorage.getItem(notesLsKey(targetSpaceId));
+      var targetArr = raw ? JSON.parse(raw) : [];
+      toMove.forEach(function (n) {
+        n.spaceId = targetSpaceId;
+        targetArr.push(n);
+      });
+      localStorage.setItem(notesLsKey(targetSpaceId), JSON.stringify(targetArr));
+      setNotesArray(remaining);
+      localStorage.setItem(notesLsKey(currentSpaceId), JSON.stringify(remaining));
+      renderCurrentNotes();
+      renderTabs();
+      deselectAll();
+      setSaveStatus('saved');
+      if (window.showNotification) {
+        var targetName2 = spacesList.find(function (s) { return s.id === targetSpaceId; });
+        window.showNotification('Moved ' + toMove.length + ' note(s) to ' + (targetName2 ? targetName2.name : 'board'), 'success');
+      }
+    }
+  }
+
+  // ============================================================
+  // NOTES
   // ============================================================
   function loadNotesForSpace() {
     var cc = getClassCode(); if (!cc) return;
@@ -3410,7 +3579,6 @@ function openPresentationMode() {
       renderCurrentNotes();
       return;
     }
-
     var path = getNotesPath(currentSpaceId);
     if (!path) return;
     notesRef = db.ref(path);
@@ -3429,11 +3597,23 @@ function openPresentationMode() {
     var notes = getNotesArray();
     var wb = document.getElementById(WB_ID);
     var welcome = wb ? wb.querySelector('.welcome-note') : null;
+    var emptyHint = wb ? wb.querySelector('.mw-empty-hint') : null;
+
     if (!notes || notes.length === 0) {
-      if (welcome) welcome.style.display = '';
+      if (welcome) welcome.style.display = 'none';
+      if (!emptyHint && wb) {
+        emptyHint = document.createElement('div');
+        emptyHint.className = 'mw-empty-hint';
+        emptyHint.innerHTML =
+          '<div class="mw-empty-icon">📝</div>' +
+          '<div class="mw-empty-title">This board is empty</div>' +
+          '<div class="mw-empty-desc">Click <strong>+ Add New Memory</strong><br>to start placing notes</div>';
+        wb.appendChild(emptyHint);
+      } else if (emptyHint) emptyHint.style.display = '';
       updateMinimap();
       return;
     }
+    if (emptyHint) emptyHint.style.display = 'none';
     if (welcome) welcome.style.display = 'none';
 
     var createFn = isTeacher ? window.createStickyNoteElement : window.createStudentStickyNoteElement;
@@ -3451,40 +3631,79 @@ function openPresentationMode() {
   }
 
   // ============================================================
-  // NOTE INTERACTIONS (drag + resize + rotate + select + context)
+  // NOTE INTERACTIONS
   // ============================================================
   function attachInteractions(noteElement, note) {
-    // Apply stored size + pin
     if (note.w) noteElement.style.width = note.w + 'px';
     if (note.h) noteElement.style.height = note.h + 'px';
     if (note.rotation !== undefined) noteElement.style.transform = 'rotate(' + note.rotation + 'deg)';
     noteElement.dataset.pinned = note.pinned ? 'true' : 'false';
     noteElement.dataset.noteId = note.id;
+    if (note.zIndex) noteElement.style.zIndex = note.zIndex;
 
-    // Clone to strip old handlers
     var fresh = noteElement.cloneNode(true);
     if (noteElement.parentNode) noteElement.parentNode.replaceChild(fresh, noteElement);
 
-    // Drag
     setupDrag(fresh, note);
-    // Select on click
     fresh.addEventListener('click', function (e) {
       if (e.target.closest('.nwh, .nwh-locked, button, .btn-note, .btn-student-note')) return;
       if (fresh.classList.contains('dragging')) return;
-      selectNote(note.id, fresh);
+      handleNoteClick(note.id, fresh, e);
     });
-    // Right-click context menu
     fresh.addEventListener('contextmenu', function (e) {
       e.preventDefault();
-      showContextMenu(e.clientX, e.clientY, note, fresh);
+      if (selectedNoteIds.indexOf(note.id) === -1) {
+        selectedNoteIds = [note.id];
+        updateSelectionVisuals();
+      }
+      showNoteContextMenu(e.clientX, e.clientY);
     });
-
     return fresh;
+  }
+
+  function handleNoteClick(noteId, el, e) {
+    if (e.shiftKey || e.ctrlKey || e.metaKey) {
+      var idx = selectedNoteIds.indexOf(noteId);
+      if (idx === -1) selectedNoteIds.push(noteId);
+      else selectedNoteIds.splice(idx, 1);
+    } else {
+      if (selectedNoteIds.length === 1 && selectedNoteIds[0] === noteId) {
+        selectedNoteIds = [];
+      } else {
+        selectedNoteIds = [noteId];
+      }
+    }
+    updateSelectionVisuals();
+  }
+
+  function updateSelectionVisuals() {
+    // Clear
+    document.querySelectorAll('.sticky-note, .student-sticky-note').forEach(function (el) {
+      el.classList.remove('selected', 'selected-multi');
+      el.querySelectorAll('.nwh, .nwh-locked').forEach(function (h) { h.remove(); });
+    });
+    // Apply
+    selectedNoteIds.forEach(function (id) {
+      var el = document.getElementById('note-' + id) || document.getElementById('student-note-' + id);
+      if (!el) return;
+      if (selectedNoteIds.length === 1) {
+        el.classList.add('selected');
+        attachHandles(el, id);
+      } else {
+        el.classList.add('selected-multi');
+      }
+    });
+  }
+
+  function deselectAll() {
+    selectedNoteIds = [];
+    updateSelectionVisuals();
   }
 
   function setupDrag(noteElement, note) {
     var dragging = false, hasMoved = false;
-    var sx = 0, sy = 0, nx0 = 0, ny0 = 0;
+    var sx = 0, sy = 0;
+    var starts = {}; // noteId -> {x, y}
 
     function start(e) {
       if (note.pinned) return;
@@ -3494,9 +3713,18 @@ function openPresentationMode() {
       dragging = true; hasMoved = false;
       var p = e.touches ? e.touches[0] : e;
       sx = p.clientX; sy = p.clientY;
-      nx0 = Number(note.x); ny0 = Number(note.y);
-      if (isNaN(nx0)) nx0 = 40;
-      if (isNaN(ny0)) ny0 = 40;
+
+      // Build start positions for all selected notes (or this note if none selected)
+      starts = {};
+      var ids = selectedNoteIds.length && selectedNoteIds.indexOf(note.id) !== -1
+        ? selectedNoteIds.slice()
+        : [note.id];
+      var arr = getNotesArray();
+      ids.forEach(function (id) {
+        var n = arr.find(function (x) { return x.id === id; });
+        if (n) starts[id] = { x: Number(n.x) || 0, y: Number(n.y) || 0 };
+      });
+
       document.addEventListener('mousemove', drag);
       document.addEventListener('mouseup', end);
       document.addEventListener('touchmove', drag, { passive: false });
@@ -3511,17 +3739,24 @@ function openPresentationMode() {
       if (!hasMoved) {
         hasMoved = true;
         pushUndo();
-        noteElement.classList.add('dragging');
-        noteElement.style.zIndex = '1000';
+        Object.keys(starts).forEach(function (id) {
+          var el = document.getElementById('note-' + id) || document.getElementById('student-note-' + id);
+          if (el) { el.classList.add('dragging'); el.style.zIndex = '1000'; }
+        });
       }
       var r = getWbRect();
       var pctDx = (dx / currentZoom) / r.width * 100;
       var pctDy = (dy / currentZoom) / r.height * 100;
-      var newX = Math.max(0, Math.min(92, nx0 + pctDx));
-      var newY = Math.max(0, Math.min(92, ny0 + pctDy));
-      note.x = newX; note.y = newY;
-      noteElement.style.left = newX + '%';
-      noteElement.style.top = newY + '%';
+      var arr = getNotesArray();
+      Object.keys(starts).forEach(function (id) {
+        var n = arr.find(function (x) { return x.id === id; });
+        if (!n) return;
+        var newX = Math.max(0, Math.min(92, starts[id].x + pctDx));
+        var newY = Math.max(0, Math.min(92, starts[id].y + pctDy));
+        n.x = newX; n.y = newY;
+        var el = document.getElementById('note-' + id) || document.getElementById('student-note-' + id);
+        if (el) { el.style.left = newX + '%'; el.style.top = newY + '%'; }
+      });
       updateMinimap();
     }
     function end() {
@@ -3532,9 +3767,16 @@ function openPresentationMode() {
       document.removeEventListener('touchmove', drag);
       document.removeEventListener('touchend', end);
       if (hasMoved) {
-        noteElement.classList.remove('dragging');
-        noteElement.style.zIndex = '2';
-        persistNote(note, { x: note.x, y: note.y });
+        Object.keys(starts).forEach(function (id) {
+          var el = document.getElementById('note-' + id) || document.getElementById('student-note-' + id);
+          if (el) { el.classList.remove('dragging'); el.style.zIndex = '2'; }
+        });
+        var arr = getNotesArray();
+        Object.keys(starts).forEach(function (id) {
+          var n = arr.find(function (x) { return x.id === id; });
+          if (n) persistNote(n, { x: n.x, y: n.y });
+        });
+        setSaveStatus('saved');
       }
     }
     noteElement.addEventListener('mousedown', start);
@@ -3545,34 +3787,28 @@ function openPresentationMode() {
     if (noteEl.querySelector('.nwh')) return;
     var note = getNotesArray().find(function (n) { return n.id === noteId; });
     if (!note) return;
-
     if (note.pinned) {
       var lock = document.createElement('div');
       lock.className = 'nwh-locked';
       lock.textContent = '📌';
-      lock.title = 'Unpin note';
       lock.onclick = function (e) {
         e.stopPropagation();
         pushUndo();
         note.pinned = false;
         persistNote(note, { pinned: false });
         deselectAll();
+        setSaveStatus('saved');
       };
       noteEl.appendChild(lock);
       return;
     }
-
     var rot = document.createElement('div');
     rot.className = 'nwh nwh-rotate';
     rot.innerHTML = '\u21BB';
-    rot.title = 'Rotate';
     noteEl.appendChild(rot);
-
     var resize = document.createElement('div');
     resize.className = 'nwh nwh-resize';
-    resize.title = 'Resize';
     noteEl.appendChild(resize);
-
     setupRotate(rot, noteEl, note);
     setupResize(resize, noteEl, note);
   }
@@ -3584,8 +3820,7 @@ function openPresentationMode() {
       pushUndo();
       var p = e.touches ? e.touches[0] : e;
       var r = noteEl.getBoundingClientRect();
-      var cx = r.left + r.width / 2;
-      var cy = r.top + r.height / 2;
+      var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
       startAngle = Math.atan2(p.clientY - cy, p.clientX - cx) * 180 / Math.PI;
       startRotation = Number(note.rotation) || 0;
       document.addEventListener('mousemove', move);
@@ -3597,11 +3832,9 @@ function openPresentationMode() {
       e.preventDefault();
       var p = e.touches ? e.touches[0] : e;
       var r = noteEl.getBoundingClientRect();
-      var cx = r.left + r.width / 2;
-      var cy = r.top + r.height / 2;
+      var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
       var angle = Math.atan2(p.clientY - cy, p.clientX - cx) * 180 / Math.PI;
       var rotation = startRotation + (angle - startAngle);
-      // Snap to 15deg increments if shift
       if (e.shiftKey) rotation = Math.round(rotation / 15) * 15;
       note.rotation = rotation;
       noteEl.style.transform = 'rotate(' + rotation + 'deg)';
@@ -3612,6 +3845,7 @@ function openPresentationMode() {
       document.removeEventListener('touchmove', move);
       document.removeEventListener('touchend', end);
       persistNote(note, { rotation: note.rotation });
+      setSaveStatus('saved');
     }
     handle.addEventListener('mousedown', start);
     handle.addEventListener('touchstart', start, { passive: false });
@@ -3624,8 +3858,7 @@ function openPresentationMode() {
       pushUndo();
       var p = e.touches ? e.touches[0] : e;
       sx = p.clientX; sy = p.clientY;
-      w0 = noteEl.offsetWidth;
-      h0 = noteEl.offsetHeight;
+      w0 = noteEl.offsetWidth; h0 = noteEl.offsetHeight;
       document.addEventListener('mousemove', move);
       document.addEventListener('mouseup', end);
       document.addEventListener('touchmove', move, { passive: false });
@@ -3648,122 +3881,144 @@ function openPresentationMode() {
       document.removeEventListener('touchmove', move);
       document.removeEventListener('touchend', end);
       persistNote(note, { w: note.w, h: note.h });
+      setSaveStatus('saved');
     }
     handle.addEventListener('mousedown', start);
     handle.addEventListener('touchstart', start, { passive: false });
   }
 
   function persistNote(note, fields) {
+    setSaveStatus('saving');
     var db = getDatabase(), path = getNotesPath(currentSpaceId);
     if (db && path && note.id) {
-      db.ref(path + '/' + note.id).update(fields).catch(function () {});
+      db.ref(path + '/' + note.id).update(fields)
+        .then(function () { setSaveStatus('saved'); })
+        .catch(function () { setSaveStatus('error'); });
     } else {
-      window.saveMemoryWallToLocalStorage();
+      localStorage.setItem(notesLsKey(currentSpaceId), JSON.stringify(getNotesArray()));
+      setSaveStatus('saved');
     }
   }
 
   // ============================================================
-  // SELECTION
+  // NOTE CONTEXT MENU (with move to board)
   // ============================================================
-  function selectNote(id, el) {
-    if (selectedNoteId === id) { deselectAll(); return; }
-    deselectAll();
-    selectedNoteId = id;
-    if (el) {
-      el.classList.add('selected');
-      attachHandles(el, id);
-    }
-  }
-  function deselectAll() {
-    selectedNoteId = null;
-    document.querySelectorAll('.sticky-note.selected, .student-sticky-note.selected').forEach(function (el) {
-      el.classList.remove('selected');
-      el.querySelectorAll('.nwh, .nwh-locked').forEach(function (h) { h.remove(); });
-    });
-  }
-
-  // ============================================================
-  // CONTEXT MENU
-  // ============================================================
-  function showContextMenu(x, y, note, noteEl) {
+  function showNoteContextMenu(x, y) {
     hideContextMenu();
+    var ids = selectedNoteIds.slice();
+    if (!ids.length) return;
+    var count = ids.length;
+    var anyPinned = ids.some(function (id) {
+      var n = getNotesArray().find(function (x) { return x.id === id; });
+      return n && n.pinned;
+    });
+
+    var otherBoards = spacesList.filter(function (s) { return s.id !== currentSpaceId; });
+    var moveBtns = otherBoards.length
+      ? '<div class="mw-ctx-subheader">Move to board</div>' +
+        otherBoards.map(function (s) {
+          return '<button class="mw-ctx-item" data-move="' + esc(s.id) + '">📁 ' + esc(s.name) + '</button>';
+        }).join('')
+      : '';
+
     var menu = document.createElement('div');
     menu.className = 'mw-ctx-menu';
     menu.style.left = x + 'px';
     menu.style.top = y + 'px';
     menu.innerHTML =
-      '<button class="mw-ctx-item" data-act="pin">' + (note.pinned ? '📌 Unpin' : '📌 Pin') + '</button>' +
+      '<div class="mw-ctx-subheader">' + count + ' note' + (count > 1 ? 's' : '') + ' selected</div>' +
+      '<button class="mw-ctx-item" data-act="pin">' + (anyPinned ? '📌 Unpin' : '📌 Pin') + '</button>' +
       '<button class="mw-ctx-item" data-act="duplicate">📋 Duplicate</button>' +
       '<button class="mw-ctx-item" data-act="front">⬆️ Bring to front</button>' +
       '<button class="mw-ctx-item" data-act="back">⬇️ Send to back</button>' +
+      moveBtns +
       '<div class="mw-ctx-sep"></div>' +
-      '<button class="mw-ctx-item mw-ctx-danger" data-act="delete">🗑️ Delete</button>';
+      '<button class="mw-ctx-item mw-ctx-danger" data-act="delete">🗑️ Delete ' + (count > 1 ? count + ' notes' : 'note') + '</button>';
 
     document.body.appendChild(menu);
 
     menu.onclick = function (e) {
+      var moveBtn = e.target.closest('[data-move]');
+      if (moveBtn) {
+        hideContextMenu();
+        moveNotesToBoard(ids, moveBtn.getAttribute('data-move'));
+        return;
+      }
       var btn = e.target.closest('[data-act]');
       if (!btn) return;
       var act = btn.getAttribute('data-act');
       hideContextMenu();
       if (act === 'pin') {
         pushUndo();
-        note.pinned = !note.pinned;
-        persistNote(note, { pinned: note.pinned });
-        if (note.pinned) {
-          noteEl.dataset.pinned = 'true';
-          deselectAll();
-        } else {
-          noteEl.dataset.pinned = 'false';
-        }
+        ids.forEach(function (id) {
+          var n = getNotesArray().find(function (x) { return x.id === id; });
+          if (n) { n.pinned = !n.pinned; persistNote(n, { pinned: n.pinned }); }
+        });
+        deselectAll();
       } else if (act === 'duplicate') {
-        duplicateNote(note);
+        ids.forEach(function (id) {
+          var n = getNotesArray().find(function (x) { return x.id === id; });
+          if (n) duplicateNote(n);
+        });
       } else if (act === 'front') {
         pushUndo();
-        note.zIndex = 500;
-        persistNote(note, { zIndex: 500 });
-        noteEl.style.zIndex = '500';
+        ids.forEach(function (id) {
+          var n = getNotesArray().find(function (x) { return x.id === id; });
+          if (n) { n.zIndex = 500; persistNote(n, { zIndex: 500 }); var el = document.getElementById('note-' + id) || document.getElementById('student-note-' + id); if (el) el.style.zIndex = '500'; }
+        });
       } else if (act === 'back') {
         pushUndo();
-        note.zIndex = 1;
-        persistNote(note, { zIndex: 1 });
-        noteEl.style.zIndex = '1';
+        ids.forEach(function (id) {
+          var n = getNotesArray().find(function (x) { return x.id === id; });
+          if (n) { n.zIndex = 1; persistNote(n, { zIndex: 1 }); var el = document.getElementById('note-' + id) || document.getElementById('student-note-' + id); if (el) el.style.zIndex = '1'; }
+        });
       } else if (act === 'delete') {
-        window.deleteNote(note.id, { stopPropagation: function () {} });
+        if (!confirm('Delete ' + (ids.length > 1 ? ids.length + ' notes' : 'this note') + '?')) return;
+        pushUndo();
+        var db = getDatabase();
+        if (db && !getIsDemo()) {
+          var path = getNotesPath(currentSpaceId);
+          ids.forEach(function (id) {
+            if (path) db.ref(path + '/' + id).remove();
+          });
+        } else {
+          setNotesArray(getNotesArray().filter(function (n) { return ids.indexOf(n.id) === -1; }));
+          localStorage.setItem(notesLsKey(currentSpaceId), JSON.stringify(getNotesArray()));
+          renderCurrentNotes();
+        }
+        deselectAll();
+        setSaveStatus('saved');
       }
     };
-
     setTimeout(function () {
-      document.addEventListener('mousedown', hideContextMenuOutside, { once: true });
+      document.addEventListener('mousedown', function oh(e) {
+        if (!e.target.closest('.mw-ctx-menu')) { hideContextMenu(); document.removeEventListener('mousedown', oh); }
+      });
     }, 10);
   }
-  function hideContextMenuOutside(e) {
-    if (!e.target.closest('.mw-ctx-menu')) hideContextMenu();
-  }
+
   function hideContextMenu() {
     document.querySelectorAll('.mw-ctx-menu').forEach(function (m) { m.remove(); });
   }
 
   function duplicateNote(note) {
-    pushUndo();
     var copy = Object.assign({}, note);
     copy.id = 'note_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     copy.x = Math.min(90, (Number(note.x) || 40) + 5);
     copy.y = Math.min(90, (Number(note.y) || 40) + 5);
     copy.createdAt = new Date().toISOString();
-    copy.likes = 0;
-    copy.likedBy = [];
+    copy.likes = 0; copy.likedBy = [];
     var arr = getNotesArray().slice();
     arr.push(copy);
     setNotesArray(arr);
-
     var db = getDatabase(), path = getNotesPath(currentSpaceId);
     if (db && path) {
       db.ref(path + '/' + copy.id).set(copy).catch(function () {});
     } else {
-      window.saveMemoryWallToLocalStorage();
+      localStorage.setItem(notesLsKey(currentSpaceId), JSON.stringify(arr));
       renderCurrentNotes();
     }
+    setSaveStatus('saved');
   }
 
   // ============================================================
@@ -3797,7 +4052,7 @@ function openPresentationMode() {
     var p = false, sx = 0, sy = 0, px = 0, py = 0;
     wb.addEventListener('mousedown', function (e) {
       if (currentZoom <= 1) return;
-      if (e.target.closest('.sticky-note, .student-sticky-note, button, .welcome-note, .mw-zoom-float, .mw-minimap')) return;
+      if (e.target.closest('.sticky-note, .student-sticky-note, button, .welcome-note, .mw-zoom-float, .mw-minimap, .mw-empty-hint')) return;
       e.preventDefault();
       p = true; sx = e.clientX; sy = e.clientY; px = currentPanX; py = currentPanY;
       wb.style.cursor = 'grabbing';
@@ -3814,60 +4069,71 @@ function openPresentationMode() {
   }
 
   // ============================================================
-  // ADD MEMORY PAGE: BOARD PICKER + POSITION PICKER
+  // ADD MEMORY PAGE: BOARD PICKER (the fix)
   // ============================================================
-  function injectAddMemoryHelpers() {
+  function injectAddHelpers() {
+    if (addHelpersInjected) return;
     var textId = isTeacher ? 'addMemoryText' : 'studentAddMemoryText';
     var textarea = document.getElementById(textId);
     if (!textarea) return;
-    var formGroup = textarea.closest('.form-group');
-    if (!formGroup) return;
 
-    // ---------- BOARD SELECTOR (the critical fix) ----------
-    if (!document.getElementById('mwBoardSelector')) {
-      pendingSpaceId = currentSpaceId;
-      var boardWrap = document.createElement('div');
-      boardWrap.className = 'mw-board-picker';
-      boardWrap.id = 'mwBoardSelector';
-      boardWrap.innerHTML =
-        '<label for="mwBoardSelect">\uD83D\uDCCB Add to which board?</label>' +
+    // Find the top-level container inside .content-body
+    var body = textarea.closest('.content-body');
+    if (!body) return;
+
+    // Don't double-inject
+    if (body.querySelector('.mw-add-helpers')) { addHelpersInjected = true; return; }
+
+    pendingSpaceId = currentSpaceId;
+    pendingPosition = { x: 40, y: 40 };
+
+    var helpers = document.createElement('div');
+    helpers.className = 'mw-add-helpers';
+    helpers.innerHTML =
+      '<div class="mw-board-picker">' +
+        '<label for="mwBoardSelect">📋 Add to which board?</label>' +
         '<select id="mwBoardSelect" class="mw-board-select">' +
           spacesList.map(function (s) {
             return '<option value="' + esc(s.id) + '"' + (s.id === currentSpaceId ? ' selected' : '') + '>' +
               esc(s.name) + (s.id === currentSpaceId ? '  (current)' : '') + '</option>';
           }).join('') +
-        '</select>';
-      formGroup.parentNode.insertBefore(boardWrap, formGroup);
-
-      var sel = document.getElementById('mwBoardSelect');
-      sel.addEventListener('change', function () { pendingSpaceId = sel.value; });
-    }
-
-    // ---------- POSITION PICKER ----------
-    if (!document.getElementById('mwPosPicker')) {
-      pendingPosition = { x: 40, y: 40 };
-      var posWrap = document.createElement('div');
-      posWrap.id = 'mwPosPicker';
-      posWrap.className = 'mw-pos-picker';
-      posWrap.innerHTML =
-        '<label>\uD83D\uDCCD Where should it appear? ' +
-          '<span style="font-weight:400;color:var(--text-muted);font-size:0.75rem;">(click the map)</span>' +
-        '</label>' +
+        '</select>' +
+      '</div>' +
+      '<div class="mw-pos-picker">' +
+        '<label>📍 Where should it appear? <span style="font-weight:400;color:var(--text-muted);font-size:0.75rem;">(click the map)</span></label>' +
         '<div class="mw-pos-map" id="mwPosMap">' +
           '<div class="mw-pos-marker" id="mwPosMarker" style="left:40%;top:40%;"></div>' +
           '<div class="mw-pos-label" id="mwPosLabel">40%, 40%</div>' +
-        '</div>';
-      formGroup.parentNode.insertBefore(posWrap, formGroup);
+        '</div>' +
+      '</div>';
 
-      var map = document.getElementById('mwPosMap');
+    // Insert right after the pro-tip (or at top of content-body)
+    var proTip = body.querySelector('.pro-tip');
+    if (proTip && proTip.nextSibling) {
+      body.insertBefore(helpers, proTip.nextSibling);
+    } else if (proTip) {
+      body.appendChild(helpers);
+    } else {
+      body.insertBefore(helpers, body.firstChild);
+    }
+
+    var sel = document.getElementById('mwBoardSelect');
+    if (sel) sel.addEventListener('change', function () { pendingSpaceId = sel.value; });
+
+    var map = document.getElementById('mwPosMap');
+    if (map) {
       map.addEventListener('click', function (e) {
         var rect = map.getBoundingClientRect();
-        var xPct = ((e.clientX - rect.left) / rect.width) * 100;
-        var yPct = ((e.clientY - rect.top) / rect.height) * 100;
-        setPendingPosition(xPct, yPct);
+        setPendingPosition(
+          ((e.clientX - rect.left) / rect.width) * 100,
+          ((e.clientY - rect.top) / rect.height) * 100
+        );
       });
     }
+    addHelpersInjected = true;
+    LOG('add helpers injected');
   }
+
   function setPendingPosition(x, y) {
     pendingPosition = { x: Math.max(5, Math.min(88, x)), y: Math.max(5, Math.min(88, y)) };
     var marker = document.getElementById('mwPosMarker');
@@ -3877,7 +4143,33 @@ function openPresentationMode() {
   }
 
   // ============================================================
-  // SAVE — respects pendingSpaceId (the fix)
+  // WATCH ADD MEMORY PAGE — the key fix
+  // ============================================================
+  function watchAddMemoryPage() {
+    var page = document.getElementById(ADD_PAGE_ID);
+    if (!page) { setTimeout(watchAddMemoryPage, 500); return; }
+    LOG('watching add page:', ADD_PAGE_ID);
+
+    var wasVisible = false;
+    var check = function () {
+      var isVisible = page.offsetParent !== null && getComputedStyle(page).display !== 'none';
+      if (isVisible && !wasVisible) {
+        // Just became visible — reset flag & inject
+        addHelpersInjected = false;
+        setTimeout(injectAddHelpers, 60);
+      }
+      wasVisible = isVisible;
+    };
+
+    new MutationObserver(check).observe(page, {
+      attributes: true,
+      attributeFilter: ['style', 'class']
+    });
+    check();
+  }
+
+  // ============================================================
+  // BUILD NOTE + SAVE
   // ============================================================
   function buildNoteObject(text, author, color) {
     var studentId = localStorage.getItem('studentUserId') || 'student_' + Date.now();
@@ -3900,10 +4192,10 @@ function openPresentationMode() {
   }
 
   function saveNoteToTargetSpace(note) {
+    setSaveStatus('saving');
     var targetSpace = note.spaceId || currentSpaceId;
     var db = getDatabase();
 
-    // Demo / local path
     if (!db || getIsDemo()) {
       var lsKey = notesLsKey(targetSpace);
       var raw = localStorage.getItem(lsKey);
@@ -3915,27 +4207,29 @@ function openPresentationMode() {
         renderCurrentNotes();
       }
     } else {
-      // Firebase path
       var cc = getClassCode();
       var path = targetSpace === 'main'
         ? 'memoryWall/' + cc + '/notes'
         : 'memoryWall/' + cc + '/spaces/' + targetSpace + '/notes';
-      db.ref(path).push(note).catch(function () {});
+      db.ref(path).push(note).catch(function () { setSaveStatus('error'); });
     }
+    setSaveStatus('saved');
 
-    // If target ≠ current, auto-switch so user sees the new note
+    // Auto-switch if target != current
     if (targetSpace !== currentSpaceId) {
       setTimeout(function () {
         switchSpace(targetSpace);
         if (window.showNotification) {
-          var boardName = spacesList.find(function (s) { return s.id === targetSpace; });
-          window.showNotification('Switched to ' + (boardName ? boardName.name : 'board'), 'info');
+          var targetName = spacesList.find(function (s) { return s.id === targetSpace; });
+          window.showNotification('Switched to ' + (targetName ? targetName.name : 'board'), 'info');
         }
-      }, 400);
+      }, 300);
+    } else {
+      setTimeout(renderTabs, 500); // update tab count
     }
   }
 
-  // ---------- OVERRIDE SUBMIT FUNCTIONS ----------
+  // ---------- OVERRIDE SUBMITS ----------
   window.submitMemory = function () {
     var textEl = document.getElementById('addMemoryText');
     var authorEl = document.getElementById('addMemoryAuthor');
@@ -3946,7 +4240,7 @@ function openPresentationMode() {
     if (text.length < 10) { window.showNotification && window.showNotification('At least 10 characters please', 'warning'); return; }
     pushUndo();
     saveNoteToTargetSpace(buildNoteObject(text, author, color));
-    window.showNotification && window.showNotification('Memory added!', 'success');
+    window.showNotification && window.showNotification('Memory added to "' + (spacesList.find(function (s) { return s.id === pendingSpaceId; }) || { name: 'board' }).name + '"!', 'success');
     if (typeof window.backToMemoryWall === 'function') window.backToMemoryWall();
   };
 
@@ -3998,12 +4292,13 @@ function openPresentationMode() {
     var db = getDatabase();
     if (!db || getIsDemo()) {
       setNotesArray(getNotesArray().filter(function (n) { return n.id !== id; }));
-      window.saveMemoryWallToLocalStorage();
+      localStorage.setItem(notesLsKey(currentSpaceId), JSON.stringify(getNotesArray()));
       renderCurrentNotes();
     } else {
       var path = getNotesPath(currentSpaceId);
       if (path) db.ref(path + '/' + id).remove();
     }
+    setSaveStatus('saved');
   };
   window.likeNote = function (id, ev) {
     if (ev) ev.stopPropagation();
@@ -4013,12 +4308,7 @@ function openPresentationMode() {
     var el = document.getElementById('note-' + id);
     var span = el && el.querySelector('.note-likes span:last-child');
     if (span) span.textContent = note.likes;
-    var db = getDatabase();
-    if (!db || getIsDemo()) window.saveMemoryWallToLocalStorage();
-    else {
-      var path = getNotesPath(currentSpaceId);
-      if (path) db.ref(path + '/' + id).update({ likes: note.likes });
-    }
+    persistNote(note, { likes: note.likes });
   };
   window.studentLikeNote = function (id, ev) {
     if (ev) ev.stopPropagation();
@@ -4031,65 +4321,71 @@ function openPresentationMode() {
     var el = document.getElementById('student-note-' + id);
     var span = el && el.querySelector('.student-note-likes span:last-child');
     if (span) span.textContent = note.likes;
-    var db = getDatabase();
-    var path = getNotesPath(currentSpaceId);
-    if (db && path) db.ref(path + '/' + id).update({ likes: note.likes, likedBy: note.likedBy });
+    persistNote(note, { likes: note.likes, likedBy: note.likedBy });
   };
 
-  // Hook Add Memory page to inject helpers
-  var addPageFn = isTeacher ? 'showAddMemoryPage' : 'showStudentAddMemoryPage';
-  var origAddPage = window[addPageFn];
-  if (typeof origAddPage === 'function') {
-    window[addPageFn] = function () {
-      var r = origAddPage.apply(this, arguments);
-      setTimeout(injectAddMemoryHelpers, 120);
-      return r;
-    };
-  }
-
   // ============================================================
-  // KEYBOARD SHORTCUTS
+  // KEYBOARD SHORTCUTS (with arrow nudge + delete all)
   // ============================================================
   document.addEventListener('keydown', function (e) {
     var tag = (document.activeElement && document.activeElement.tagName || '').toLowerCase();
     var inInput = tag === 'input' || tag === 'textarea' || (document.activeElement && document.activeElement.isContentEditable);
 
-    // Undo / Redo
-    if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey && !inInput) {
-      e.preventDefault(); undo(); return;
-    }
-    if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey)) && !inInput) {
-      e.preventDefault(); redo(); return;
-    }
-
-    // Duplicate
-    if ((e.ctrlKey || e.metaKey) && e.key === 'd' && selectedNoteId && !inInput) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey && !inInput) { e.preventDefault(); undo(); return; }
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey)) && !inInput) { e.preventDefault(); redo(); return; }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'd' && selectedNoteIds.length && !inInput) {
       e.preventDefault();
-      var note = getNotesArray().find(function (n) { return n.id === selectedNoteId; });
-      if (note) duplicateNote(note);
+      selectedNoteIds.forEach(function (id) {
+        var n = getNotesArray().find(function (x) { return x.id === id; });
+        if (n) duplicateNote(n);
+      });
       return;
     }
 
-    // Escape — deselect
-    if (e.key === 'Escape') {
-      deselectAll();
-      hideContextMenu();
-      return;
-    }
+    if (e.key === 'Escape') { deselectAll(); hideContextMenu(); return; }
 
-    // Delete selected
-    if ((e.key === 'Delete' || e.key === 'Backspace') && selectedNoteId && !inInput) {
+    // Arrow nudge
+    if (selectedNoteIds.length && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].indexOf(e.key) !== -1 && !inInput) {
       e.preventDefault();
-      window.deleteNote(selectedNoteId, { stopPropagation: function () {} });
-      deselectAll();
+      var step = e.shiftKey ? 5 : 1;
+      var dx = e.key === 'ArrowLeft' ? -step : e.key === 'ArrowRight' ? step : 0;
+      var dy = e.key === 'ArrowUp' ? -step : e.key === 'ArrowDown' ? step : 0;
+      var arr = getNotesArray();
+      selectedNoteIds.forEach(function (id) {
+        var n = arr.find(function (x) { return x.id === id; });
+        if (!n || n.pinned) return;
+        n.x = Math.max(0, Math.min(92, (Number(n.x) || 0) + dx));
+        n.y = Math.max(0, Math.min(92, (Number(n.y) || 0) + dy));
+        var el = document.getElementById('note-' + id) || document.getElementById('student-note-' + id);
+        if (el) { el.style.left = n.x + '%'; el.style.top = n.y + '%'; }
+        persistNote(n, { x: n.x, y: n.y });
+      });
+      updateMinimap();
       return;
     }
 
-    // ? for shortcuts
+    if ((e.key === 'Delete' || e.key === 'Backspace') && selectedNoteIds.length && !inInput) {
+      e.preventDefault();
+      var ids = selectedNoteIds.slice();
+      if (!confirm('Delete ' + (ids.length > 1 ? ids.length + ' notes' : 'this note') + '?')) return;
+      pushUndo();
+      var db = getDatabase();
+      if (db && !getIsDemo()) {
+        var path = getNotesPath(currentSpaceId);
+        ids.forEach(function (id) { if (path) db.ref(path + '/' + id).remove(); });
+      } else {
+        setNotesArray(getNotesArray().filter(function (n) { return ids.indexOf(n.id) === -1; }));
+        localStorage.setItem(notesLsKey(currentSpaceId), JSON.stringify(getNotesArray()));
+        renderCurrentNotes();
+      }
+      deselectAll();
+      setSaveStatus('saved');
+      return;
+    }
+
     if (e.key === '?' && !inInput && !e.ctrlKey && !e.metaKey) {
       e.preventDefault();
       showShortcutsModal();
-      return;
     }
   });
 
@@ -4102,31 +4398,32 @@ function openPresentationMode() {
   // ============================================================
   function showShortcutsModal() {
     if (document.querySelector('.mw-shortcuts-overlay')) return;
+    var rows = [
+      ['Ctrl+Z / Ctrl+Y', 'Undo / Redo'],
+      ['Ctrl+D', 'Duplicate selected'],
+      ['Ctrl+Scroll', 'Zoom in/out'],
+      ['Shift+Click', 'Multi-select'],
+      ['Arrows', 'Nudge (Shift = x5)'],
+      ['Delete', 'Delete selected'],
+      ['Right-click note', 'Context menu / Move to board'],
+      ['Right-click tab', 'Rename / Duplicate board'],
+      ['Double-click tab', 'Rename board'],
+      ['Escape', 'Deselect'],
+      ['?', 'Shortcuts panel']
+    ].map(function (r) {
+      return '<div class="mw-shortcut-row"><span>' + r[1] + '</span><span class="mw-shortcut-key">' + r[0] + '</span></div>';
+    }).join('');
     var ov = document.createElement('div');
     ov.className = 'mw-shortcuts-overlay';
     ov.innerHTML =
       '<div class="mw-shortcuts-card">' +
         '<h3>⌨️ Keyboard Shortcuts</h3>' +
-        '<div class="mw-shortcuts-grid">' +
-          row('Ctrl + Z', 'Undo') +
-          row('Ctrl + Y', 'Redo') +
-          row('Ctrl + D', 'Duplicate selected note') +
-          row('Ctrl + Scroll', 'Zoom in/out') +
-          row('Delete', 'Delete selected note') +
-          row('Escape', 'Deselect') +
-          row('Shift (while rotating)', 'Snap to 15°') +
-          row('Right-click note', 'Context menu') +
-          row('Double-click tab', 'Rename board') +
-          row('?', 'Show this panel') +
-        '</div>' +
+        '<div class="mw-shortcuts-grid">' + rows + '</div>' +
         '<button class="mw-shortcut-close">Got it</button>' +
       '</div>';
     document.body.appendChild(ov);
     ov.querySelector('.mw-shortcut-close').onclick = function () { ov.remove(); };
     ov.addEventListener('click', function (e) { if (e.target === ov) ov.remove(); });
-  }
-  function row(key, label) {
-    return '<div class="mw-shortcut-row"><span>' + label + '</span><span class="mw-shortcut-key">' + key + '</span></div>';
   }
 
   // ============================================================
@@ -4152,6 +4449,7 @@ function openPresentationMode() {
       currentSpaceId = 'main';
       lastSpaceMetaSignature = '';
       undoStack = []; redoStack = [];
+      addHelpersInjected = false;
       resetView();
       loadSpacesFromLocal();
       renderTabs();
@@ -4164,7 +4462,7 @@ function openPresentationMode() {
   }
 
   // ============================================================
-  // VISIBILITY WATCH + BOOT
+  // WATCH SECTION + BOOT
   // ============================================================
   function watchSection() {
     var section = document.getElementById(SECTION_ID);
@@ -4177,21 +4475,38 @@ function openPresentationMode() {
     new MutationObserver(check).observe(section, { attributes: true, attributeFilter: ['style', 'class'] });
     check();
   }
-  function boot() { LOG('booting'); watchSection(); }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
-  else boot();
+
+  function boot() {
+    LOG('booting');
+    // Wait for deferred scripts to load before hooking anything
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function () {
+        setTimeout(function () {
+          watchSection();
+          watchAddMemoryPage();
+        }, 100);
+      });
+    } else {
+      setTimeout(function () {
+        watchSection();
+        watchAddMemoryPage();
+      }, 100);
+    }
+  }
+  boot();
 
   // Debug
   window.__mwDebug = function () {
-    console.log('--- MW v4 DEBUG ---');
+    console.log('--- MW v5 DEBUG ---');
     console.log('mode:', isTeacher ? 'TEACHER' : 'STUDENT');
     console.log('class code:', getClassCode());
     console.log('controls built:', controlsBuilt);
+    console.log('add helpers injected:', addHelpersInjected);
     console.log('current space:', currentSpaceId, '| pending:', pendingSpaceId);
     console.log('spaces:', spacesList.map(function (s) { return s.name + ' (' + s.id + ')'; }));
-    console.log('notes:', getNotesArray().length, '| undo:', undoStack.length, '| redo:', redoStack.length);
-    console.log('sync:', (getDatabase() && getClassCode() && !getIsDemo()) ? 'online' : 'local');
-    console.log('search:', searchQuery, '| color filter:', colorFilter);
+    console.log('notes:', getNotesArray().length, '| selected:', selectedNoteIds.length);
+    console.log('minimap visible:', minimapVisible);
+    console.log('add page el:', !!document.getElementById(ADD_PAGE_ID));
   };
   LOG('type __mwDebug() for diagnostics');
 })();
