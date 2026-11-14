@@ -1,11 +1,18 @@
 /* ============================================================
-   MEMORY WALL UPGRADE — Spaces + Zoom
-   Works in both teacher and student mode.
+   MEMORY WALL UPGRADE — Spaces + Zoom (v2)
+   - Controls injected into .content-header (guaranteed visible)
+   - Debug logs prefixed with [MW]
    ============================================================ */
 (function () {
   'use strict';
   if (window.__memoryWallUpgrade) return;
   window.__memoryWallUpgrade = true;
+
+  const LOG = (...a) => console.log('[MW]', ...a);
+  const WARN = (...a) => console.warn('[MW]', ...a);
+  const ERR = (...a) => console.error('[MW]', ...a);
+
+  LOG('script loaded');
 
   // ---------- CONFIG ----------
   const ZOOM_MIN = 0.4;
@@ -17,8 +24,12 @@
   // ---------- MODE DETECT ----------
   const isTeacher = !!document.querySelector('.teacher-emoji')
     || window.location.href.includes('teachermode');
-  const WB_ID = isTeacher ? 'memoryWhiteboard' : 'studentMemoryWhiteboard';
+  LOG('mode =', isTeacher ? 'TEACHER' : 'STUDENT');
+
+  const WB_ID    = isTeacher ? 'memoryWhiteboard' : 'studentMemoryWhiteboard';
   const NOTES_ID = isTeacher ? 'stickyNotesContainer' : 'studentStickyNotesContainer';
+  const SECTION_ID = isTeacher ? 'memoryWall' : 'studentMemoryWall';
+  LOG('WB_ID =', WB_ID, '| NOTES_ID =', NOTES_ID, '| SECTION_ID =', SECTION_ID);
 
   // ---------- STATE ----------
   let currentSpaceId = 'main';
@@ -26,21 +37,21 @@
   let currentPanX = 0;
   let currentPanY = 0;
   let spacesList = [{ id: 'main', name: 'Main Board', createdAt: 0 }];
-  let spacesLoaded = false;
+  let controlsBuilt = false;
   let notesRef = null;
 
-  // ---------- SAFE GLOBAL ACCESS ----------
-  const getClassCode = () => (typeof currentClassCode !== 'undefined') ? currentClassCode : null;
-  const getDatabase  = () => (typeof database !== 'undefined') ? database : null;
+  // ---------- HELPERS ----------
+  const getClassCode = () => (typeof currentClassCode !== 'undefined' && currentClassCode) || null;
+  const getDatabase  = () => (typeof database !== 'undefined' && database) || null;
   const getIsDemo    = () => (typeof isDemoMode !== 'undefined') ? isDemoMode : false;
 
   const escapeHtml = (s) => String(s).replace(/[&<>"']/g, c => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
   }[c]));
 
-  const spaceKey       = () => LS_SPACE_KEY + (getClassCode() || 'global');
-  const spacesLsKey    = () => LS_SPACES_KEY + (getClassCode() || 'global');
-  const notesLsKey     = (spaceId) => {
+  const spaceKey    = () => LS_SPACE_KEY + (getClassCode() || 'global');
+  const spacesLsKey = () => LS_SPACES_KEY + (getClassCode() || 'global');
+  const notesLsKey  = (spaceId) => {
     const cc = getClassCode();
     return spaceId === 'main'
       ? `memoryWall_notes_${cc}`
@@ -55,10 +66,24 @@
       : `memoryWall/${cc}/spaces/${spaceId}/notes`;
   }
 
-  const getSpaceMetaPath = () => {
+  function getSpaceMetaPath() {
     const cc = getClassCode();
     return cc ? `memoryWall/${cc}/spaceMeta` : null;
-  };
+  }
+
+  function getNotesArray() {
+    try {
+      if (isTeacher) return (typeof memoryWallNotes !== 'undefined') ? memoryWallNotes : [];
+      return (typeof studentMemoryWallNotes !== 'undefined') ? studentMemoryWallNotes : [];
+    } catch (e) { return []; }
+  }
+
+  function setNotesArray(arr) {
+    try {
+      if (isTeacher) memoryWallNotes = arr;
+      else studentMemoryWallNotes = arr;
+    } catch (e) {}
+  }
 
   // ---------- ZOOM ----------
   function applyTransform(smooth) {
@@ -66,27 +91,24 @@
     if (!canvas) return;
     canvas.style.transition = smooth ? 'transform 0.12s ease-out' : 'none';
     canvas.style.transform = `translate(${currentPanX}px, ${currentPanY}px) scale(${currentZoom})`;
-    const wb = document.getElementById(WB_ID);
-    if (wb) wb.dataset.zoomActive = currentZoom > 1 ? 'true' : 'false';
   }
 
-  function setZoom(z, smooth) {
+  function setZoom(z) {
     currentZoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, z));
-    applyTransform(smooth !== false);
-    updateZoomLabel();
+    applyTransform(true);
+    updateZoomLabels();
   }
 
   function resetView() {
-    currentZoom = 1;
-    currentPanX = 0;
-    currentPanY = 0;
+    currentZoom = 1; currentPanX = 0; currentPanY = 0;
     applyTransform(true);
-    updateZoomLabel();
+    updateZoomLabels();
   }
 
-  function updateZoomLabel() {
-    const el = document.querySelector(`#${WB_ID} .mw-zoom-label`);
-    if (el) el.textContent = Math.round(currentZoom * 100) + '%';
+  function updateZoomLabels() {
+    document.querySelectorAll('.mw-zoom-pct').forEach(el => {
+      el.textContent = Math.round(currentZoom * 100) + '%';
+    });
   }
 
   // ---------- CANVAS WRAPPER ----------
@@ -94,71 +116,119 @@
     if (wb.querySelector('.wb-canvas')) return wb.querySelector('.wb-canvas');
     const canvas = document.createElement('div');
     canvas.className = 'wb-canvas';
-
     Array.from(wb.children).forEach(child => {
-      if (child.classList.contains('mw-space-bar')
-          || child.classList.contains('mw-zoom-controls')
-          || child.classList.contains('whiteboard-controls')) return;
+      if (child.classList.contains('mw-zoom-float') ||
+          child.classList.contains('whiteboard-controls')) return;
       canvas.appendChild(child);
     });
-
     wb.insertBefore(canvas, wb.firstChild);
+    LOG('canvas wrapper built');
     return canvas;
   }
 
-  // ---------- SPACE UI ----------
-  function buildSpaceBar(wb) {
-    if (wb.querySelector('.mw-space-bar')) return;
-    const bar = document.createElement('div');
-    bar.className = 'mw-space-bar';
-    wb.appendChild(bar);
-    renderSpaceBar();
+  // ---------- BUILD CONTROLS ----------
+  function buildControls() {
+    if (controlsBuilt) return;
+
+    const wb = document.getElementById(WB_ID);
+    if (!wb) { WARN('no whiteboard element'); return; }
+
+    const card = wb.closest('.content-card');
+    const header = card ? card.querySelector('.content-header') : null;
+    if (!header) { WARN('no content-header found'); return; }
+
+    // Avoid double-inject
+    if (header.querySelector('.mw-header-controls')) { controlsBuilt = true; return; }
+
+    const wrap = document.createElement('div');
+    wrap.className = 'mw-header-controls';
+
+    // Tabs
+    const tabs = document.createElement('div');
+    tabs.className = 'mw-header-tabs';
+    wrap.appendChild(tabs);
+
+    // + New button
+    const addBtn = document.createElement('button');
+    addBtn.className = 'mw-add-btn';
+    addBtn.textContent = '+ New Space';
+    addBtn.onclick = addNewSpace;
+    wrap.appendChild(addBtn);
+
+    // Zoom (inline)
+    const zoom = document.createElement('div');
+    zoom.className = 'mw-zoom-inline';
+    zoom.innerHTML = `
+      <button data-act="out" title="Zoom out">−</button>
+      <span class="mw-zoom-pct">100%</span>
+      <button data-act="in" title="Zoom in">+</button>
+      <button data-act="reset" title="Reset view">⌂</button>
+    `;
+    zoom.querySelector('[data-act="out"]').onclick   = () => setZoom(currentZoom - ZOOM_STEP);
+    zoom.querySelector('[data-act="in"]').onclick    = () => setZoom(currentZoom + ZOOM_STEP);
+    zoom.querySelector('[data-act="reset"]').onclick = resetView;
+    wrap.appendChild(zoom);
+
+    // Insert between H2 and the + Add New Memory button
+    const addMemoryBtn = header.querySelector('button');
+    if (addMemoryBtn) header.insertBefore(wrap, addMemoryBtn);
+    else header.appendChild(wrap);
+
+    LOG('header controls injected');
+
+    // Floating zoom for mobile
+    const float = document.createElement('div');
+    float.className = 'mw-zoom-float';
+    float.innerHTML = `
+      <button data-act="out">−</button>
+      <button data-act="in">+</button>
+      <button data-act="reset">⌂</button>
+    `;
+    float.querySelector('[data-act="out"]').onclick   = () => setZoom(currentZoom - ZOOM_STEP);
+    float.querySelector('[data-act="in"]').onclick    = () => setZoom(currentZoom + ZOOM_STEP);
+    float.querySelector('[data-act="reset"]').onclick = resetView;
+    wb.appendChild(float);
+
+    // Ensure canvas wrapper exists
+    ensureCanvasWrapper(wb);
+
+    // Setup wheel + pinch + pan
+    attachWheel(wb);
+    attachPinch(wb);
+    attachPan(wb);
+
+    // Load spaces
+    loadSpacesFromLocal();
+    ensureSpacesLoaded();
+    renderTabs();
+    updateZoomLabels();
+
+    controlsBuilt = true;
+    LOG('controls built successfully');
   }
 
-  function renderSpaceBar() {
-    const bar = document.querySelector(`#${WB_ID} .mw-space-bar`);
-    if (!bar) return;
+  // ---------- SPACE TABS ----------
+  function renderTabs() {
+    const tabs = document.querySelector(`#${WB_ID}`)
+      ?.closest('.content-card')
+      ?.querySelector('.mw-header-tabs');
+    if (!tabs) return;
 
-    const tabs = spacesList.map(s => `
-      <button class="mw-space-tab${s.id === currentSpaceId ? ' active' : ''}" data-space="${escapeHtml(s.id)}">
-        <span class="mw-space-name">${escapeHtml(s.name)}</span>
-        ${s.id !== 'main' ? `<span class="mw-space-del" data-del="${escapeHtml(s.id)}" title="Delete space">×</span>` : ''}
+    tabs.innerHTML = spacesList.map(s => `
+      <button class="mw-tab${s.id === currentSpaceId ? ' active' : ''}" data-space="${escapeHtml(s.id)}">
+        <span>${escapeHtml(s.name)}</span>
+        ${s.id !== 'main' ? `<span class="mw-tab-del" data-del="${escapeHtml(s.id)}" title="Delete">×</span>` : ''}
       </button>
     `).join('');
 
-    bar.innerHTML = `
-      <div class="mw-space-tabs">${tabs}</div>
-      <button class="mw-space-add" title="Create new space">+ New</button>
-    `;
-
-    bar.querySelectorAll('.mw-space-tab').forEach(tab => {
-      tab.addEventListener('click', (e) => {
+    tabs.querySelectorAll('.mw-tab').forEach(tab => {
+      tab.onclick = (e) => {
         const delId = e.target.getAttribute('data-del');
         if (delId) { e.stopPropagation(); deleteSpace(delId); return; }
         const sid = tab.getAttribute('data-space');
         if (sid && sid !== currentSpaceId) switchSpace(sid);
-      });
+      };
     });
-
-    bar.querySelector('.mw-space-add').addEventListener('click', addNewSpace);
-  }
-
-  // ---------- ZOOM UI ----------
-  function buildZoomControls(wb) {
-    if (wb.querySelector('.mw-zoom-controls')) return;
-    const c = document.createElement('div');
-    c.className = 'mw-zoom-controls';
-    c.innerHTML = `
-      <button class="mw-zoom-btn" data-act="out" title="Zoom out (Ctrl+scroll)">−</button>
-      <span class="mw-zoom-label">100%</span>
-      <button class="mw-zoom-btn" data-act="in" title="Zoom in (Ctrl+scroll)">+</button>
-      <button class="mw-zoom-btn" data-act="reset" title="Reset view">⌂</button>
-    `;
-    wb.appendChild(c);
-
-    c.querySelector('[data-act="out"]').onclick = () => setZoom(currentZoom - ZOOM_STEP);
-    c.querySelector('[data-act="in"]').onclick  = () => setZoom(currentZoom + ZOOM_STEP);
-    c.querySelector('[data-act="reset"]').onclick = resetView;
   }
 
   // ---------- SPACE LOGIC ----------
@@ -176,7 +246,8 @@
       }
       const cur = localStorage.getItem(spaceKey());
       if (cur) currentSpaceId = cur;
-    } catch (e) {}
+      LOG('spaces loaded:', spacesList.map(s => s.name));
+    } catch (e) { WARN('loadSpacesFromLocal failed:', e); }
   }
 
   function saveSpacesToLocal() {
@@ -184,15 +255,12 @@
   }
 
   function ensureSpacesLoaded() {
-    if (spacesLoaded) return;
-    spacesLoaded = true;
-    loadSpacesFromLocal();
-
     const db = getDatabase();
     const cc = getClassCode();
-    if (!db || !cc || getIsDemo()) { renderSpaceBar(); return; }
-
-    db.ref(getSpaceMetaPath()).on('value', snap => {
+    if (!db || !cc || getIsDemo()) return;
+    const path = getSpaceMetaPath();
+    if (!path) return;
+    db.ref(path).on('value', snap => {
       if (snap.exists() && snap.val().spaces) {
         const remote = snap.val().spaces;
         if (Array.isArray(remote) && remote.length) {
@@ -201,21 +269,23 @@
             spacesList.unshift({ id: 'main', name: 'Main Board', createdAt: 0 });
           }
           saveSpacesToLocal();
-          renderSpaceBar();
+          renderTabs();
         }
       }
     });
   }
 
   function switchSpace(spaceId) {
+    LOG('switchSpace →', spaceId);
     currentSpaceId = spaceId;
     try { localStorage.setItem(spaceKey(), spaceId); } catch (e) {}
-    renderSpaceBar();
+    renderTabs();
     resetView();
-    loadNotes();
+    loadNotesForSpace();
   }
 
   async function addNewSpace() {
+    LOG('addNewSpace called');
     const name = prompt('Name for the new space:', `Board ${spacesList.length + 1}`);
     if (!name || !name.trim()) return;
 
@@ -229,13 +299,14 @@
 
     const db = getDatabase();
     const cc = getClassCode();
-    if (db && cc && !getIsDemo()) {
-      try { await db.ref(getSpaceMetaPath()).update({ spaces: spacesList }); }
-      catch (e) { console.warn('Space save failed:', e); }
+    const path = getSpaceMetaPath();
+    if (db && cc && path && !getIsDemo()) {
+      try { await db.ref(path).update({ spaces: spacesList }); } catch (e) { WARN(e); }
     }
 
-    renderSpaceBar();
+    renderTabs();
     switchSpace(newSpace.id);
+    LOG('new space created:', newSpace.name);
   }
 
   async function deleteSpace(spaceId) {
@@ -247,38 +318,36 @@
 
     const db = getDatabase();
     const cc = getClassCode();
-    if (db && cc && !getIsDemo()) {
+    const metaPath = getSpaceMetaPath();
+    if (db && cc && metaPath && !getIsDemo()) {
       try {
-        await db.ref(getSpaceMetaPath()).update({ spaces: spacesList });
+        await db.ref(metaPath).update({ spaces: spacesList });
         await db.ref(`memoryWall/${cc}/spaces/${spaceId}`).remove();
-      } catch (e) { console.warn('Delete failed:', e); }
+      } catch (e) { WARN(e); }
     } else {
       try { localStorage.removeItem(notesLsKey(spaceId)); } catch (e) {}
     }
 
     if (currentSpaceId === spaceId) switchSpace('main');
-    else renderSpaceBar();
+    else renderTabs();
   }
 
   // ---------- NOTES LOADING ----------
-  function loadNotes() {
+  function loadNotesForSpace() {
     const cc = getClassCode();
-    if (!cc) return;
+    if (!cc) { WARN('no class code'); return; }
+
+    if (notesRef) { try { notesRef.off(); } catch (e) {} notesRef = null; }
 
     const db = getDatabase();
 
-    if (notesRef && typeof notesRef.off === 'function') {
-      try { notesRef.off(); } catch (e) {}
-      notesRef = null;
-    }
-
-    // Demo / offline → localStorage
+    // Demo/offline → localStorage
     if (!db || getIsDemo()) {
       try {
-        const saved = localStorage.getItem(notesLsKey(currentSpaceId));
-        setNotesArray(saved ? JSON.parse(saved) : []);
+        const raw = localStorage.getItem(notesLsKey(currentSpaceId));
+        setNotesArray(raw ? JSON.parse(raw) : []);
       } catch (e) { setNotesArray([]); }
-      renderNotes();
+      renderCurrentNotes();
       return;
     }
 
@@ -287,30 +356,14 @@
     if (!path) return;
     notesRef = db.ref(path);
     notesRef.on('value', snap => {
-      const notes = [];
-      if (snap.exists()) {
-        snap.forEach(child => notes.push({ id: child.key, ...child.val() }));
-      }
-      setNotesArray(notes);
-      renderNotes();
+      const arr = [];
+      if (snap.exists()) snap.forEach(child => arr.push({ id: child.key, ...child.val() }));
+      setNotesArray(arr);
+      renderCurrentNotes();
     });
   }
 
-  function setNotesArray(arr) {
-    try {
-      if (isTeacher) memoryWallNotes = arr;
-      else studentMemoryWallNotes = arr;
-    } catch (e) {}
-  }
-
-  function getNotesArray() {
-    try {
-      if (isTeacher) return (typeof memoryWallNotes !== 'undefined') ? memoryWallNotes : [];
-      return (typeof studentMemoryWallNotes !== 'undefined') ? studentMemoryWallNotes : [];
-    } catch (e) { return []; }
-  }
-
-  function renderNotes() {
+  function renderCurrentNotes() {
     const container = document.getElementById(NOTES_ID);
     if (!container) return;
     container.innerHTML = '';
@@ -321,131 +374,51 @@
 
     if (!notes || notes.length === 0) {
       if (welcome) welcome.style.display = '';
-      updateStats();
       return;
     }
     if (welcome) welcome.style.display = 'none';
 
     const createFn = isTeacher ? window.createStickyNoteElement : window.createStudentStickyNoteElement;
-    if (typeof createFn !== 'function') return;
+    if (typeof createFn !== 'function') { WARN('missing createFn:', isTeacher ? 'createStickyNoteElement' : 'createStudentStickyNoteElement'); return; }
 
     notes.forEach(note => {
       const el = createFn(note);
       if (el) container.appendChild(el);
     });
-
-    updateStats();
   }
 
-  function updateStats() {
-    try {
-      if (isTeacher && typeof window.updateMemoryWallStats === 'function') window.updateMemoryWallStats();
-      if (!isTeacher && typeof window.updateStudentMemoryWallStats === 'function') window.updateStudentMemoryWallStats();
-    } catch (e) {}
-  }
-
-  // ---------- ZOOM-AWARE DRAGGING ----------
-  function setupZoomAwareDragging(noteElement, note) {
-    let dragging = false, offsetX = 0, offsetY = 0;
-
-    const getWbRect = () => document.getElementById(WB_ID).getBoundingClientRect();
-
-    function start(e) {
-      if (e.target.closest('button, .btn-note, .btn-student-note')) return;
-      e.preventDefault();
-      e.stopPropagation();
-      dragging = true;
-
-      const p = e.touches ? e.touches[0] : e;
-      const r = getWbRect();
-      const mouseCanvasX = (p.clientX - r.left - currentPanX) / currentZoom;
-      const mouseCanvasY = (p.clientY - r.top - currentPanY) / currentZoom;
-      const noteCanvasX = (Number(note.x) || 20) / 100 * r.width;
-      const noteCanvasY = (Number(note.y) || 20) / 100 * r.height;
-
-      offsetX = mouseCanvasX - noteCanvasX;
-      offsetY = mouseCanvasY - noteCanvasY;
-
-      noteElement.classList.add('dragging');
-      noteElement.style.zIndex = '1000';
-
-      document.addEventListener('mousemove', drag);
-      document.addEventListener('mouseup', end);
-      document.addEventListener('touchmove', drag, { passive: false });
-      document.addEventListener('touchend', end);
-    }
-
-    function drag(e) {
-      if (!dragging) return;
-      e.preventDefault();
-      const p = e.touches ? e.touches[0] : e;
-      const r = getWbRect();
-      const mouseCanvasX = (p.clientX - r.left - currentPanX) / currentZoom;
-      const mouseCanvasY = (p.clientY - r.top - currentPanY) / currentZoom;
-      const noteCanvasX = mouseCanvasX - offsetX;
-      const noteCanvasY = mouseCanvasY - offsetY;
-
-      const xPct = Math.max(0, Math.min(95, (noteCanvasX / r.width) * 100));
-      const yPct = Math.max(0, Math.min(95, (noteCanvasY / r.height) * 100));
-
-      note.x = xPct;
-      note.y = yPct;
-      noteElement.style.left = xPct + '%';
-      noteElement.style.top = yPct + '%';
-    }
-
-    function end() {
-      if (!dragging) return;
-      dragging = false;
-      noteElement.classList.remove('dragging');
-      noteElement.style.zIndex = '2';
-      document.removeEventListener('mousemove', drag);
-      document.removeEventListener('mouseup', end);
-      document.removeEventListener('touchmove', drag);
-      document.removeEventListener('touchend', end);
-      if (isTeacher && typeof window.saveNotePosition === 'function') {
-        try { window.saveNotePosition(note.id, note.x, note.y); } catch (e) {}
-      }
-    }
-
-    noteElement.addEventListener('mousedown', start);
-    noteElement.addEventListener('touchstart', start, { passive: false });
-  }
-
-  // ---------- WHEEL + PINCH ----------
+  // ---------- WHEEL / PINCH / PAN ----------
   function attachWheel(wb) {
     wb.addEventListener('wheel', e => {
       if (!e.ctrlKey && !e.metaKey) return;
       e.preventDefault();
-      setZoom(currentZoom + (e.deltaY > 0 ? -1 : 1) * 0.08, false);
+      setZoom(currentZoom + (e.deltaY > 0 ? -1 : 1) * 0.08);
     }, { passive: false });
   }
 
   function attachPinch(wb) {
-    let pinchDist = 0, pinchZoom = 1;
+    let dist0 = 0, zoom0 = 1;
     wb.addEventListener('touchstart', e => {
       if (e.touches.length !== 2) return;
       const dx = e.touches[0].clientX - e.touches[1].clientX;
       const dy = e.touches[0].clientY - e.touches[1].clientY;
-      pinchDist = Math.sqrt(dx * dx + dy * dy);
-      pinchZoom = currentZoom;
+      dist0 = Math.hypot(dx, dy); zoom0 = currentZoom;
     }, { passive: true });
     wb.addEventListener('touchmove', e => {
-      if (e.touches.length !== 2 || !pinchDist) return;
+      if (e.touches.length !== 2 || !dist0) return;
       e.preventDefault();
       const dx = e.touches[0].clientX - e.touches[1].clientX;
       const dy = e.touches[0].clientY - e.touches[1].clientY;
-      setZoom(pinchZoom * (Math.sqrt(dx * dx + dy * dy) / pinchDist), false);
+      setZoom(zoom0 * (Math.hypot(dx, dy) / dist0));
     }, { passive: false });
-    wb.addEventListener('touchend', () => { pinchDist = 0; });
+    wb.addEventListener('touchend', () => { dist0 = 0; });
   }
 
-  // ---------- PAN ----------
   function attachPan(wb) {
     let panning = false, sx = 0, sy = 0, px = 0, py = 0;
     wb.addEventListener('mousedown', e => {
       if (currentZoom <= 1) return;
-      if (e.target.closest('.sticky-note, .student-sticky-note, button, .mw-space-bar, .mw-zoom-controls, .welcome-note')) return;
+      if (e.target.closest('.sticky-note, .student-sticky-note, button, .welcome-note, .mw-zoom-float')) return;
       e.preventDefault();
       panning = true; sx = e.clientX; sy = e.clientY;
       px = currentPanX; py = currentPanY;
@@ -462,37 +435,30 @@
     });
   }
 
-  // ---------- OVERRIDE DATA LAYER (per-space paths) ----------
+  // ---------- PUBLIC OVERRIDES (Firebase path per space) ----------
   window.saveMemoryWallToLocalStorage = function () {
-    const cc = getClassCode();
-    if (!cc) return;
-    try {
-      localStorage.setItem(notesLsKey(currentSpaceId), JSON.stringify(getNotesArray()));
-    } catch (e) {}
+    const cc = getClassCode(); if (!cc) return;
+    try { localStorage.setItem(notesLsKey(currentSpaceId), JSON.stringify(getNotesArray())); } catch (e) {}
   };
 
   window.saveNoteToFirebase = function (note) {
-    const db = getDatabase();
-    const cc = getClassCode();
+    const db = getDatabase(), cc = getClassCode();
     if (!db || !cc) return;
     const path = getNotesPath(currentSpaceId);
     if (!path) return;
     const ref = db.ref(path).push();
     note.id = ref.key;
-    ref.set(note).catch(e => console.warn('Save failed:', e));
+    ref.set(note).catch(e => WARN('save failed:', e));
   };
 
   window.deleteNote = function (noteId, event) {
     if (event) event.stopPropagation();
     if (!confirm('Delete this memory note?')) return;
-    const cc = getClassCode();
-    if (!cc) return;
-    const db = getDatabase();
+    const db = getDatabase(), cc = getClassCode();
     if (!db || getIsDemo()) {
-      const arr = getNotesArray().filter(n => n.id !== noteId);
-      setNotesArray(arr);
+      setNotesArray(getNotesArray().filter(n => n.id !== noteId));
       window.saveMemoryWallToLocalStorage();
-      renderNotes();
+      renderCurrentNotes();
     } else {
       db.ref(`${getNotesPath(currentSpaceId)}/${noteId}`).remove();
     }
@@ -500,104 +466,88 @@
 
   window.likeNote = function (noteId, event) {
     if (event) event.stopPropagation();
-    const arr = getNotesArray();
-    const note = arr.find(n => n.id === noteId);
+    const note = getNotesArray().find(n => n.id === noteId);
     if (!note) return;
     note.likes = (note.likes || 0) + 1;
     const el = document.getElementById(`note-${noteId}`);
-    if (el) {
-      const span = el.querySelector('.note-likes span:last-child');
-      if (span) span.textContent = note.likes;
-    }
+    const span = el?.querySelector('.note-likes span:last-child');
+    if (span) span.textContent = note.likes;
     const db = getDatabase();
-    if (!db || getIsDemo()) {
-      window.saveMemoryWallToLocalStorage();
-    } else {
-      db.ref(`${getNotesPath(currentSpaceId)}/${noteId}`).update({ likes: note.likes });
-    }
+    if (!db || getIsDemo()) window.saveMemoryWallToLocalStorage();
+    else db.ref(`${getNotesPath(currentSpaceId)}/${noteId}`).update({ likes: note.likes });
   };
 
   window.studentLikeNote = function (noteId, event) {
     if (event) event.stopPropagation();
-    const arr = getNotesArray();
-    const note = arr.find(n => n.id === noteId);
+    const note = getNotesArray().find(n => n.id === noteId);
     if (!note) return;
     const uid = localStorage.getItem('studentUserId');
     if (!uid) return;
-    if (note.likedBy && note.likedBy.includes(uid)) return;
+    if ((note.likedBy || []).includes(uid)) return;
     note.likes = (note.likes || 0) + 1;
     note.likedBy = [...(note.likedBy || []), uid];
     const el = document.getElementById(`student-note-${noteId}`);
-    if (el) {
-      const span = el.querySelector('.student-note-likes span:last-child');
-      if (span) span.textContent = note.likes;
-    }
+    const span = el?.querySelector('.student-note-likes span:last-child');
+    if (span) span.textContent = note.likes;
     const db = getDatabase();
-    if (db) {
-      db.ref(`${getNotesPath(currentSpaceId)}/${noteId}`).update({
-        likes: note.likes, likedBy: note.likedBy
-      });
-    }
+    if (db) db.ref(`${getNotesPath(currentSpaceId)}/${noteId}`).update({ likes: note.likes, likedBy: note.likedBy });
   };
 
-  // ---------- INIT ----------
-  function init() {
-    const wb = document.getElementById(WB_ID);
-    if (!wb) { setTimeout(init, 500); return; }
+  // ---------- WATCH FOR MEMORY WALL VISIBILITY ----------
+  function watchVisibility() {
+    const section = document.getElementById(SECTION_ID);
+    if (!section) {
+      LOG('section not found yet, retrying…');
+      setTimeout(watchVisibility, 500);
+      return;
+    }
+    LOG('section found:', SECTION_ID);
 
-    ensureCanvasWrapper(wb);
-    buildSpaceBar(wb);
-    buildZoomControls(wb);
-    attachWheel(wb);
-    attachPinch(wb);
-    attachPan(wb);
-    ensureSpacesLoaded();
+    const check = () => {
+      if (section.offsetParent === null) return;
+      if (!controlsBuilt) buildControls();
+    };
 
-    setTimeout(() => { if (getClassCode()) loadNotes(); }, 300);
+    new MutationObserver(check).observe(section, { attributes: true, attributeFilter: ['style', 'class'] });
+    check();
   }
 
-  // Hook into the showXxx entry point to reload spaces for new class
-  const hookEntry = (name) => {
-    const orig = window[name];
-    if (typeof orig === 'function') {
-      window[name] = function () {
-        ensureSpacesLoaded();
-        return orig.apply(this, arguments);
-      };
-    }
-  };
-  hookEntry(isTeacher ? 'showMemoryWall' : 'showStudentMemoryWall');
+  // ---------- BOOT ----------
+  function boot() {
+    LOG('booting…');
+    watchVisibility();
 
-  // Replace load/render with ours
-  window.loadMemoryWallNotes = loadNotes;
-  window.loadStudentMemoryWall = loadNotes;
-  window.renderStickyNotes = renderNotes;
-  window.renderStudentStickyNotes = renderNotes;
-
-  // Replace dragging with zoom-aware version
-  window.setupNoteDragging = setupZoomAwareDragging;
-  window.setupStudentNoteDragging = setupZoomAwareDragging;
-
-  // Reset everything on class switch
-  const origSwitchClass = window.switchClass;
-  if (typeof origSwitchClass === 'function') {
-    window.switchClass = async function () {
-      const r = await origSwitchClass.apply(this, arguments);
-      spacesLoaded = false;
-      spacesList = [{ id: 'main', name: 'Main Board', createdAt: 0 }];
-      currentSpaceId = 'main';
-      currentZoom = 1; currentPanX = 0; currentPanY = 0;
-      if (notesRef) { try { notesRef.off(); } catch (e) {} notesRef = null; }
-      ensureSpacesLoaded();
-      applyTransform(false);
-      loadNotes();
-      return r;
-    };
+    // Also retry periodically in case DOM changes
+    let tries = 0;
+    const iv = setInterval(() => {
+      tries++;
+      if (controlsBuilt || tries > 60) { clearInterval(iv); return; }
+      const wb = document.getElementById(WB_ID);
+      const section = document.getElementById(SECTION_ID);
+      if (wb && section && section.offsetParent !== null) buildControls();
+    }, 500);
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', boot);
   } else {
-    init();
+    boot();
   }
+
+  // Debug helper for console
+  window.__mwDebug = () => {
+    console.log('--- MEMORY WALL DEBUG ---');
+    console.log('mode:', isTeacher ? 'TEACHER' : 'STUDENT');
+    console.log('whiteboard exists:', !!document.getElementById(WB_ID));
+    console.log('notes container exists:', !!document.getElementById(NOTES_ID));
+    console.log('section exists:', !!document.getElementById(SECTION_ID));
+    console.log('section visible:', document.getElementById(SECTION_ID)?.offsetParent !== null);
+    console.log('controls built:', controlsBuilt);
+    console.log('header controls in DOM:', !!document.querySelector('.mw-header-controls'));
+    console.log('class code:', getClassCode());
+    console.log('current space:', currentSpaceId);
+    console.log('spaces:', spacesList);
+    console.log('notes count:', getNotesArray().length);
+  };
+  LOG('type __mwDebug() in console to diagnose');
 })();
