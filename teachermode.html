@@ -4511,6 +4511,418 @@ function openPresentationMode() {
   LOG('type __mwDebug() for diagnostics');
 })();
 </script>
+<style id="mw-v5-patch-styles">
+/* Save-to indicator in Add Memory page */
+.mw-save-to-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--ember-soft, rgba(255,71,20,0.12));
+  color: var(--ember, #ff4714);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.7rem;
+  font-weight: 700;
+  margin-top: 8px;
+}
+.mw-save-to-badge strong {
+  font-weight: 800;
+}
+.mw-save-to-badge.changed {
+  background: rgba(16, 185, 129, 0.14);
+  color: #059669;
+  animation: mw-badge-pulse 1.2s ease-out;
+}
+@keyframes mw-badge-pulse {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+</style>
+
+<script id="mw-v5-patch">
+(function () {
+  'use strict';
+  if (window.__mwPatchV5) return;
+  window.__mwPatchV5 = true;
+
+  var LOG = function () { var a = [].slice.call(arguments); a.unshift('[MW patch]'); console.log.apply(console, a); };
+  LOG('patch loaded');
+
+  var isTeacher = !!document.querySelector('.teacher-emoji')
+    || window.location.href.indexOf('teachermode') !== -1;
+
+  // ============================================================
+  // Helpers — read state directly from DOM (no v5 internals needed)
+  // ============================================================
+  function getClassCode() {
+    return (typeof currentClassCode !== 'undefined' && currentClassCode) || null;
+  }
+  function getDb() {
+    return (typeof database !== 'undefined' && database) || null;
+  }
+  function getIsDemo() {
+    return (typeof isDemoMode !== 'undefined') ? isDemoMode : false;
+  }
+  function getCurrentSpaceId() {
+    var active = document.querySelector('.mw-tab.active');
+    if (active) return active.getAttribute('data-space');
+    var cc = getClassCode();
+    if (cc) {
+      var saved = localStorage.getItem('mw_current_space_' + cc);
+      if (saved) return saved;
+    }
+    return 'main';
+  }
+  function getPendingSpaceFromDropdown() {
+    var sel = document.getElementById('mwBoardSelect');
+    if (sel && sel.value) return sel.value;
+    return getCurrentSpaceId();
+  }
+  function getPendingPositionFromLabel() {
+    var label = document.getElementById('mwPosLabel');
+    if (label) {
+      var txt = (label.textContent || '').replace(/%/g, '');
+      var parts = txt.split(',');
+      if (parts.length === 2) {
+        var x = parseFloat(parts[0]);
+        var y = parseFloat(parts[1]);
+        if (!isNaN(x) && !isNaN(y)) return { x: x, y: y };
+      }
+    }
+    return { x: 40, y: 40 };
+  }
+  function getColor() {
+    if (isTeacher) {
+      if (typeof selectedAddMemoryColor !== 'undefined' && selectedAddMemoryColor) return selectedAddMemoryColor;
+      if (typeof selectedNoteColor !== 'undefined' && selectedNoteColor) return selectedNoteColor;
+    } else {
+      if (typeof studentSelectedAddMemoryColor !== 'undefined' && studentSelectedAddMemoryColor) return studentSelectedAddMemoryColor;
+    }
+    return '#FFEB3B';
+  }
+  function notify(msg, type) {
+    if (typeof window.showNotification === 'function') window.showNotification(msg, type || 'success');
+    else LOG('notification:', msg);
+  }
+  function switchToSpace(spaceId) {
+    var tab = document.querySelector('.mw-tab[data-space="' + spaceId + '"]');
+    if (tab) tab.click();
+    else LOG('no tab for space:', spaceId);
+  }
+
+  // ============================================================
+  // Build a note + save to a specific board
+  // ============================================================
+  function buildNote(text, author, color, spaceId, pos) {
+    var studentId = localStorage.getItem('studentUserId') || 'student_' + Date.now();
+    return {
+      id: 'note_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+      text: text,
+      author: author,
+      color: color || '#FFEB3B',
+      x: pos.x,
+      y: pos.y,
+      rotation: (Math.random() * 8) - 4,
+      w: 200,
+      h: 160,
+      likes: 0,
+      likedBy: [],
+      createdAt: new Date().toISOString(),
+      classCode: getClassCode(),
+      spaceId: spaceId,
+      isStudentNote: !isTeacher,
+      isTeacherNote: isTeacher,
+      studentId: isTeacher ? null : studentId,
+      teacherId: isTeacher ? ((typeof teacherId !== 'undefined') ? teacherId : null) : null,
+      pinned: false
+    };
+  }
+
+  function notesLsKey(sid) {
+    var cc = getClassCode();
+    return sid === 'main'
+      ? 'memoryWall_notes_' + cc
+      : 'memoryWall_notes_' + cc + '_' + sid;
+  }
+
+  function saveNoteToSpace(note, targetSpaceId, done) {
+    var db = getDb();
+    var cc = getClassCode();
+    var current = getCurrentSpaceId();
+
+    LOG('saving note → space:', targetSpaceId, '| class:', cc, '| demo:', getIsDemo(), '| db:', !!db);
+
+    if (!db || getIsDemo() || !cc) {
+      // ---------- Local ----------
+      var lsKey = notesLsKey(targetSpaceId);
+      var raw = localStorage.getItem(lsKey);
+      var arr = raw ? JSON.parse(raw) : [];
+      arr.push(note);
+      localStorage.setItem(lsKey, JSON.stringify(arr));
+      LOG('saved to localStorage:', lsKey, '(' + arr.length + ' notes)');
+
+      if (targetSpaceId !== current) {
+        setTimeout(function () { switchToSpace(targetSpaceId); }, 200);
+      } else if (typeof window.renderStickyNotes === 'function' && isTeacher) {
+        window.renderStickyNotes();
+      } else if (typeof window.renderStudentStickyNotes === 'function' && !isTeacher) {
+        window.renderStudentStickyNotes();
+      }
+      done && done(true);
+    } else {
+      // ---------- Firebase ----------
+      var path = targetSpaceId === 'main'
+        ? 'memoryWall/' + cc + '/notes'
+        : 'memoryWall/' + cc + '/spaces/' + targetSpaceId + '/notes';
+      LOG('saving to Firebase:', path);
+      db.ref(path).push(note)
+        .then(function (ref) {
+          LOG('firebase save ok, key:', ref.key);
+          if (targetSpaceId !== current) {
+            setTimeout(function () { switchToSpace(targetSpaceId); }, 200);
+          }
+          done && done(true);
+        })
+        .catch(function (err) {
+          LOG('firebase save FAILED:', err);
+          notify('Save failed: ' + (err && err.message || err), 'error');
+          done && done(false);
+        });
+    }
+  }
+
+  // ============================================================
+  // The three submit handlers the interceptor calls
+  // ============================================================
+  function handleStudentSubmit() {
+    var textEl = document.getElementById('studentAddMemoryText');
+    var authorEl = document.getElementById('studentAddMemoryAuthor');
+    var text = textEl ? textEl.value.trim() : '';
+    var author = (authorEl && authorEl.value.trim()) || 'Student';
+    if (!text) { notify('Write something first!', 'error'); return; }
+    if (text.length < 10) { notify('At least 10 characters please', 'warning'); return; }
+
+    var spaceId = getPendingSpaceFromDropdown();
+    var pos = getPendingPositionFromLabel();
+    var color = getColor();
+
+    LOG('student submit → space:', spaceId, 'pos:', pos);
+    var note = buildNote(text, author, color, spaceId, pos);
+
+    saveNoteToSpace(note, spaceId, function (ok) {
+      if (!ok) return;
+      var boardName = (document.querySelector('.mw-tab[data-space="' + spaceId + '"] span') || {}).textContent || 'board';
+      notify('Saved to "' + boardName.trim() + '" ✓', 'success');
+      setTimeout(function () {
+        if (typeof window.studentBackToMemoryWall === 'function') window.studentBackToMemoryWall();
+      }, 400);
+    });
+  }
+
+  function handleTeacherSubmit() {
+    var textEl = document.getElementById('addMemoryText');
+    var authorEl = document.getElementById('addMemoryAuthor');
+    var text = textEl ? textEl.value.trim() : '';
+    var author = (authorEl && authorEl.value.trim()) || 'Anonymous';
+    if (!text) { notify('Write something first!', 'error'); return; }
+    if (text.length < 10) { notify('At least 10 characters please', 'warning'); return; }
+
+    var spaceId = getPendingSpaceFromDropdown();
+    var pos = getPendingPositionFromLabel();
+    var color = getColor();
+
+    LOG('teacher submit → space:', spaceId, 'pos:', pos);
+    var note = buildNote(text, author, color, spaceId, pos);
+
+    saveNoteToSpace(note, spaceId, function (ok) {
+      if (!ok) return;
+      var boardName = (document.querySelector('.mw-tab[data-space="' + spaceId + '"] span') || {}).textContent || 'board';
+      notify('Saved to "' + boardName.trim() + '" ✓', 'success');
+      setTimeout(function () {
+        if (typeof window.backToMemoryWall === 'function') window.backToMemoryWall();
+      }, 400);
+    });
+  }
+
+  function handleModalSubmit() {
+    var textEl = document.getElementById('modalMemoryText');
+    var authorEl = document.getElementById('modalMemoryAuthor');
+    var text = textEl ? textEl.value.trim() : '';
+    var author = (authorEl && authorEl.value.trim()) || 'Anonymous';
+    if (!text) { notify('Write something first!', 'error'); return; }
+
+    var spaceId = getPendingSpaceFromDropdown();
+    var pos = getPendingPositionFromLabel();
+    var color = getColor();
+
+    var note = buildNote(text, author, color, spaceId, pos);
+    saveNoteToSpace(note, spaceId, function (ok) {
+      if (!ok) return;
+      notify('Saved ✓', 'success');
+      if (typeof window.hideModal === 'function') window.hideModal('memoryModal');
+    });
+  }
+
+  // ============================================================
+  // EXPOSE — so future deferred script overrides don't matter
+  // ============================================================
+  function reapply() {
+    if (!window.__memoryWallUpgrade) return;
+    window.studentSubmitMemory = handleStudentSubmit;
+    window.submitMemory = handleTeacherSubmit;
+    window.addMemoryFromModal = handleModalSubmit;
+    LOG('overrides re-applied');
+  }
+  reapply();
+  window.addEventListener('load', function () {
+    reapply();
+    setTimeout(reapply, 100);
+    setTimeout(reapply, 500);
+    setTimeout(reapply, 1500);
+    setTimeout(reapply, 3000);
+  });
+
+  // ============================================================
+  // CAPTURE-PHASE INTERCEPTOR — the actual fix
+  // Fires on document BEFORE the button's inline onclick can run.
+  // ============================================================
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest('button, a');
+    if (!btn) return;
+    var oc = btn.getAttribute('onclick') || '';
+    if (!oc) return;
+
+    if (oc.indexOf('studentSubmitMemory') !== -1) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      LOG('intercepted → studentSubmitMemory');
+      handleStudentSubmit();
+      return;
+    }
+    if (oc.indexOf('addMemoryFromModal') !== -1) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      LOG('intercepted → addMemoryFromModal');
+      handleModalSubmit();
+      return;
+    }
+    if (oc.indexOf('submitMemory') !== -1 && oc.indexOf('studentSubmitMemory') === -1) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      LOG('intercepted → submitMemory');
+      handleTeacherSubmit();
+      return;
+    }
+  }, true); // ← capture phase, this is the key
+
+  // ============================================================
+  // SAVE-TO BADGE — visual confirmation of target board
+  // ============================================================
+  function updateSaveToBadge() {
+    var helpers = document.querySelector('.mw-add-helpers');
+    if (!helpers) return;
+    var sel = document.getElementById('mwBoardSelect');
+    if (!sel) return;
+    var badge = helpers.querySelector('.mw-save-to-badge');
+    if (!badge) {
+      badge = document.createElement('div');
+      badge.className = 'mw-save-to-badge';
+      helpers.appendChild(badge);
+    }
+    var opt = sel.options[sel.selectedIndex];
+    var boardName = opt ? opt.textContent.replace(/\s*\(current\)\s*/, '').trim() : 'board';
+    var isCurrent = sel.value === getCurrentSpaceId();
+    badge.innerHTML = isCurrent
+      ? '📍 Saving to: <strong>' + boardName + '</strong>'
+      : '📍 Saving to: <strong>' + boardName + '</strong> · will switch';
+    badge.classList.toggle('changed', !isCurrent);
+  }
+
+  // Watch for the helpers to appear, then wire the badge to the dropdown
+  function watchHelpers() {
+    var helpers = document.querySelector('.mw-add-helpers');
+    if (helpers && !helpers.dataset.mwPatched) {
+      helpers.dataset.mwPatched = '1';
+      var sel = document.getElementById('mwBoardSelect');
+      if (sel) {
+        sel.addEventListener('change', function () {
+          LOG('dropdown changed →', sel.value);
+          updateSaveToBadge();
+        });
+      }
+      updateSaveToBadge();
+      LOG('helpers wired');
+    }
+    setTimeout(watchHelpers, 400);
+  }
+  watchHelpers();
+
+  // ============================================================
+  // IMPROVEMENT: Double-click on empty board → quick-add prompt
+  // ============================================================
+  function setupQuickAdd() {
+    var wbId = isTeacher ? 'memoryWhiteboard' : 'studentMemoryWhiteboard';
+    var wb = document.getElementById(wbId);
+    if (!wb || wb.dataset.mwQuickAdd) return;
+    wb.dataset.mwQuickAdd = '1';
+
+    wb.addEventListener('dblclick', function (e) {
+      if (e.target.closest('.sticky-note, .student-sticky-note, button, .mw-zoom-float, .mw-minimap')) return;
+      var text = prompt('Quick note text (min 10 chars):');
+      if (!text || text.trim().length < 10) return;
+
+      var rect = wb.getBoundingClientRect();
+      var canvas = wb.querySelector('.wb-canvas');
+      var panX = 0, panY = 0, zoom = 1;
+      if (canvas) {
+        var tr = canvas.style.transform || '';
+        var m = tr.match(/translate\(([-\d.]+)px,\s*([-\d.]+)px\)\s*scale\(([-\d.]+)\)/);
+        if (m) { panX = parseFloat(m[1]); panY = parseFloat(m[2]); zoom = parseFloat(m[3]); }
+      }
+      var xPct = ((e.clientX - rect.left - panX) / zoom / rect.width) * 100;
+      var yPct = ((e.clientY - rect.top - panY) / zoom / rect.height) * 100;
+      xPct = Math.max(5, Math.min(88, xPct));
+      yPct = Math.max(5, Math.min(88, yPct));
+
+      var spaceId = getCurrentSpaceId();
+      var author = isTeacher
+        ? ((typeof teacherName !== 'undefined') ? teacherName : 'Teacher')
+        : (localStorage.getItem('studentName') || 'Student');
+      var note = buildNote(text.trim(), author, '#FFEB3B', spaceId, { x: xPct, y: yPct });
+      saveNoteToSpace(note, spaceId, function (ok) {
+        if (ok) notify('Quick note added ✓', 'success');
+      });
+    });
+    LOG('quick-add enabled (double-click on board)');
+  }
+
+  // Wire when memory wall is visible
+  setInterval(function () {
+    var sectionId = isTeacher ? 'memoryWall' : 'studentMemoryWall';
+    var section = document.getElementById(sectionId);
+    if (section && section.offsetParent !== null) {
+      setupQuickAdd();
+    }
+  }, 1500);
+
+  // ============================================================
+  // Diagnostic
+  // ============================================================
+  window.__mwPatchDebug = function () {
+    console.log('--- MW v5 PATCH DEBUG ---');
+    console.log('current space:', getCurrentSpaceId());
+    console.log('dropdown value:', (document.getElementById('mwBoardSelect') || {}).value);
+    console.log('pending position:', getPendingPositionFromLabel());
+    console.log('save-to badge:', document.querySelector('.mw-save-to-badge')?.textContent);
+    console.log('override status:');
+    console.log('  studentSubmitMemory is mine:', window.studentSubmitMemory === handleStudentSubmit);
+    console.log('  submitMemory is mine:', window.submitMemory === handleTeacherSubmit);
+  };
+  LOG('patch ready — type __mwPatchDebug() to verify');
+})();
+</script>
 
 </body>
 </html>
