@@ -4999,6 +4999,1129 @@ LOG('__mwDebug() ready');
 })();
 </script>
 
+<style id="memory-wall-v3-styles">
+/* ============================================================
+   MEMORY WALL v3 — position picker, selection, extras
+   ============================================================ */
+
+.whiteboard-controls { display: none !important; }
+
+.wb-canvas {
+  position: absolute;
+  inset: 0;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+.sticky-note.selected,
+.student-sticky-note.selected {
+  outline: 3px solid var(--ember, #ff4714);
+  outline-offset: 4px;
+  z-index: 100 !important;
+  box-shadow:
+    0 0 0 6px color-mix(in srgb, var(--ember, #ff4714) 25%, transparent),
+    0 12px 32px rgba(60, 42, 15, 0.28) !important;
+}
+
+/* ---------- HEADER CONTROLS ---------- */
+.mw-header-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0 8px;
+  justify-content: center;
+}
+.mw-header-tabs {
+  display: flex;
+  gap: 3px;
+  padding: 3px;
+  background: var(--ink-2, #faf5e8);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow-x: auto;
+  flex: 1 1 auto;
+  min-width: 0;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.mw-header-tabs::-webkit-scrollbar { display: none; }
+.mw-tab {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-ui, system-ui, sans-serif);
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+.mw-tab:hover { background: var(--card); color: var(--text); }
+.mw-tab.active {
+  background: var(--gradient-flame, linear-gradient(135deg, #ffaa33 0%, #ff4714 50%, #d61f00 100%));
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(255, 71, 20, 0.28);
+}
+.mw-tab-del {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  font-size: 11px;
+  line-height: 1;
+  opacity: 0.8;
+}
+.mw-tab-del:hover { background: #ef4444; color: #fff; opacity: 1; }
+.mw-add-btn {
+  padding: 6px 10px;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--text-muted);
+  font-family: var(--font-ui, system-ui, sans-serif);
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.mw-add-btn:hover {
+  background: var(--gradient-flame, linear-gradient(135deg, #ffaa33 0%, #ff4714 50%, #d61f00 100%));
+  color: #fff;
+  border-color: transparent;
+}
+.mw-zoom-inline {
+  display: flex;
+  gap: 1px;
+  align-items: center;
+  padding: 3px;
+  background: var(--ink-2, #faf5e8);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+.mw-zoom-inline button {
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+.mw-zoom-inline button:hover { background: var(--card); }
+.mw-zoom-inline button.mw-extra { font-size: 0.75rem; width: 26px; }
+.mw-zoom-inline .mw-zoom-pct {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  min-width: 36px;
+  text-align: center;
+  padding: 0 2px;
+  user-select: none;
+}
+
+/* Sync indicator */
+.mw-sync-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+  margin-left: 4px;
+}
+.mw-sync-indicator.offline { background: rgba(245, 158, 11, 0.14); color: #b45309; }
+.mw-sync-indicator::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: mw-sync-blink 1.8s ease-in-out infinite;
+}
+@keyframes mw-sync-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* Floating zoom for mobile */
+.mw-zoom-float {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  z-index: 25;
+  display: none;
+  padding: 3px;
+  background: color-mix(in srgb, var(--card) 94%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(60, 42, 15, 0.14);
+  gap: 2px;
+}
+.mw-zoom-float button {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-mono, monospace);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+.mw-zoom-float button:hover { background: var(--ink-2); }
+
+/* Fullscreen */
+.content-card.mw-fullscreen {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 9999 !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+.content-card.mw-fullscreen .memory-whiteboard,
+.content-card.mw-fullscreen #studentMemoryWhiteboard {
+  flex: 1 !important;
+  height: auto !important;
+}
+
+/* ---------- POSITION PICKER ---------- */
+.mw-pos-picker { margin-bottom: 18px; }
+.mw-pos-picker > label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+.mw-pos-map {
+  position: relative;
+  height: 180px;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(90deg, rgba(60,42,15,0.06) 1px, transparent 1px),
+    linear-gradient(rgba(60,42,15,0.06) 1px, transparent 1px);
+  background-size: 24px 24px;
+  overflow: hidden;
+  cursor: crosshair;
+  user-select: none;
+  touch-action: manipulation;
+}
+.mw-pos-map::before {
+  content: 'Click to choose position';
+  position: absolute;
+  top: 8px;
+  left: 12px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  pointer-events: none;
+  font-weight: 600;
+  opacity: 0.7;
+}
+.mw-pos-marker {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--ember, #ff4714);
+  border: 3px solid #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  transition: left 0.12s ease, top 0.12s ease;
+  z-index: 2;
+}
+.mw-pos-label {
+  position: absolute;
+  bottom: 8px;
+  right: 10px;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.94);
+  padding: 3px 10px;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+@media (max-width: 900px) {
+  .mw-header-controls { order: 3; flex-basis: 100%; justify-content: flex-start; margin: 8px 0 0 0; }
+  .mw-zoom-float { display: flex; }
+}
+</style>
+
+<script id="memory-wall-v3-script">
+(function () {
+  'use strict';
+  if (window.__memoryWallUpgrade) return;
+  window.__memoryWallUpgrade = true;
+
+  var LOG = function () { var a = [].slice.call(arguments); a.unshift('[MW]'); console.log.apply(console, a); };
+
+  LOG('v3 script loaded');
+
+  var ZOOM_MIN = 0.4, ZOOM_MAX = 3.0, ZOOM_STEP = 0.2;
+  var LS_SPACE_KEY = 'mw_current_space_';
+  var LS_SPACES_KEY = 'mw_spaces_';
+
+  var isTeacher = !!document.querySelector('.teacher-emoji')
+    || window.location.href.indexOf('teachermode') !== -1;
+  var WB_ID      = isTeacher ? 'memoryWhiteboard' : 'studentMemoryWhiteboard';
+  var NOTES_ID   = isTeacher ? 'stickyNotesContainer' : 'studentStickyNotesContainer';
+  var SECTION_ID = isTeacher ? 'memoryWall' : 'studentMemoryWall';
+  LOG('mode =', isTeacher ? 'TEACHER' : 'STUDENT');
+
+  var currentSpaceId = 'main';
+  var currentZoom = 1;
+  var currentPanX = 0, currentPanY = 0;
+  var spacesList = [{ id: 'main', name: 'Main Board', createdAt: 0 }];
+  var controlsBuilt = false;
+  var notesRef = null;
+  var spaceMetaRef = null;
+  var pendingPosition = { x: 40, y: 40 };
+  var selectedNoteId = null;
+  var lastSpaceMetaSignature = '';
+
+  function getClassCode() { return (typeof currentClassCode !== 'undefined' && currentClassCode) || null; }
+  function getDatabase() { return (typeof database !== 'undefined' && database) || null; }
+  function getIsDemo() { return (typeof isDemoMode !== 'undefined') ? isDemoMode : false; }
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c];
+    });
+  }
+
+  function spaceKey()    { return LS_SPACE_KEY + (getClassCode() || 'global'); }
+  function spacesLsKey() { return LS_SPACES_KEY + (getClassCode() || 'global'); }
+  function notesLsKey(sid) {
+    var cc = getClassCode();
+    return sid === 'main'
+      ? 'memoryWall_notes_' + cc
+      : 'memoryWall_notes_' + cc + '_' + sid;
+  }
+  function getNotesPath(sid) {
+    var cc = getClassCode(); if (!cc) return null;
+    return sid === 'main'
+      ? 'memoryWall/' + cc + '/notes'
+      : 'memoryWall/' + cc + '/spaces/' + sid + '/notes';
+  }
+  function getSpaceMetaPath() {
+    var cc = getClassCode();
+    return cc ? 'memoryWall/' + cc + '/spaceMeta' : null;
+  }
+
+  function getNotesArray() {
+    try {
+      if (isTeacher) return (typeof memoryWallNotes !== 'undefined') ? memoryWallNotes : [];
+      return (typeof studentMemoryWallNotes !== 'undefined') ? studentMemoryWallNotes : [];
+    } catch (e) { return []; }
+  }
+  function setNotesArray(arr) {
+    try {
+      if (isTeacher) memoryWallNotes = arr;
+      else studentMemoryWallNotes = arr;
+    } catch (e) {}
+  }
+
+  function getWbRect() {
+    var wb = document.getElementById(WB_ID);
+    return wb ? wb.getBoundingClientRect() : { left:0, top:0, width:1, height:1 };
+  }
+
+  // ---------- ZOOM ----------
+  function applyTransform(smooth) {
+    var c = document.querySelector('#' + WB_ID + ' .wb-canvas');
+    if (!c) return;
+    c.style.transition = smooth ? 'transform 0.12s ease-out' : 'none';
+    c.style.transform = 'translate(' + currentPanX + 'px, ' + currentPanY + 'px) scale(' + currentZoom + ')';
+  }
+  function setZoom(z) {
+    currentZoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, z));
+    applyTransform(true);
+    updateZoomLabels();
+  }
+  function resetView() {
+    currentZoom = 1; currentPanX = 0; currentPanY = 0;
+    applyTransform(true);
+    updateZoomLabels();
+  }
+  function zoomToFit() {
+    var notes = getNotesArray();
+    if (notes.length === 0) { resetView(); return; }
+    var minX = 100, minY = 100, maxX = 0, maxY = 0;
+    notes.forEach(function (n) {
+      var nx = Number(n.x), ny = Number(n.y);
+      if (isNaN(nx) || isNaN(ny)) return;
+      if (nx < minX) minX = nx;
+      if (ny < minY) minY = ny;
+      if (nx > maxX) maxX = nx;
+      if (ny > maxY) maxY = ny;
+    });
+    var pad = 8;
+    var spanX = Math.max(20, (maxX - minX) + pad * 2);
+    var spanY = Math.max(20, (maxY - minY) + pad * 2);
+    var z = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, Math.min(100 / spanX, 100 / spanY)));
+    var cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
+    var r = getWbRect();
+    currentZoom = z;
+    currentPanX = r.width / 2 - (cx / 100) * r.width * z;
+    currentPanY = r.height / 2 - (cy / 100) * r.height * z;
+    applyTransform(true);
+    updateZoomLabels();
+  }
+  function updateZoomLabels() {
+    var pct = Math.round(currentZoom * 100) + '%';
+    document.querySelectorAll('.mw-zoom-pct').forEach(function (el) { el.textContent = pct; });
+  }
+
+  // ---------- CANVAS WRAPPER ----------
+  function ensureCanvasWrapper(wb) {
+    var existing = wb.querySelector('.wb-canvas');
+    if (existing) return existing;
+    var canvas = document.createElement('div');
+    canvas.className = 'wb-canvas';
+    Array.from(wb.children).forEach(function (child) {
+      if (child.classList.contains('mw-zoom-float')
+          || child.classList.contains('whiteboard-controls')) return;
+      canvas.appendChild(child);
+    });
+    wb.insertBefore(canvas, wb.firstChild);
+    return canvas;
+  }
+
+  // ---------- SYNC INDICATOR ----------
+  function updateSyncIndicator() {
+    var el = document.querySelector('.mw-sync-indicator');
+    if (!el) return;
+    var online = !!getDatabase() && !!getClassCode() && !getIsDemo();
+    el.textContent = online ? 'Synced' : 'Local';
+    el.classList.toggle('offline', !online);
+  }
+  function ensureSyncIndicator(header) {
+    if (header.querySelector('.mw-sync-indicator')) return;
+    var el = document.createElement('span');
+    el.className = 'mw-sync-indicator';
+    el.textContent = 'Synced';
+    var ctrl = header.querySelector('.mw-header-controls');
+    if (ctrl) ctrl.appendChild(el);
+    updateSyncIndicator();
+  }
+
+  // ---------- BUILD CONTROLS ----------
+  function buildControls() {
+    if (controlsBuilt) return;
+    var wb = document.getElementById(WB_ID);
+    if (!wb) return;
+    var card = wb.closest('.content-card');
+    var header = card ? card.querySelector('.content-header') : null;
+    if (!header) return;
+    if (header.querySelector('.mw-header-controls')) { controlsBuilt = true; return; }
+
+    var wrap = document.createElement('div');
+    wrap.className = 'mw-header-controls';
+
+    var tabs = document.createElement('div');
+    tabs.className = 'mw-header-tabs';
+    wrap.appendChild(tabs);
+
+    var addBtn = document.createElement('button');
+    addBtn.className = 'mw-add-btn';
+    addBtn.textContent = '+ New Space';
+    addBtn.onclick = addNewSpace;
+    wrap.appendChild(addBtn);
+
+    var zoom = document.createElement('div');
+    zoom.className = 'mw-zoom-inline';
+    zoom.innerHTML =
+      '<button data-act="out" title="Zoom out">\u2212</button>' +
+      '<span class="mw-zoom-pct">100%</span>' +
+      '<button data-act="in" title="Zoom in">+</button>' +
+      '<button data-act="fit" class="mw-extra" title="Zoom to fit">\u2317</button>' +
+      '<button data-act="full" class="mw-extra" title="Fullscreen">\u26F6</button>' +
+      '<button data-act="reset" title="Reset view">\u2302</button>';
+    zoom.querySelector('[data-act="out"]').onclick = function () { setZoom(currentZoom - ZOOM_STEP); };
+    zoom.querySelector('[data-act="in"]').onclick  = function () { setZoom(currentZoom + ZOOM_STEP); };
+    zoom.querySelector('[data-act="fit"]').onclick = zoomToFit;
+    zoom.querySelector('[data-act="full"]').onclick = toggleFullscreen;
+    zoom.querySelector('[data-act="reset"]').onclick = resetView;
+    wrap.appendChild(zoom);
+
+    var addMemoryBtn = header.querySelector('button');
+    if (addMemoryBtn) header.insertBefore(wrap, addMemoryBtn);
+    else header.appendChild(wrap);
+
+    ensureSyncIndicator(header);
+
+    var float = document.createElement('div');
+    float.className = 'mw-zoom-float';
+    float.innerHTML =
+      '<button data-act="out">\u2212</button>' +
+      '<button data-act="in">+</button>' +
+      '<button data-act="fit">\u2317</button>' +
+      '<button data-act="reset">\u2302</button>';
+    float.querySelector('[data-act="out"]').onclick = function () { setZoom(currentZoom - ZOOM_STEP); };
+    float.querySelector('[data-act="in"]').onclick = function () { setZoom(currentZoom + ZOOM_STEP); };
+    float.querySelector('[data-act="fit"]').onclick = zoomToFit;
+    float.querySelector('[data-act="reset"]').onclick = resetView;
+    wb.appendChild(float);
+
+    ensureCanvasWrapper(wb);
+    attachWheel(wb);
+    attachPinch(wb);
+    attachPan(wb);
+
+    loadSpacesFromLocal();
+    renderTabs();
+    ensureSpacesLoaded();
+    updateZoomLabels();
+    updateSyncIndicator();
+
+    controlsBuilt = true;
+    LOG('controls built');
+  }
+
+  function toggleFullscreen() {
+    var card = document.getElementById(WB_ID);
+    card = card ? card.closest('.content-card') : null;
+    if (!card) return;
+    card.classList.toggle('mw-fullscreen');
+    if (card.classList.contains('mw-fullscreen')) {
+      if (card.requestFullscreen) card.requestFullscreen().catch(function () {});
+    } else {
+      if (document.fullscreenElement) document.exitFullscreen().catch(function () {});
+    }
+  }
+
+  // ---------- TABS ----------
+  function renderTabs() {
+    var wb = document.getElementById(WB_ID);
+    var card = wb ? wb.closest('.content-card') : null;
+    var tabs = card ? card.querySelector('.mw-header-tabs') : null;
+    if (!tabs) return;
+
+    tabs.innerHTML = spacesList.map(function (s) {
+      return '<button class="mw-tab' + (s.id === currentSpaceId ? ' active' : '') + '" data-space="' + esc(s.id) + '">' +
+        '<span>' + esc(s.name) + '</span>' +
+        (s.id !== 'main' ? '<span class="mw-tab-del" data-del="' + esc(s.id) + '" title="Delete">\u00D7</span>' : '') +
+        '</button>';
+    }).join('');
+
+    Array.from(tabs.querySelectorAll('.mw-tab')).forEach(function (tab) {
+      tab.onclick = function (e) {
+        var delId = e.target.getAttribute('data-del');
+        if (delId) { e.stopPropagation(); deleteSpace(delId); return; }
+        var sid = tab.getAttribute('data-space');
+        if (sid && sid !== currentSpaceId) switchSpace(sid);
+      };
+      tab.ondblclick = function (e) {
+        if (e.target.getAttribute('data-del')) return;
+        var sid = tab.getAttribute('data-space');
+        if (sid) renameSpace(sid);
+      };
+    });
+  }
+
+  // ---------- SPACES ----------
+  function loadSpacesFromLocal() {
+    try {
+      var saved = localStorage.getItem(spacesLsKey());
+      if (saved) {
+        var parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length) {
+          spacesList = parsed;
+          if (!spacesList.find(function (s) { return s.id === 'main'; })) {
+            spacesList.unshift({ id: 'main', name: 'Main Board', createdAt: 0 });
+          }
+        }
+      }
+      var cur = localStorage.getItem(spaceKey());
+      if (cur) currentSpaceId = cur;
+    } catch (e) {}
+  }
+  function saveSpacesToLocal() {
+    try { localStorage.setItem(spacesLsKey(), JSON.stringify(spacesList)); } catch (e) {}
+  }
+
+  function ensureSpacesLoaded() {
+    if (spaceMetaRef) return;
+    var db = getDatabase(), p = getSpaceMetaPath();
+    if (!db || !p || getIsDemo()) return;
+    spaceMetaRef = db.ref(p);
+    spaceMetaRef.on('value', function (snap) {
+      if (!snap.exists() || !snap.val().spaces) return;
+      var remote = snap.val().spaces;
+      if (!Array.isArray(remote) || !remote.length) return;
+      var sig = JSON.stringify(remote.map(function (s) { return s.id; }).sort());
+      if (sig === lastSpaceMetaSignature) return;
+      lastSpaceMetaSignature = sig;
+      spacesList = remote;
+      if (!spacesList.find(function (s) { return s.id === 'main'; })) {
+        spacesList.unshift({ id: 'main', name: 'Main Board', createdAt: 0 });
+      }
+      saveSpacesToLocal();
+      renderTabs();
+    });
+  }
+
+  function refreshSpaceMeta() {
+    var db = getDatabase(), p = getSpaceMetaPath();
+    if (!db || !p || getIsDemo()) return;
+    db.ref(p).once('value').then(function (snap) {
+      if (snap.exists() && snap.val().spaces) {
+        var remote = snap.val().spaces;
+        if (Array.isArray(remote) && remote.length) {
+          spacesList = remote;
+          if (!spacesList.find(function (s) { return s.id === 'main'; })) {
+            spacesList.unshift({ id: 'main', name: 'Main Board', createdAt: 0 });
+          }
+          saveSpacesToLocal();
+          renderTabs();
+        }
+      }
+    }).catch(function () {});
+  }
+
+  function switchSpace(sid) {
+    currentSpaceId = sid;
+    try { localStorage.setItem(spaceKey(), sid); } catch (e) {}
+    renderTabs();
+    resetView();
+    deselectAll();
+    loadNotesForSpace();
+  }
+
+  async function addNewSpace() {
+    var name = prompt('Name for the new space:', 'Board ' + (spacesList.length + 1));
+    if (!name || !name.trim()) return;
+    var newSpace = {
+      id: 'sp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+      name: name.trim().slice(0, 40),
+      createdAt: Date.now()
+    };
+    spacesList.push(newSpace);
+    saveSpacesToLocal();
+    var db = getDatabase(), p = getSpaceMetaPath();
+    if (db && p && !getIsDemo()) {
+      try { await db.ref(p).update({ spaces: spacesList }); } catch (e) {}
+    }
+    renderTabs();
+    switchSpace(newSpace.id);
+  }
+
+  async function renameSpace(sid) {
+    var space = spacesList.find(function (s) { return s.id === sid; });
+    if (!space) return;
+    var newName = prompt('Rename space:', space.name);
+    if (!newName || !newName.trim()) return;
+    space.name = newName.trim().slice(0, 40);
+    saveSpacesToLocal();
+    var db = getDatabase(), p = getSpaceMetaPath();
+    if (db && p && !getIsDemo()) {
+      try { await db.ref(p).update({ spaces: spacesList }); } catch (e) {}
+    }
+    renderTabs();
+  }
+
+  async function deleteSpace(sid) {
+    if (sid === 'main') return;
+    if (!confirm('Delete this space and all its notes?')) return;
+    spacesList = spacesList.filter(function (s) { return s.id !== sid; });
+    saveSpacesToLocal();
+    var db = getDatabase(), cc = getClassCode(), p = getSpaceMetaPath();
+    if (db && cc && p && !getIsDemo()) {
+      try {
+        await db.ref(p).update({ spaces: spacesList });
+        await db.ref('memoryWall/' + cc + '/spaces/' + sid).remove();
+      } catch (e) {}
+    } else {
+      try { localStorage.removeItem(notesLsKey(sid)); } catch (e) {}
+    }
+    if (currentSpaceId === sid) switchSpace('main');
+    else renderTabs();
+  }
+
+  // ---------- NOTES ----------
+  function loadNotesForSpace() {
+    var cc = getClassCode();
+    if (!cc) return;
+    if (notesRef) { try { notesRef.off(); } catch (e) {} notesRef = null; }
+    deselectAll();
+
+    var db = getDatabase();
+    if (!db || getIsDemo()) {
+      try {
+        var raw = localStorage.getItem(notesLsKey(currentSpaceId));
+        setNotesArray(raw ? JSON.parse(raw) : []);
+      } catch (e) { setNotesArray([]); }
+      renderCurrentNotes();
+      return;
+    }
+
+    var path = getNotesPath(currentSpaceId);
+    if (!path) return;
+    notesRef = db.ref(path);
+    notesRef.on('value', function (snap) {
+      var arr = [];
+      if (snap.exists()) snap.forEach(function (child) { arr.push(Object.assign({ id: child.key }, child.val())); });
+      setNotesArray(arr);
+      renderCurrentNotes();
+    });
+  }
+
+  function renderCurrentNotes() {
+    var container = document.getElementById(NOTES_ID);
+    if (!container) return;
+    container.innerHTML = '';
+    var notes = getNotesArray();
+    var wb = document.getElementById(WB_ID);
+    var welcome = wb ? wb.querySelector('.welcome-note') : null;
+
+    if (!notes || notes.length === 0) {
+      if (welcome) welcome.style.display = '';
+      return;
+    }
+    if (welcome) welcome.style.display = 'none';
+
+    var createFn = isTeacher ? window.createStickyNoteElement : window.createStudentStickyNoteElement;
+    if (typeof createFn !== 'function') return;
+
+    notes.forEach(function (n) {
+      var el = createFn(n);
+      if (!el) return;
+      var replaced = attachDrag(el, n);
+      var target = replaced || el;
+      target.addEventListener('click', function (e) {
+        if (e.target.closest('button, .btn-note, .btn-student-note')) return;
+        if (target.classList.contains('dragging')) return;
+        selectNote(n.id, target);
+      });
+      container.appendChild(target);
+    });
+  }
+
+  // ---------- ZOOM-AWARE DRAG (simple delta math) ----------
+  function attachDrag(noteElement, note) {
+    var dragging = false, hasMoved = false;
+    var sx = 0, sy = 0, nx0 = 0, ny0 = 0;
+
+    function start(e) {
+      if (e.target.closest('button, .btn-note, .btn-student-note')) return;
+      e.preventDefault();
+      e.stopPropagation();
+      dragging = true; hasMoved = false;
+      var p = e.touches ? e.touches[0] : e;
+      sx = p.clientX; sy = p.clientY;
+      nx0 = Number(note.x); ny0 = Number(note.y);
+      if (isNaN(nx0)) nx0 = 40;
+      if (isNaN(ny0)) ny0 = 40;
+      document.addEventListener('mousemove', drag);
+      document.addEventListener('mouseup', end);
+      document.addEventListener('touchmove', drag, { passive: false });
+      document.addEventListener('touchend', end);
+    }
+    function drag(e) {
+      if (!dragging) return;
+      e.preventDefault();
+      var p = e.touches ? e.touches[0] : e;
+      var dx = p.clientX - sx, dy = p.clientY - sy;
+      if (!hasMoved && Math.abs(dx) + Math.abs(dy) < 3) return;
+      if (!hasMoved) {
+        hasMoved = true;
+        noteElement.classList.add('dragging');
+        noteElement.style.zIndex = '1000';
+      }
+      var r = getWbRect();
+      var pctDx = (dx / currentZoom) / r.width * 100;
+      var pctDy = (dy / currentZoom) / r.height * 100;
+      var newX = Math.max(0, Math.min(92, nx0 + pctDx));
+      var newY = Math.max(0, Math.min(92, ny0 + pctDy));
+      note.x = newX; note.y = newY;
+      noteElement.style.left = newX + '%';
+      noteElement.style.top = newY + '%';
+    }
+    function end() {
+      if (!dragging) return;
+      dragging = false;
+      document.removeEventListener('mousemove', drag);
+      document.removeEventListener('mouseup', end);
+      document.removeEventListener('touchmove', drag);
+      document.removeEventListener('touchend', end);
+      if (hasMoved) {
+        noteElement.classList.remove('dragging');
+        noteElement.style.zIndex = '2';
+        var db = getDatabase(), path = getNotesPath(currentSpaceId);
+        if (db && path && note.id) {
+          db.ref(path + '/' + note.id).update({ x: note.x, y: note.y }).catch(function () {});
+        } else {
+          window.saveMemoryWallToLocalStorage();
+        }
+      }
+    }
+
+    var fresh = noteElement.cloneNode(true);
+    if (noteElement.parentNode) noteElement.parentNode.replaceChild(fresh, noteElement);
+    fresh.addEventListener('mousedown', start);
+    fresh.addEventListener('touchstart', start, { passive: false });
+    return fresh;
+  }
+
+  // ---------- SELECTION ----------
+  function selectNote(id, el) {
+    if (selectedNoteId === id) { deselectAll(); return; }
+    deselectAll();
+    selectedNoteId = id;
+    if (el) el.classList.add('selected');
+  }
+  function deselectAll() {
+    selectedNoteId = null;
+    document.querySelectorAll('.sticky-note.selected, .student-sticky-note.selected').forEach(function (el) {
+      el.classList.remove('selected');
+    });
+  }
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') { deselectAll(); return; }
+    if ((e.key === 'Delete' || e.key === 'Backspace') && selectedNoteId) {
+      var tag = (document.activeElement && document.activeElement.tagName || '').toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || (document.activeElement && document.activeElement.isContentEditable)) return;
+      e.preventDefault();
+      window.deleteNote(selectedNoteId, { stopPropagation: function () {} });
+      deselectAll();
+    }
+  });
+  document.addEventListener('mousedown', function (e) {
+    if (!e.target.closest('.sticky-note, .student-sticky-note')) deselectAll();
+  });
+
+  // ---------- WHEEL / PINCH / PAN ----------
+  function attachWheel(wb) {
+    wb.addEventListener('wheel', function (e) {
+      if (!e.ctrlKey && !e.metaKey) return;
+      e.preventDefault();
+      setZoom(currentZoom + (e.deltaY > 0 ? -1 : 1) * 0.08);
+    }, { passive: false });
+  }
+  function attachPinch(wb) {
+    var d0 = 0, z0 = 1;
+    wb.addEventListener('touchstart', function (e) {
+      if (e.touches.length !== 2) return;
+      var dx = e.touches[0].clientX - e.touches[1].clientX;
+      var dy = e.touches[0].clientY - e.touches[1].clientY;
+      d0 = Math.hypot(dx, dy); z0 = currentZoom;
+    }, { passive: true });
+    wb.addEventListener('touchmove', function (e) {
+      if (e.touches.length !== 2 || !d0) return;
+      e.preventDefault();
+      var dx = e.touches[0].clientX - e.touches[1].clientX;
+      var dy = e.touches[0].clientY - e.touches[1].clientY;
+      setZoom(z0 * Math.hypot(dx, dy) / d0);
+    }, { passive: false });
+    wb.addEventListener('touchend', function () { d0 = 0; });
+  }
+  function attachPan(wb) {
+    var p = false, sx = 0, sy = 0, px = 0, py = 0;
+    wb.addEventListener('mousedown', function (e) {
+      if (currentZoom <= 1) return;
+      if (e.target.closest('.sticky-note, .student-sticky-note, button, .welcome-note, .mw-zoom-float')) return;
+      e.preventDefault();
+      p = true; sx = e.clientX; sy = e.clientY; px = currentPanX; py = currentPanY;
+      wb.style.cursor = 'grabbing';
+    });
+    document.addEventListener('mousemove', function (e) {
+      if (!p) return;
+      currentPanX = px + (e.clientX - sx);
+      currentPanY = py + (e.clientY - sy);
+      applyTransform(false);
+    });
+    document.addEventListener('mouseup', function () {
+      if (p) { p = false; wb.style.cursor = ''; }
+    });
+  }
+
+  // ---------- POSITION PICKER ----------
+  function injectPositionPicker() {
+    if (document.getElementById('mwPosPicker')) return;
+    var textId = isTeacher ? 'addMemoryText' : 'studentAddMemoryText';
+    var textarea = document.getElementById(textId);
+    if (!textarea) return;
+    var formGroup = textarea.closest('.form-group');
+    if (!formGroup) return;
+
+    pendingPosition = { x: 40, y: 40 };
+
+    var wrap = document.createElement('div');
+    wrap.id = 'mwPosPicker';
+    wrap.className = 'mw-pos-picker';
+    wrap.innerHTML =
+      '<label>\uD83D\uDCCD Where should it appear? ' +
+      '<span style="font-weight:400;color:var(--text-muted);font-size:0.75rem;">(click the map)</span></label>' +
+      '<div class="mw-pos-map" id="mwPosMap">' +
+      '<div class="mw-pos-marker" id="mwPosMarker" style="left:40%;top:40%;"></div>' +
+      '<div class="mw-pos-label" id="mwPosLabel">40%, 40%</div>' +
+      '</div>';
+    formGroup.parentNode.insertBefore(wrap, formGroup);
+
+    var map = document.getElementById('mwPosMap');
+    map.addEventListener('click', function (e) {
+      var rect = map.getBoundingClientRect();
+      var xPct = ((e.clientX - rect.left) / rect.width) * 100;
+      var yPct = ((e.clientY - rect.top) / rect.height) * 100;
+      setPendingPosition(xPct, yPct);
+    });
+  }
+  function setPendingPosition(x, y) {
+    pendingPosition = { x: Math.max(5, Math.min(88, x)), y: Math.max(5, Math.min(88, y)) };
+    var marker = document.getElementById('mwPosMarker');
+    var label = document.getElementById('mwPosLabel');
+    if (marker) {
+      marker.style.left = pendingPosition.x + '%';
+      marker.style.top = pendingPosition.y + '%';
+    }
+    if (label) label.textContent = Math.round(pendingPosition.x) + '%, ' + Math.round(pendingPosition.y) + '%';
+  }
+
+  // ---------- OVERRIDE SUBMIT FUNCTIONS ----------
+  function buildNoteObject(text, author, color) {
+    var studentId = localStorage.getItem('studentUserId') || 'student_' + Date.now();
+    return {
+      id: 'note_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+      text: text,
+      author: author,
+      color: color || '#FFEB3B',
+      x: pendingPosition.x,
+      y: pendingPosition.y,
+      rotation: (Math.random() * 8) - 4,
+      likes: 0,
+      likedBy: [],
+      createdAt: new Date().toISOString(),
+      classCode: getClassCode(),
+      spaceId: currentSpaceId,
+      isStudentNote: !isTeacher,
+      isTeacherNote: isTeacher,
+      studentId: isTeacher ? null : studentId,
+      teacherId: isTeacher ? ((typeof teacherId !== 'undefined') ? teacherId : null) : null
+    };
+  }
+  function saveNoteToCurrentSpace(note) {
+    var db = getDatabase();
+    if (!db || getIsDemo()) {
+      var arr = getNotesArray();
+      arr.push(note);
+      setNotesArray(arr);
+      window.saveMemoryWallToLocalStorage();
+      renderCurrentNotes();
+    } else {
+      window.saveNoteToFirebase(note);
+    }
+  }
+
+  window.submitMemory = function () {
+    var textEl = document.getElementById('addMemoryText');
+    var authorEl = document.getElementById('addMemoryAuthor');
+    var text = textEl ? textEl.value.trim() : '';
+    var author = (authorEl && authorEl.value.trim()) || 'Anonymous';
+    var color = (typeof selectedAddMemoryColor !== 'undefined') ? selectedAddMemoryColor : '#FFEB3B';
+    if (!text) { window.showNotification && window.showNotification('Write something first!', 'error'); return; }
+    if (text.length < 10) { window.showNotification && window.showNotification('At least 10 characters please', 'warning'); return; }
+    saveNoteToCurrentSpace(buildNoteObject(text, author, color));
+    window.showNotification && window.showNotification('Memory added!', 'success');
+    if (typeof window.backToMemoryWall === 'function') window.backToMemoryWall();
+  };
+
+  window.studentSubmitMemory = function () {
+    var textEl = document.getElementById('studentAddMemoryText');
+    var authorEl = document.getElementById('studentAddMemoryAuthor');
+    var text = textEl ? textEl.value.trim() : '';
+    var author = (authorEl && authorEl.value.trim()) || 'Student';
+    var color = (typeof studentSelectedAddMemoryColor !== 'undefined') ? studentSelectedAddMemoryColor : '#FFEB3B';
+    if (!text) { window.showNotification && window.showNotification('Write something first!', 'error'); return; }
+    if (text.length < 10) { window.showNotification && window.showNotification('At least 10 characters please', 'warning'); return; }
+    saveNoteToCurrentSpace(buildNoteObject(text, author, color));
+    window.showNotification && window.showNotification('Memory added!', 'success');
+    if (typeof window.studentBackToMemoryWall === 'function') window.studentBackToMemoryWall();
+  };
+
+  window.addMemoryFromModal = function () {
+    var textEl = document.getElementById('modalMemoryText');
+    var authorEl = document.getElementById('modalMemoryAuthor');
+    var text = textEl ? textEl.value.trim() : '';
+    var author = (authorEl && authorEl.value.trim()) || 'Anonymous';
+    var color = (typeof selectedNoteColor !== 'undefined') ? selectedNoteColor : '#FFEB3B';
+    if (!text) { window.showNotification && window.showNotification('Write something first!', 'error'); return; }
+    saveNoteToCurrentSpace(buildNoteObject(text, author, color));
+    if (typeof window.hideModal === 'function') window.hideModal('memoryModal');
+    window.showNotification && window.showNotification('Memory added!', 'success');
+  };
+
+  // ---------- PUBLIC OVERRIDES ----------
+  window.saveMemoryWallToLocalStorage = function () {
+    var cc = getClassCode(); if (!cc) return;
+    try { localStorage.setItem(notesLsKey(currentSpaceId), JSON.stringify(getNotesArray())); } catch (e) {}
+  };
+
+  window.saveNoteToFirebase = function (note) {
+    var db = getDatabase(), cc = getClassCode();
+    if (!db || !cc) return;
+    var path = getNotesPath(currentSpaceId);
+    if (!path) return;
+    var ref = db.ref(path).push();
+    note.id = ref.key;
+    ref.set(note).catch(function () {});
+  };
+
+  window.deleteNote = function (id, ev) {
+    if (ev) ev.stopPropagation();
+    if (!confirm('Delete this note?')) return;
+    var db = getDatabase();
+    if (!db || getIsDemo()) {
+      setNotesArray(getNotesArray().filter(function (n) { return n.id !== id; }));
+      window.saveMemoryWallToLocalStorage();
+      renderCurrentNotes();
+    } else {
+      var path = getNotesPath(currentSpaceId);
+      if (path) db.ref(path + '/' + id).remove();
+    }
+  };
+
+  window.likeNote = function (id, ev) {
+    if (ev) ev.stopPropagation();
+    var note = getNotesArray().find(function (n) { return n.id === id; });
+    if (!note) return;
+    note.likes = (note.likes || 0) + 1;
+    var el = document.getElementById('note-' + id);
+    var span = el && el.querySelector('.note-likes span:last-child');
+    if (span) span.textContent = note.likes;
+    var db = getDatabase();
+    if (!db || getIsDemo()) window.saveMemoryWallToLocalStorage();
+    else {
+      var path = getNotesPath(currentSpaceId);
+      if (path) db.ref(path + '/' + id).update({ likes: note.likes });
+    }
+  };
+
+  window.studentLikeNote = function (id, ev) {
+    if (ev) ev.stopPropagation();
+    var note = getNotesArray().find(function (n) { return n.id === id; });
+    if (!note) return;
+    var uid = localStorage.getItem('studentUserId');
+    if (!uid || (note.likedBy || []).indexOf(uid) !== -1) return;
+    note.likes = (note.likes || 0) + 1;
+    note.likedBy = (note.likedBy || []).concat([uid]);
+    var el = document.getElementById('student-note-' + id);
+    var span = el && el.querySelector('.student-note-likes span:last-child');
+    if (span) span.textContent = note.likes;
+    var db = getDatabase();
+    var path = getNotesPath(currentSpaceId);
+    if (db && path) db.ref(path + '/' + id).update({ likes: note.likes, likedBy: note.likedBy });
+  };
+
+  // Hook Add Memory page to inject picker
+  var addPageFn = isTeacher ? 'showAddMemoryPage' : 'showStudentAddMemoryPage';
+  var origAddPage = window[addPageFn];
+  if (typeof origAddPage === 'function') {
+    window[addPageFn] = function () {
+      var r = origAddPage.apply(this, arguments);
+      setTimeout(injectPositionPicker, 120);
+      return r;
+    };
+  }
+
+  // Sync on tab focus
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) return;
+    refreshSpaceMeta();
+    updateSyncIndicator();
+    if (currentSpaceId && getClassCode()) loadNotesForSpace();
+  });
+
+  // Class switch
+  var origSwitch = window.switchClass;
+  if (typeof origSwitch === 'function') {
+    window.switchClass = async function () {
+      var r = await origSwitch.apply(this, arguments);
+      if (notesRef) { try { notesRef.off(); } catch (e) {} notesRef = null; }
+      if (spaceMetaRef) { try { spaceMetaRef.off(); } catch (e) {} spaceMetaRef = null; }
+      spacesList = [{ id: 'main', name: 'Main Board', createdAt: 0 }];
+      currentSpaceId = 'main';
+      lastSpaceMetaSignature = '';
+      resetView();
+      loadSpacesFromLocal();
+      renderTabs();
+      ensureSpacesLoaded();
+      loadNotesForSpace();
+      updateSyncIndicator();
+      return r;
+    };
+  }
+
+  // Visibility watch
+  function watchSection() {
+    var section = document.getElementById(SECTION_ID);
+    if (!section) { setTimeout(watchSection, 500); return; }
+    var check = function () {
+      if (section.offsetParent === null) return;
+      if (!controlsBuilt) buildControls();
+      refreshSpaceMeta();
+    };
+    new MutationObserver(check).observe(section, { attributes: true, attributeFilter: ['style', 'class'] });
+    check();
+  }
+
+  function boot() { LOG('booting'); watchSection(); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+
+  window.__mwDebug = function () {
+    console.log('--- MW v3 DEBUG ---');
+    console.log('mode:', isTeacher ? 'TEACHER' : 'STUDENT');
+    console.log('class code:', getClassCode());
+    console.log('controls built:', controlsBuilt);
+    console.log('current space:', currentSpaceId);
+    console.log('pending position:', pendingPosition);
+    console.log('spaces:', spacesList.map(function (s) { return s.name + ' (' + s.id + ')'; }));
+    console.log('notes count:', getNotesArray().length);
+    console.log('sync:', (getDatabase() && getClassCode() && !getIsDemo()) ? 'online' : 'local');
+  };
+  LOG('type __mwDebug() for diagnostics');
+})();
+</script>
+
 </body>
 </html>
 
