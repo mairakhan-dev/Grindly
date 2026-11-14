@@ -4925,25 +4925,25 @@ function openPresentationMode() {
 </script>
 
 
-<script id="mw-v7-clean">
+<script id="mw-v8-fix">
 (function () {
   'use strict';
-  if (window.__mwV7Clean) return;
-  window.__mwV7Clean = true;
+  if (window.__mwV8) return;
+  window.__mwV8 = true;
 
   var isTeacher = window.location.href.indexOf('teachermode') !== -1
                 || !!document.querySelector('.teacher-emoji');
   var WB_ID = isTeacher ? 'memoryWhiteboard' : 'studentMemoryWhiteboard';
   var SECTION_ID = isTeacher ? 'memoryWall' : 'studentMemoryWall';
 
-  function log() { var a = [].slice.call(arguments); a.unshift('[MW v7]'); console.log.apply(console, a); }
-  function getClassCode() { return (typeof currentClassCode !== 'undefined') ? currentClassCode : null; }
-  function getDb() { return (typeof database !== 'undefined') ? database : null; }
-  function getIsDemo() { return (typeof isDemoMode !== 'undefined') ? isDemoMode : false; }
+  function log() { var a = [].slice.call(arguments); a.unshift('[MW v8]'); console.log.apply(console, a); }
   function notify(msg, type) {
     if (typeof showNotification === 'function') showNotification(msg, type || 'info');
     else log(msg);
   }
+  function getClassCode() { return (typeof currentClassCode !== 'undefined') ? currentClassCode : null; }
+  function getDb() { return (typeof database !== 'undefined') ? database : null; }
+  function getIsDemo() { return (typeof isDemoMode !== 'undefined') ? isDemoMode : false; }
   function getCurrentSpaceId() {
     var active = document.querySelector('.mw-tab.active');
     if (active) return active.getAttribute('data-space');
@@ -4957,84 +4957,115 @@ function openPresentationMode() {
       ? 'memoryWall/' + cc + '/notes'
       : 'memoryWall/' + cc + '/spaces/' + sid + '/notes';
   }
-
-  // ============================================================
-  // FIX A · Detach deferred listener (stops main notes showing on other boards)
-  // ============================================================
-  function detachDeferredListener() {
-    var db = getDb(), cc = getClassCode();
-    if (!db || !cc) return;
-    try { db.ref('memoryWall/' + cc + '/notes').off('value'); } catch (e) {}
+  function notesLsKey(sid) {
+    var cc = getClassCode();
+    return 'memoryWall_notes_' + cc + (sid === 'main' ? '' : '_' + sid);
   }
 
   // ============================================================
-  // FIX B · Migrate existing notes: force id = Firebase key
-  // (fixes the root cause of drag/like duplication)
+  // ★ THE FIX — always load the CURRENT board, not main
   // ============================================================
-  var migratedSpaces = {};
-  function migrateIds() {
+  var activeRef = null;
+  var activeSpace = null;
+
+  function applyNotes(arr) {
+    try {
+      if (isTeacher) memoryWallNotes = arr;
+      else studentMemoryWallNotes = arr;
+    } catch (e) { log('array assign failed:', e); }
+    var renderFn = isTeacher ? window.renderStickyNotes : window.renderStudentStickyNotes;
+    if (typeof renderFn === 'function') {
+      try { renderFn(); } catch (e) { log('render failed:', e); }
+    }
+    ensureMinimap();
+  }
+
+  function loadCurrentBoard() {
     var db = getDb(), cc = getClassCode();
-    if (!db || !cc || getIsDemo()) return;
+    if (!cc) return;
     var sid = getCurrentSpaceId();
-    var mk = cc + '::' + sid;
-    if (migratedSpaces[mk]) return;
-    migratedSpaces[mk] = true;
     var path = getNotesPath(sid);
     if (!path) return;
-    db.ref(path).once('value').then(function (snap) {
-      if (!snap.exists()) return;
-      var fixes = [];
-      snap.forEach(function (child) {
-        var val = child.val();
-        if (val && val.id && val.id !== child.key) fixes.push(child.key);
+
+    if (activeRef) { try { activeRef.off(); } catch (e) {} activeRef = null; }
+    activeSpace = sid;
+    log('loading board:', sid);
+
+    if (!db || getIsDemo()) {
+      var raw = localStorage.getItem(notesLsKey(sid));
+      applyNotes(raw ? JSON.parse(raw) : []);
+      return;
+    }
+
+    activeRef = db.ref(path);
+    activeRef.on('value', function (snap) {
+      var arr = [];
+      if (snap.exists()) snap.forEach(function (child) {
+        var val = child.val() || {};
+        // Force id = Firebase key (fixes drag-duplication permanently)
+        if (val.id !== child.key) {
+          db.ref(path + '/' + child.key + '/id').set(child.key).catch(function () {});
+        }
+        arr.push(Object.assign({}, val, { id: child.key }));
       });
-      if (!fixes.length) return;
-      log('migrating', fixes.length, 'note ids in', sid);
-      Promise.all(fixes.map(function (key) {
-        return db.ref(path + '/' + key + '/id').set(key);
-      })).then(function () {
-        log('✔ migrated', fixes.length, 'ids');
-      }).catch(function (e) { log('migrate failed:', e); });
-    }).catch(function () {});
+      applyNotes(arr);
+    });
   }
 
+  // Override the deferred scripts' load functions
+  window.loadStudentMemoryWall = loadCurrentBoard;
+  window.loadMemoryWallNotes   = loadCurrentBoard;
+  window.loadMemoryWallFromFirebase = loadCurrentBoard;
+  window.loadMemoryWallFromLocalStorage = loadCurrentBoard;
+
+  // Re-load when user switches boards via v5's own switchSpace
+  document.addEventListener('click', function (e) {
+    var tab = e.target.closest('.mw-tab');
+    if (tab) setTimeout(loadCurrentBoard, 150);
+  }, true);
+
+  // Safety net — catch any board change that slipped through
+  setInterval(function () {
+    var section = document.getElementById(SECTION_ID);
+    if (!section || section.offsetParent === null) return;
+    var sid = getCurrentSpaceId();
+    if (sid !== activeSpace) loadCurrentBoard();
+  }, 1000);
+
   // ============================================================
-  // FIX C · Remove ghost notes (empty text) — once per board
+  // Ghost cleanup — runs ONCE per board, safe
   // ============================================================
-  var cleanedSpaces = {};
+  var cleaned = {};
   function cleanGhosts() {
     var db = getDb(), cc = getClassCode();
     if (!db || !cc || getIsDemo()) return;
     var sid = getCurrentSpaceId();
-    var ck = cc + '::' + sid;
-    if (cleanedSpaces[ck]) return;
-    cleanedSpaces[ck] = true;
+    var key = cc + '::' + sid;
+    if (cleaned[key]) return;
+    cleaned[key] = true;
     var path = getNotesPath(sid);
     if (!path) return;
     db.ref(path).once('value').then(function (snap) {
       if (!snap.exists()) return;
       var ghosts = [];
       snap.forEach(function (child) {
-        var val = child.val();
-        if (!val || !val.text || !String(val.text).trim()) ghosts.push(child.key);
+        var v = child.val();
+        if (!v || !v.text || !String(v.text).trim()) ghosts.push(child.key);
       });
       if (!ghosts.length) return;
-      log('removing', ghosts.length, 'ghost(s) in', sid);
-      ghosts.forEach(function (key) {
-        db.ref(path + '/' + key).remove().catch(function () {});
+      log('removing', ghosts.length, 'ghost(s) from', sid);
+      ghosts.forEach(function (k) {
+        db.ref(path + '/' + k).remove().catch(function () {});
       });
     }).catch(function () {});
   }
 
   // ============================================================
-  // FIX D · Submit handler — save with correct id, auto-switch board
-  // (intercepted BEFORE deferred + v5-patch handlers)
+  // Submit handler — one path, correct id
   // ============================================================
   function doSubmit() {
-    var textId = isTeacher ? 'addMemoryText' : 'studentAddMemoryText';
-    var authorId = isTeacher ? 'addMemoryAuthor' : 'studentAddMemoryAuthor';
-    var textEl = document.getElementById(textId);
-    var authorEl = document.getElementById(authorId);
+    var textEl = document.getElementById(isTeacher ? 'addMemoryText' : 'studentAddMemoryText');
+    var authorEl = document.getElementById(isTeacher ? 'addMemoryAuthor' : 'studentAddMemoryAuthor');
     var text = textEl ? textEl.value.trim() : '';
     var author = (authorEl && authorEl.value.trim()) || (isTeacher ? 'Anonymous' : 'Student');
 
@@ -5044,11 +5075,10 @@ function openPresentationMode() {
     var sel = document.getElementById('mwBoardSelect');
     var spaceId = (sel && sel.value) || getCurrentSpaceId();
 
-    var posLabel = document.getElementById('mwPosLabel');
     var pos = { x: 40, y: 40 };
+    var posLabel = document.getElementById('mwPosLabel');
     if (posLabel) {
-      var txt = (posLabel.textContent || '').replace(/%/g, '');
-      var parts = txt.split(',');
+      var parts = (posLabel.textContent || '').replace(/%/g, '').split(',');
       if (parts.length === 2) {
         pos.x = parseFloat(parts[0]) || 40;
         pos.y = parseFloat(parts[1]) || 40;
@@ -5078,33 +5108,37 @@ function openPresentationMode() {
     var db = getDb(), cc = getClassCode();
 
     if (!db || !cc || getIsDemo()) {
-      var lsKey = 'memoryWall_notes_' + cc + (spaceId === 'main' ? '' : '_' + spaceId);
-      var raw = localStorage.getItem(lsKey);
-      var arr = raw ? JSON.parse(raw) : [];
+      var lsKey = notesLsKey(spaceId);
+      var arr = [];
+      try { arr = JSON.parse(localStorage.getItem(lsKey) || '[]'); } catch (e) {}
       note.id = 'note_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
       arr.push(note);
       localStorage.setItem(lsKey, JSON.stringify(arr));
-      afterSave(spaceId);
+      finishSave(spaceId, note.id);
     } else {
       var path = spaceId === 'main'
         ? 'memoryWall/' + cc + '/notes'
         : 'memoryWall/' + cc + '/spaces/' + spaceId + '/notes';
       var ref = db.ref(path).push();
-      note.id = ref.key;                     // ← CRITICAL: id = Firebase key
-      ref.set(note)
-        .then(function () { afterSave(spaceId); })
-        .catch(function (e) { notify('Save failed', 'error'); log('save failed:', e); });
+      note.id = ref.key;
+      ref.set(note).then(function () {
+        finishSave(spaceId, note.id);
+      }).catch(function (e) {
+        log('save failed:', e);
+        notify('Save failed: ' + (e.message || e), 'error');
+      });
     }
   }
 
-  function afterSave(spaceId) {
+  function finishSave(spaceId, noteId) {
     var sel = document.getElementById('mwBoardSelect');
-    var boardName = 'board';
+    var name = 'board';
     if (sel && sel.options[sel.selectedIndex]) {
-      boardName = sel.options[sel.selectedIndex].textContent.replace(/\s*\(current\)\s*/, '').trim();
+      name = sel.options[sel.selectedIndex].textContent.replace(/\s*\(current\)\s*/, '').trim();
     }
-    notify('Saved to "' + boardName + '" ✓', 'success');
+    notify('Saved to "' + name + '" ✓', 'success');
 
+    // If saved to a different board, switch to it so user can see it
     if (spaceId !== getCurrentSpaceId()) {
       var tab = document.querySelector('.mw-tab[data-space="' + spaceId + '"]');
       if (tab) tab.click();
@@ -5113,28 +5147,24 @@ function openPresentationMode() {
     setTimeout(function () {
       var backFn = isTeacher ? 'backToMemoryWall' : 'studentBackToMemoryWall';
       if (typeof window[backFn] === 'function') window[backFn]();
-      var activeTab = document.querySelector('.mw-tab.active');
-      if (activeTab) activeTab.click();
-      detachDeferredListener();
-    }, 400);
+      setTimeout(loadCurrentBoard, 100);
+    }, 350);
   }
 
   // ============================================================
-  // FIX E · Safe like handler — looks up correct key, never makes ghosts
+  // Safe like — updates only the correct note, never makes ghosts
   // ============================================================
   function doLike(noteId) {
     var db = getDb(), path = getNotesPath(getCurrentSpaceId());
     if (!db || !path) return;
-
     db.ref(path).once('value').then(function (snap) {
       if (!snap.exists()) return;
       var key = null, data = null;
       snap.forEach(function (child) {
-        var val = child.val();
-        if (child.key === noteId || (val && val.id === noteId)) { key = child.key; data = val; }
+        var v = child.val();
+        if (child.key === noteId || (v && v.id === noteId)) { key = child.key; data = v; }
       });
-      if (!key || !data) return;
-
+      if (!key) return;
       var updates = { likes: (data.likes || 0) + 1 };
       if (!isTeacher) {
         var uid = localStorage.getItem('studentUserId');
@@ -5148,7 +5178,7 @@ function openPresentationMode() {
   }
 
   // ============================================================
-  // FIX F · Force minimap visible with inline styles
+  // Minimap — always visible
   // ============================================================
   function ensureMinimap() {
     var wb = document.getElementById(WB_ID);
@@ -5166,17 +5196,17 @@ function openPresentationMode() {
       'background:rgba(255,255,255,0.95)!important;border:1px solid rgba(60,42,15,0.15)!important;' +
       'border-radius:8px!important;box-shadow:0 4px 16px rgba(60,42,15,0.18)!important;' +
       'pointer-events:none!important;overflow:hidden!important;';
-    var dots = minimap.querySelector('.mw-minimap-dots');
     var notes = (isTeacher ? window.memoryWallNotes : window.studentMemoryWallNotes) || [];
+    var dots = minimap.querySelector('.mw-minimap-dots');
     if (dots) {
       dots.innerHTML = notes
-        .filter(function (n) { return n.text && String(n.text).trim(); })
+        .filter(function (n) { return n && n.text && String(n.text).trim(); })
         .map(function (n) {
-          var color = n.color || '#FFEB3B';
+          var c = n.color || '#FFEB3B';
           var x = Math.max(0, Math.min(98, Number(n.x) || 0));
           var y = Math.max(0, Math.min(98, Number(n.y) || 0));
           return '<div style="position:absolute;left:' + x + '%;top:' + y + '%;' +
-                 'width:5px;height:5px;border-radius:1px;background:' + color + ';' +
+                 'width:5px;height:5px;border-radius:1px;background:' + c + ';' +
                  'transform:translate(-50%,-50%);"></div>';
         }).join('');
     }
@@ -5190,45 +5220,38 @@ function openPresentationMode() {
   setInterval(ensureMinimap, 1200);
 
   // ============================================================
-  // CAPTURE-PHASE INTERCEPTS (window level — fires first)
+  // Capture-phase interceptors (window level — runs before everything)
   // ============================================================
   window.addEventListener('click', function (e) {
     var btn = e.target.closest('button');
     if (!btn) return;
-
-    // Submit
     var oc = btn.getAttribute('onclick') || '';
+
     if (oc.indexOf('studentSubmitMemory') !== -1
         || oc.indexOf('submitMemory') !== -1
         || oc.indexOf('addMemoryFromModal') !== -1) {
       e.preventDefault();
       e.stopImmediatePropagation();
       e.stopPropagation();
-      log('intercepted submit');
       doSubmit();
       return;
     }
 
-    // Like
     if (btn.classList.contains('btn-like')) {
       var noteEl = btn.closest('[data-note-id]');
-      var noteId = (noteEl && noteEl.dataset.noteId) || null;
-      if (!noteId) {
-        var m = oc.match(/(?:studentLikeNote|likeNote)\(['"]([^'"]+)['"]/);
-        if (m) noteId = m[1];
-      }
-      if (noteId) {
+      var id = (noteEl && noteEl.dataset.noteId)
+            || (oc.match(/(?:studentLikeNote|likeNote)\(['"]([^'"]+)['"]/) || [])[1];
+      if (id) {
         e.preventDefault();
         e.stopImmediatePropagation();
         e.stopPropagation();
-        log('intercepted like:', noteId);
-        doLike(noteId);
+        doLike(id);
       }
     }
   }, true);
 
   // ============================================================
-  // BOOT · run fixes once when memory wall opens
+  // Boot
   // ============================================================
   var booted = false;
   function boot() {
@@ -5236,33 +5259,31 @@ function openPresentationMode() {
     var section = document.getElementById(SECTION_ID);
     if (!section || section.offsetParent === null) return;
     booted = true;
-    log('v7 booting');
-    detachDeferredListener();
-    migrateIds();
+    log('v8 booting');
+    loadCurrentBoard();
     cleanGhosts();
   }
-
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
 
-  // Re-run migration/cleanup when user switches to a new board
+  // Retry boot when section becomes visible
   setInterval(function () {
     var section = document.getElementById(SECTION_ID);
     if (section && section.offsetParent !== null) {
-      detachDeferredListener();
-      migrateIds();
-      cleanGhosts();
+      if (!booted) { boot(); }
+      else { cleanGhosts(); }
     }
-  }, 2500);
+  }, 2000);
 
   // Debug
-  window.__mwV7Debug = function () {
+  window.__mwV8Debug = function () {
     log('mode:', isTeacher ? 'teacher' : 'student');
-    log('space:', getCurrentSpaceId());
-    log('migrated:', Object.keys(migratedSpaces));
-    log('cleaned:', Object.keys(cleanedSpaces));
+    log('active space:', activeSpace);
+    log('current tab:', getCurrentSpaceId());
+    log('notes in memory:', (isTeacher ? window.memoryWallNotes : window.studentMemoryWallNotes || []).length);
     log('minimap exists:', !!document.querySelector('.mw-minimap'));
   };
+  log('v8 loaded — __mwV8Debug() for diagnostics');
 })();
 </script>
 </body>
