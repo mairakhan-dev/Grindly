@@ -4924,350 +4924,347 @@ function openPresentationMode() {
 })();
 </script>
 
-<script id="memory-wall-v6-patch">
+
+<script id="mw-v7-clean">
 (function () {
   'use strict';
-  if (window.__mwV6) return;
-  window.__mwV6 = true;
+  if (window.__mwV7Clean) return;
+  window.__mwV7Clean = true;
 
-  var LOG = function () { var a = [].slice.call(arguments); a.unshift('[MW v6]'); console.log.apply(console, a); };
-  LOG('v6 patch loaded');
+  var isTeacher = window.location.href.indexOf('teachermode') !== -1
+                || !!document.querySelector('.teacher-emoji');
+  var WB_ID = isTeacher ? 'memoryWhiteboard' : 'studentMemoryWhiteboard';
+  var SECTION_ID = isTeacher ? 'memoryWall' : 'studentMemoryWall';
 
-  // ============================================================
-  // Detect mode robustly — checks DOM first, then URL
-  // ============================================================
-  function detectMode() {
-    var hasStudent = !!document.getElementById('studentMemoryWhiteboard');
-    var hasTeacher = !!document.getElementById('memoryWhiteboard');
-    if (hasStudent && !hasTeacher) return 'student';
-    if (hasTeacher && !hasStudent) return 'teacher';
-    if (window.location.href.indexOf('studentmode') !== -1) return 'student';
-    if (window.location.href.indexOf('teachermode') !== -1) return 'teacher';
-    return 'student';
-  }
-  var mode = detectMode();
-  var isTeacher = mode === 'teacher';
-  LOG('mode:', mode);
-
-  // ============================================================
-  // Helpers (safe — work with v5 internals via typeof)
-  // ============================================================
-  function getClassCode() {
-    return (typeof currentClassCode !== 'undefined' && currentClassCode) || null;
-  }
-  function getDb() {
-    return (typeof database !== 'undefined' && database) || null;
-  }
-  function getIsDemo() {
-    return (typeof isDemoMode !== 'undefined') ? isDemoMode : false;
+  function log() { var a = [].slice.call(arguments); a.unshift('[MW v7]'); console.log.apply(console, a); }
+  function getClassCode() { return (typeof currentClassCode !== 'undefined') ? currentClassCode : null; }
+  function getDb() { return (typeof database !== 'undefined') ? database : null; }
+  function getIsDemo() { return (typeof isDemoMode !== 'undefined') ? isDemoMode : false; }
+  function notify(msg, type) {
+    if (typeof showNotification === 'function') showNotification(msg, type || 'info');
+    else log(msg);
   }
   function getCurrentSpaceId() {
     var active = document.querySelector('.mw-tab.active');
     if (active) return active.getAttribute('data-space');
     var cc = getClassCode();
-    if (cc) {
-      var s = localStorage.getItem('mw_current_space_' + cc);
-      if (s) return s;
-    }
-    return 'main';
+    return (cc && localStorage.getItem('mw_current_space_' + cc)) || 'main';
   }
   function getNotesPath(sid) {
-    var cc = getClassCode(); if (!cc) return null;
+    var cc = getClassCode();
+    if (!cc) return null;
     return sid === 'main'
       ? 'memoryWall/' + cc + '/notes'
       : 'memoryWall/' + cc + '/spaces/' + sid + '/notes';
   }
-  function getNotesArray() {
-    try {
-      if (isTeacher) {
-        if (typeof memoryWallNotes !== 'undefined') return memoryWallNotes;
-      } else {
-        if (typeof studentMemoryWallNotes !== 'undefined') return studentMemoryWallNotes;
-      }
-      return [];
-    } catch (e) { return []; }
-  }
-  function setNotesArray(arr) {
-    try {
-      if (isTeacher) memoryWallNotes = arr;
-      else studentMemoryWallNotes = arr;
-    } catch (e) {}
+
+  // ============================================================
+  // FIX A · Detach deferred listener (stops main notes showing on other boards)
+  // ============================================================
+  function detachDeferredListener() {
+    var db = getDb(), cc = getClassCode();
+    if (!db || !cc) return;
+    try { db.ref('memoryWall/' + cc + '/notes').off('value'); } catch (e) {}
   }
 
   // ============================================================
-  // Find the correct Firebase key for a note
-  // (the note's `id` field is different from the Firebase key)
+  // FIX B · Migrate existing notes: force id = Firebase key
+  // (fixes the root cause of drag/like duplication)
   // ============================================================
-  var keyCache = {};
-  async function findFirebaseKey(path, noteId) {
-    var cacheKey = path + '::' + noteId;
-    if (keyCache[cacheKey]) return keyCache[cacheKey];
-    var db = getDb();
-    if (!db) return null;
-    try {
-      var snap = await db.ref(path).once('value');
-      if (!snap.exists()) return null;
-      var found = null;
+  var migratedSpaces = {};
+  function migrateIds() {
+    var db = getDb(), cc = getClassCode();
+    if (!db || !cc || getIsDemo()) return;
+    var sid = getCurrentSpaceId();
+    var mk = cc + '::' + sid;
+    if (migratedSpaces[mk]) return;
+    migratedSpaces[mk] = true;
+    var path = getNotesPath(sid);
+    if (!path) return;
+    db.ref(path).once('value').then(function (snap) {
+      if (!snap.exists()) return;
+      var fixes = [];
       snap.forEach(function (child) {
-        var d = child.val();
-        if (d && (d.id === noteId || child.key === noteId)) found = child.key;
+        var val = child.val();
+        if (val && val.id && val.id !== child.key) fixes.push(child.key);
       });
-      if (found) keyCache[cacheKey] = found;
-      return found;
-    } catch (e) {
-      LOG('key lookup failed:', e);
-      return null;
-    }
+      if (!fixes.length) return;
+      log('migrating', fixes.length, 'note ids in', sid);
+      Promise.all(fixes.map(function (key) {
+        return db.ref(path + '/' + key + '/id').set(key);
+      })).then(function () {
+        log('✔ migrated', fixes.length, 'ids');
+      }).catch(function (e) { log('migrate failed:', e); });
+    }).catch(function () {});
   }
 
   // ============================================================
-  // SAFE like handlers — never create ghost notes
+  // FIX C · Remove ghost notes (empty text) — once per board
   // ============================================================
-  async function safeStudentLike(noteId, event) {
-    if (event) event.stopPropagation();
-    var note = getNotesArray().find(function (n) { return n.id === noteId; });
-    if (!note) return;
-    var uid = localStorage.getItem('studentUserId');
-    if (!uid || (note.likedBy || []).indexOf(uid) !== -1) return;
+  var cleanedSpaces = {};
+  function cleanGhosts() {
+    var db = getDb(), cc = getClassCode();
+    if (!db || !cc || getIsDemo()) return;
+    var sid = getCurrentSpaceId();
+    var ck = cc + '::' + sid;
+    if (cleanedSpaces[ck]) return;
+    cleanedSpaces[ck] = true;
+    var path = getNotesPath(sid);
+    if (!path) return;
+    db.ref(path).once('value').then(function (snap) {
+      if (!snap.exists()) return;
+      var ghosts = [];
+      snap.forEach(function (child) {
+        var val = child.val();
+        if (!val || !val.text || !String(val.text).trim()) ghosts.push(child.key);
+      });
+      if (!ghosts.length) return;
+      log('removing', ghosts.length, 'ghost(s) in', sid);
+      ghosts.forEach(function (key) {
+        db.ref(path + '/' + key).remove().catch(function () {});
+      });
+    }).catch(function () {});
+  }
 
-    note.likes = (note.likes || 0) + 1;
-    note.likedBy = (note.likedBy || []).concat([uid]);
+  // ============================================================
+  // FIX D · Submit handler — save with correct id, auto-switch board
+  // (intercepted BEFORE deferred + v5-patch handlers)
+  // ============================================================
+  function doSubmit() {
+    var textId = isTeacher ? 'addMemoryText' : 'studentAddMemoryText';
+    var authorId = isTeacher ? 'addMemoryAuthor' : 'studentAddMemoryAuthor';
+    var textEl = document.getElementById(textId);
+    var authorEl = document.getElementById(authorId);
+    var text = textEl ? textEl.value.trim() : '';
+    var author = (authorEl && authorEl.value.trim()) || (isTeacher ? 'Anonymous' : 'Student');
 
-    var el = document.getElementById('student-note-' + noteId);
-    var span = el && el.querySelector('.student-note-likes span:last-child');
-    if (span) span.textContent = note.likes;
+    if (!text) { notify('Write something first!', 'error'); return; }
+    if (text.length < 10) { notify('At least 10 characters', 'warning'); return; }
 
-    var db = getDb(), spaceId = getCurrentSpaceId(), path = getNotesPath(spaceId);
-    if (!db || !path || getIsDemo()) {
-      // Local
-      var cc = getClassCode();
+    var sel = document.getElementById('mwBoardSelect');
+    var spaceId = (sel && sel.value) || getCurrentSpaceId();
+
+    var posLabel = document.getElementById('mwPosLabel');
+    var pos = { x: 40, y: 40 };
+    if (posLabel) {
+      var txt = (posLabel.textContent || '').replace(/%/g, '');
+      var parts = txt.split(',');
+      if (parts.length === 2) {
+        pos.x = parseFloat(parts[0]) || 40;
+        pos.y = parseFloat(parts[1]) || 40;
+      }
+    }
+
+    var color = '#FFEB3B';
+    try {
+      if (isTeacher && typeof selectedAddMemoryColor !== 'undefined' && selectedAddMemoryColor) color = selectedAddMemoryColor;
+      if (!isTeacher && typeof studentSelectedAddMemoryColor !== 'undefined' && studentSelectedAddMemoryColor) color = studentSelectedAddMemoryColor;
+    } catch (e) {}
+
+    var note = {
+      text: text, author: author, color: color,
+      x: pos.x, y: pos.y,
+      rotation: (Math.random() * 8) - 4,
+      w: 200, h: 160,
+      likes: 0, likedBy: [],
+      createdAt: new Date().toISOString(),
+      classCode: getClassCode(),
+      spaceId: spaceId,
+      isStudentNote: !isTeacher,
+      isTeacherNote: isTeacher,
+      pinned: false
+    };
+
+    var db = getDb(), cc = getClassCode();
+
+    if (!db || !cc || getIsDemo()) {
       var lsKey = 'memoryWall_notes_' + cc + (spaceId === 'main' ? '' : '_' + spaceId);
       var raw = localStorage.getItem(lsKey);
-      if (raw) {
-        try {
-          var arr = JSON.parse(raw);
-          var idx = arr.findIndex(function (n) { return n.id === noteId; });
-          if (idx !== -1) {
-            arr[idx].likes = note.likes;
-            arr[idx].likedBy = note.likedBy;
-            localStorage.setItem(lsKey, JSON.stringify(arr));
-          }
-        } catch (e) {}
-      }
-      return;
-    }
-
-    // Firebase — find real key, update THAT entry only
-    var key = await findFirebaseKey(path, noteId);
-    if (key) {
-      db.ref(path + '/' + key).update({
-        likes: note.likes, likedBy: note.likedBy
-      }).catch(function (err) { LOG('like save failed:', err); });
+      var arr = raw ? JSON.parse(raw) : [];
+      note.id = 'note_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+      arr.push(note);
+      localStorage.setItem(lsKey, JSON.stringify(arr));
+      afterSave(spaceId);
     } else {
-      LOG('could not find key for note', noteId, '— skipping persist to avoid ghost');
+      var path = spaceId === 'main'
+        ? 'memoryWall/' + cc + '/notes'
+        : 'memoryWall/' + cc + '/spaces/' + spaceId + '/notes';
+      var ref = db.ref(path).push();
+      note.id = ref.key;                     // ← CRITICAL: id = Firebase key
+      ref.set(note)
+        .then(function () { afterSave(spaceId); })
+        .catch(function (e) { notify('Save failed', 'error'); log('save failed:', e); });
     }
   }
 
-  async function safeTeacherLike(noteId, event) {
-    if (event) event.stopPropagation();
-    var note = getNotesArray().find(function (n) { return n.id === noteId; });
-    if (!note) return;
+  function afterSave(spaceId) {
+    var sel = document.getElementById('mwBoardSelect');
+    var boardName = 'board';
+    if (sel && sel.options[sel.selectedIndex]) {
+      boardName = sel.options[sel.selectedIndex].textContent.replace(/\s*\(current\)\s*/, '').trim();
+    }
+    notify('Saved to "' + boardName + '" ✓', 'success');
 
-    note.likes = (note.likes || 0) + 1;
-
-    var el = document.getElementById('note-' + noteId);
-    var span = el && el.querySelector('.note-likes span:last-child');
-    if (span) span.textContent = note.likes;
-
-    var db = getDb(), spaceId = getCurrentSpaceId(), path = getNotesPath(spaceId);
-    if (!db || !path || getIsDemo()) {
-      var cc = getClassCode();
-      var lsKey = 'memoryWall_notes_' + cc + (spaceId === 'main' ? '' : '_' + spaceId);
-      var raw = localStorage.getItem(lsKey);
-      if (raw) {
-        try {
-          var arr = JSON.parse(raw);
-          var idx = arr.findIndex(function (n) { return n.id === noteId; });
-          if (idx !== -1) {
-            arr[idx].likes = note.likes;
-            localStorage.setItem(lsKey, JSON.stringify(arr));
-          }
-        } catch (e) {}
-      }
-      return;
+    if (spaceId !== getCurrentSpaceId()) {
+      var tab = document.querySelector('.mw-tab[data-space="' + spaceId + '"]');
+      if (tab) tab.click();
     }
 
-    var key = await findFirebaseKey(path, noteId);
-    if (key) {
-      db.ref(path + '/' + key).update({ likes: note.likes })
-        .catch(function (err) { LOG('like save failed:', err); });
-    } else {
-      LOG('could not find key for note', noteId);
-    }
+    setTimeout(function () {
+      var backFn = isTeacher ? 'backToMemoryWall' : 'studentBackToMemoryWall';
+      if (typeof window[backFn] === 'function') window[backFn]();
+      var activeTab = document.querySelector('.mw-tab.active');
+      if (activeTab) activeTab.click();
+      detachDeferredListener();
+    }, 400);
   }
 
   // ============================================================
-  // Re-apply overrides AFTER deferred scripts have run
-  // This is the actual fix — deferred scripts clobber my overrides
+  // FIX E · Safe like handler — looks up correct key, never makes ghosts
   // ============================================================
-  function reapplyOverrides() {
-    window.studentLikeNote = safeStudentLike;
-    window.likeNote = safeTeacherLike;
-    LOG('overrides re-applied');
-  }
+  function doLike(noteId) {
+    var db = getDb(), path = getNotesPath(getCurrentSpaceId());
+    if (!db || !path) return;
 
-  // Try immediately (may be clobbered by deferred)
-  reapplyOverrides();
-
-  // Re-apply after window.load (deferred scripts done) + a few safety nets
-  window.addEventListener('load', function () {
-    reapplyOverrides();
-    setTimeout(reapplyOverrides, 100);
-    setTimeout(reapplyOverrides, 500);
-    setTimeout(reapplyOverrides, 1500);
-    setTimeout(reapplyOverrides, 3000);
-  });
-
-  // Also re-apply when user navigates to the memory wall
-  document.addEventListener('click', function (e) {
-    var btn = e.target.closest('[onclick*="MemoryWall"], [onclick*="memoryWall"], .nav-item');
-    if (btn) setTimeout(reapplyOverrides, 100);
-  }, true);
-
-  // ============================================================
-  // Ghost note cleanup — runs every 3s
-  // Removes any notes without a `text` field from Firebase + array
-  // ============================================================
-  var lastGhostCount = 0;
-  setInterval(function () {
-    var arr = getNotesArray();
-    if (!arr || !arr.length) return;
-    var ghosts = arr.filter(function (n) { return !n.text || !String(n.text).trim(); });
-    if (ghosts.length === 0) {
-      lastGhostCount = 0;
-      return;
-    }
-
-    LOG('cleaning ' + ghosts.length + ' ghost note(s)');
-    var db = getDb(), spaceId = getCurrentSpaceId(), path = getNotesPath(spaceId);
-
-    // Delete from Firebase
-    if (db && path && !getIsDemo()) {
-      ghosts.forEach(function (g) {
-        if (!g.id) return;
-        db.ref(path + '/' + g.id).remove().catch(function () {});
+    db.ref(path).once('value').then(function (snap) {
+      if (!snap.exists()) return;
+      var key = null, data = null;
+      snap.forEach(function (child) {
+        var val = child.val();
+        if (child.key === noteId || (val && val.id === noteId)) { key = child.key; data = val; }
       });
-    }
+      if (!key || !data) return;
 
-    // Remove from array + re-render
-    var cleaned = arr.filter(function (n) { return n.text && String(n.text).trim(); });
-    setNotesArray(cleaned);
-
-    var renderFn = isTeacher ? window.renderStickyNotes : window.renderStudentStickyNotes;
-    if (typeof renderFn === 'function') {
-      try { renderFn(); } catch (e) { LOG('re-render failed:', e); }
-    }
-
-    if (ghosts.length !== lastGhostCount && typeof window.showNotification === 'function') {
-      window.showNotification('🧹 Cleaned ' + ghosts.length + ' ghost note(s)', 'info');
-    }
-    lastGhostCount = ghosts.length;
-  }, 3000);
+      var updates = { likes: (data.likes || 0) + 1 };
+      if (!isTeacher) {
+        var uid = localStorage.getItem('studentUserId');
+        if (!uid) return;
+        var likedBy = data.likedBy || [];
+        if (likedBy.indexOf(uid) !== -1) return;
+        updates.likedBy = likedBy.concat([uid]);
+      }
+      db.ref(path + '/' + key).update(updates).catch(function (e) { log('like failed:', e); });
+    });
+  }
 
   // ============================================================
-  // Force minimap visible — runs every 2s
-  // Handles: minimap missing, minimap hidden by CSS, minimap outside viewport
+  // FIX F · Force minimap visible with inline styles
   // ============================================================
   function ensureMinimap() {
-    var wbId = isTeacher ? 'memoryWhiteboard' : 'studentMemoryWhiteboard';
-    var wb = document.getElementById(wbId);
+    var wb = document.getElementById(WB_ID);
     if (!wb) return;
     var minimap = wb.querySelector('.mw-minimap');
     if (!minimap) {
-      LOG('minimap missing — creating');
       minimap = document.createElement('div');
       minimap.className = 'mw-minimap';
       minimap.innerHTML = '<div class="mw-minimap-dots"></div><div class="mw-minimap-viewport"></div>';
       wb.appendChild(minimap);
     }
-    // Force visible with inline !important styles
-    minimap.style.setProperty('display', 'block', 'important');
-    minimap.style.setProperty('visibility', 'visible', 'important');
-    minimap.style.setProperty('opacity', '1', 'important');
-    minimap.style.setProperty('position', 'absolute', 'important');
-    minimap.style.setProperty('bottom', '10px', 'important');
-    minimap.style.setProperty('left', '10px', 'important');
-    minimap.style.setProperty('width', '140px', 'important');
-    minimap.style.setProperty('height', '90px', 'important');
-    minimap.style.setProperty('z-index', '9999', 'important');
-    minimap.style.setProperty('background', 'rgba(255,255,255,0.95)', 'important');
-    minimap.style.setProperty('border', '1px solid rgba(60,42,15,0.15)', 'important');
-    minimap.style.setProperty('border-radius', '8px', 'important');
-    minimap.style.setProperty('box-shadow', '0 4px 16px rgba(60,42,15,0.18)', 'important');
-    minimap.style.setProperty('pointer-events', 'none', 'important');
-    minimap.classList.remove('hidden');
-
-    // Update dots
+    minimap.style.cssText =
+      'display:block!important;position:absolute!important;bottom:10px!important;left:10px!important;' +
+      'width:140px!important;height:90px!important;z-index:40!important;' +
+      'background:rgba(255,255,255,0.95)!important;border:1px solid rgba(60,42,15,0.15)!important;' +
+      'border-radius:8px!important;box-shadow:0 4px 16px rgba(60,42,15,0.18)!important;' +
+      'pointer-events:none!important;overflow:hidden!important;';
     var dots = minimap.querySelector('.mw-minimap-dots');
-    var notes = getNotesArray();
+    var notes = (isTeacher ? window.memoryWallNotes : window.studentMemoryWallNotes) || [];
     if (dots) {
       dots.innerHTML = notes
-        .filter(function (n) { return n.text; })
+        .filter(function (n) { return n.text && String(n.text).trim(); })
         .map(function (n) {
           var color = n.color || '#FFEB3B';
           var x = Math.max(0, Math.min(98, Number(n.x) || 0));
           var y = Math.max(0, Math.min(98, Number(n.y) || 0));
-          return '<div style="position:absolute;left:' + x + '%;top:' + y + '%;width:5px;height:5px;border-radius:1px;background:' + color + ';transform:translate(-50%,-50%);"></div>';
+          return '<div style="position:absolute;left:' + x + '%;top:' + y + '%;' +
+                 'width:5px;height:5px;border-radius:1px;background:' + color + ';' +
+                 'transform:translate(-50%,-50%);"></div>';
         }).join('');
     }
     var vp = minimap.querySelector('.mw-minimap-viewport');
     if (vp) {
-      vp.style.position = 'absolute';
-      vp.style.left = '0%';
-      vp.style.top = '0%';
-      vp.style.width = '100%';
-      vp.style.height = '100%';
-      vp.style.border = '1.5px solid #ff4714';
-      vp.style.background = 'rgba(255,71,20,0.08)';
-      vp.style.borderRadius = '2px';
-      vp.style.pointerEvents = 'none';
+      vp.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%;' +
+        'border:1.5px solid #ff4714;background:rgba(255,71,20,0.08);' +
+        'border-radius:2px;pointer-events:none;';
     }
   }
-  setInterval(ensureMinimap, 2000);
+  setInterval(ensureMinimap, 1200);
 
   // ============================================================
-  // Diagnostic
+  // CAPTURE-PHASE INTERCEPTS (window level — fires first)
   // ============================================================
-  window.__mwV6Debug = function () {
-    console.log('--- MW v6 DEBUG ---');
-    console.log('mode:', mode);
-    console.log('class:', getClassCode());
-    console.log('space:', getCurrentSpaceId());
-    console.log('notes:', getNotesArray().length);
-    var ghosts = getNotesArray().filter(function (n) { return !n.text || !String(n.text).trim(); });
-    console.log('ghosts:', ghosts.length, ghosts.map(function (g) { return g.id; }));
-    var wb = document.getElementById(isTeacher ? 'memoryWhiteboard' : 'studentMemoryWhiteboard');
-    console.log('whiteboard:', !!wb);
-    if (wb) {
-      var mini = wb.querySelector('.mw-minimap');
-      console.log('minimap:', !!mini);
-      if (mini) {
-        var cs = getComputedStyle(mini);
-        console.log('  display:', cs.display, '| position:', cs.position,
-                    '| size:', mini.offsetWidth + '×' + mini.offsetHeight,
-                    '| z-index:', cs.zIndex);
-      }
-      console.log('header controls:', !!wb.closest('.content-card')?.querySelector('.mw-header-controls'));
-      console.log('tabs:', wb.closest('.content-card')?.querySelectorAll('.mw-tab').length || 0);
+  window.addEventListener('click', function (e) {
+    var btn = e.target.closest('button');
+    if (!btn) return;
+
+    // Submit
+    var oc = btn.getAttribute('onclick') || '';
+    if (oc.indexOf('studentSubmitMemory') !== -1
+        || oc.indexOf('submitMemory') !== -1
+        || oc.indexOf('addMemoryFromModal') !== -1) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      e.stopPropagation();
+      log('intercepted submit');
+      doSubmit();
+      return;
     }
-    console.log('override status:');
-    console.log('  studentLikeNote is safe:', window.studentLikeNote === safeStudentLike);
-    console.log('  likeNote is safe:', window.likeNote === safeTeacherLike);
+
+    // Like
+    if (btn.classList.contains('btn-like')) {
+      var noteEl = btn.closest('[data-note-id]');
+      var noteId = (noteEl && noteEl.dataset.noteId) || null;
+      if (!noteId) {
+        var m = oc.match(/(?:studentLikeNote|likeNote)\(['"]([^'"]+)['"]/);
+        if (m) noteId = m[1];
+      }
+      if (noteId) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        e.stopPropagation();
+        log('intercepted like:', noteId);
+        doLike(noteId);
+      }
+    }
+  }, true);
+
+  // ============================================================
+  // BOOT · run fixes once when memory wall opens
+  // ============================================================
+  var booted = false;
+  function boot() {
+    if (booted) return;
+    var section = document.getElementById(SECTION_ID);
+    if (!section || section.offsetParent === null) return;
+    booted = true;
+    log('v7 booting');
+    detachDeferredListener();
+    migrateIds();
+    cleanGhosts();
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+
+  // Re-run migration/cleanup when user switches to a new board
+  setInterval(function () {
+    var section = document.getElementById(SECTION_ID);
+    if (section && section.offsetParent !== null) {
+      detachDeferredListener();
+      migrateIds();
+      cleanGhosts();
+    }
+  }, 2500);
+
+  // Debug
+  window.__mwV7Debug = function () {
+    log('mode:', isTeacher ? 'teacher' : 'student');
+    log('space:', getCurrentSpaceId());
+    log('migrated:', Object.keys(migratedSpaces));
+    log('cleaned:', Object.keys(cleanedSpaces));
+    log('minimap exists:', !!document.querySelector('.mw-minimap'));
   };
-  LOG('ready — __mwV6Debug() for diagnostics');
 })();
 </script>
-
 </body>
 </html>
 
